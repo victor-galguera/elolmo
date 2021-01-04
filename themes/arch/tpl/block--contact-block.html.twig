@@ -1,0 +1,24 @@
+<section{{ attributes.addClass('section') }}>
+  {{ title_suffix }}
+  <div class="container">
+    {% if label %}
+    <header class="section-header">
+      <h2 class="section-title">{{ label }}</h2>
+    </header>
+    {% endif %}
+    <div class="section-content">
+     	<div class="row-base row">
+	        {% if address_in_contact_block %}
+	        	{% for out in address_in_contact_block %}
+	        		{{ out }}
+	        	{% endfor %}
+	        {% endif %}
+	        <div class="col-base col-md-8 arch-form-contact">
+			  	{% if content %}
+		        	{{ content }}
+		      	{% endif %} 
+	        </div>
+      	</div>
+    </div>
+  </div>
+</section>

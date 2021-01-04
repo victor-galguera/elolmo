@@ -1,0 +1,13 @@
+name: Bootstrap Carousel Image Formatter
+type: module
+description: Adds formatter for displaying image fields as Bootstrap Carousel.
+# core: 8.x
+package: Field types
+dependencies:
+  - file
+
+# Information added by Drupal.org packaging script on 2017-02-13
+version: '8.x-3.0'
+core: '8.x'
+project: 'bootstrap_carousel_if'
+datestamp: 1486969988

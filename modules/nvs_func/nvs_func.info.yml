@@ -1,0 +1,9 @@
+name: 'Naviteam func twig'
+type: module
+description: 'getNodeViewCount(nid): get node view count use statistics,...'
+package: NaviSystem
+dependencies:
+  - statistics
+tags:
+ - developer
+core: '8.x'

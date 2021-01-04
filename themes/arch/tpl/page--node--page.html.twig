@@ -1,0 +1,38 @@
+{% include theme_path_no_base ~ "/tpl/header.html.twig" %}
+{% set bg_url = file_url(node.field_background_image.entity.uri.value) %}
+<div class="layout">
+    
+    <!-- Home -->
+    
+    <main class="main main-inner bg-about"{% if bg_url %} style="background-image:url({{ bg_url }});"{% endif %} data-stellar-background-ratio="0.6">
+      <div class="container">
+        <header class="main-header">
+          <h1>{{ title }}</h1>
+        </header>
+      </div>
+
+      <!-- Lines -->
+
+      <div class="page-lines">
+        <div class="container">
+          <div class="col-line col-xs-4">
+            <div class="line"></div>
+          </div>
+          <div class="col-line col-xs-4">
+            <div class="line"></div>
+          </div>
+          <div class="col-line col-xs-4">
+            <div class="line"></div>
+            <div class="line"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    {{ page.content_full_bar }}
+    <div class="content">   
+    
+      {{ page.section_content }}
+      {{ page.section_bottom }}
+      {% include theme_path_no_base ~ "/tpl/footer.html.twig" %}
+    </div>
+</div>

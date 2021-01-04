@@ -1,0 +1,29 @@
+services:
+  nvs_func.twig.author_name_by_node:
+    class: Drupal\nvs_func\Twig\AuthorNameByNode
+    tags:
+      - { name: twig.extension }
+  nvs_func.twig.nvs_func_extension:
+    class: Drupal\nvs_func\Twig\FuncExtension
+    tags:
+      - { name: twig.extension }
+  nvs_func.twig.video_embed_extension:
+    class: Drupal\nvs_func\Twig\VideoEmbedExtension
+    tags:
+      - { name: twig.extension }
+  nvs_func.twig.preg_match_img_extension:
+    class: Drupal\nvs_func\Twig\PregMatchImgExtension
+    tags:
+      - { name: twig.extension }
+  nvs_func.twig.theme_path_extension:
+    class: Drupal\nvs_func\Twig\BasePathExtension
+    tags:
+      - { name: twig.extension }
+  nvs_func.twig.image_style_extension:
+    class: Drupal\nvs_func\Twig\NVSImageStyle
+    tags:
+      - { name: twig.extension }
+  nvs_func.twig.alias_path_extension:
+    class: Drupal\nvs_func\Twig\UrlAlias
+    tags:
+      - { name: twig.extension }

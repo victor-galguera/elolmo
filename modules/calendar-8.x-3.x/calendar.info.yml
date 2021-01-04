@@ -1,0 +1,8 @@
+name: Calendar
+type: module
+description: 'Views plugin to display views containing dates as Calendars.'
+dependencies:
+  - views
+package: Date/Time
+core: 8.x
+version: VERSION

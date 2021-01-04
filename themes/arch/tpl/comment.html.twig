@@ -1,0 +1,21 @@
+<li>
+  <div class="entry-item">
+    <div class="entry-thumb">
+      <div class="user-picture">
+        {{ user_picture }}
+      </div>
+    </div>
+    <div class="entry-box">
+
+      <div class="cmt-name">{{ author }}</div>
+      <span class="cmt-time">{{ 'Posted on'|t }} <span>{{ new_indicator_timestamp|date('F d, Y') }} at {{ new_indicator_timestamp|date('h:ia') }}</span></span>
+      <div class="cmt-reply">
+          {{ content.links }}
+      </div>
+      <div class="clearfix"></div>
+      <div class="cmt-content">
+        {{ content.comment_body }}
+      </div>
+    </div>
+  </div>
+</li>

@@ -1,0 +1,7 @@
+nvs_widget.settings:
+  path: '/admin/config/content/nvs_widget'
+  defaults:
+    _form: '\Drupal\nvs_widget\Form\nvs_widgetSettingsForm'
+    _title: 'Naviteam Widget'
+  requirements:
+    _permission: 'administer site configuration'

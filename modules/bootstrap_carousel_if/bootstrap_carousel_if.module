@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Bootstrap Carousel Image Field.
+ */
+
+
+/**
+ * Implements hook_theme().
+ */
+// function bootstrap_carousel_if_theme() {
+//   return array(
+//     'bootstrap_carousel_if' => array(
+//       'variables' => array(
+//         'interval' => '5000',
+//         'pause' => 0,
+//         'wrap' => 0,
+//         //'keyboard' => 0,
+//         'indicators' => 1,
+//         //'image_style' => 0,
+//         //'background' => 0,
+//         //'background_pos' => 'center center',
+//         //'width' => '100%',
+//         //'height' => '100px',
+//         //'id' => '',
+//         'slides' => array(),
+//       ),
+//     ),
+//   );
+// }
+
+// function template_preprocess_bootstrap_carousel_if(&$vars) {
+// 	kint($vars);
+// }

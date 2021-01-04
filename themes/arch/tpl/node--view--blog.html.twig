@@ -1,0 +1,25 @@
+{% set imageone760x514_url = getUrlByImageStyle(node.field_blog_image.0.entity.uri.value, 'image_760x514') %}
+<article class="blog">
+  <div class="row">
+    <div class="blog-thumbnail col-md-8">
+      <div class="blog-thumbnail-bg col-md-8 visible-md visible-lg" style="background-image: url({{ imageone760x514_url }});"></div>
+      <div class="blog-thumbnail-img visible-xs visible-sm"><img alt="{{ node.getTitle() }}" class="img-responsive" src="{{ imageone760x514_url }}"></div>
+    </div>
+    <div class="blog-info col-md-4">
+      <div class="blog-tags">
+        {{ content.field_blog_tags }}
+      </div>
+      <h3 class="blog-title">
+        <a href="{{ url }}">{{ node.getTitle() }}</a>
+      </h3>
+      <p>{{ node.body.summary|length > 138 ? node.body.summary|slice(0,138) ~ '...' : node.body.summary }}</p>
+      <div class="blog-meta">
+        <div class="author">
+          {{ 'by'|t }} {% if getAuthorNameByNode(node.nid.value) %}{{ getAuthorNameByNode(node.nid.value)|t }}{% else %}{{ author_name }}{% endif %}
+        </div>
+        <div class="time">{{ node.created.value|date('F, d') }}</div>
+      </div>
+      <div class="text-right"><a href="{{ url }}" class="read-more">{{ 'Read more'|t }}</a></div>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,20 @@
+md_slider.admin:
+  title: 'Slider'
+  description: 'List of Sider items'
+  parent: system.admin_structure
+  route_name: md_slider.admin
+md_slider.add:
+  title: 'Add  Slider'
+  description: 'Add new Slider'
+  parent: md_slider.admin
+  route_name: md_slider.admin.add
+md_slider.import:
+  title: 'Import Slider'
+  description: 'Import from file zip'
+  parent: md_slider.admin
+  route_name: md_slider.admin.import
+md_slider.export:
+  title: 'Export '
+  description: 'Export to file zip to store'
+  parent: md_slider.admin
+  route_name: md_slider.admin.export

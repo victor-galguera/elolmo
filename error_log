@@ -1,0 +1,3 @@
+[20-Jun-2019 21:58:53 America/New_York] Uncaught PHP Exception Drupal\Core\Entity\Query\QueryException: "'reusable' not found" at /home/goarchdrupalet/public_html/core/lib/Drupal/Core/Entity/Query/Sql/Tables.php line 367
+[20-Jun-2019 21:58:56 America/New_York] Uncaught PHP Exception Drupal\Core\Entity\Query\QueryException: "'reusable' not found" at /home/goarchdrupalet/public_html/core/lib/Drupal/Core/Entity/Query/Sql/Tables.php line 367
+[20-Jun-2019 21:59:15 America/New_York] Uncaught PHP Exception Drupal\Core\Entity\Query\QueryException: "'reusable' not found" at /home/goarchdrupalet/public_html/core/lib/Drupal/Core/Entity/Query/Sql/Tables.php line 367

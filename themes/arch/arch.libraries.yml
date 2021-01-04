@@ -1,0 +1,73 @@
+light-arch-lib:
+  version: VERSION
+  css:
+    theme:
+      light/css/style.css: {}
+      css/update.css: {}
+  js:
+    #js/jquery.min.js: {}
+    light/js/bootstrap.min.js: {}
+    light/js/smoothscroll.js: {}
+    light/js/jquery.validate.min.js: {}
+    light/js/wow.min.js: {}
+    light/js/jquery.stellar.min.js: {}
+    light/js/jquery.magnific-popup.js: {}
+    light/js/owl.carousel.min.js: {}
+
+    # SLIDER REVOLUTION
+    light/js/rev-slider/jquery.themepunch.tools.min.js: {}
+    light/js/rev-slider/jquery.themepunch.revolution.min.js: {}
+
+    # SLIDER REVOLUTION 5.0 EXTENSIONS
+    light/js/rev-slider/revolution.extension.actions.min.js: {}
+    light/js/rev-slider/revolution.extension.carousel.min.js: {}
+    light/js/rev-slider/revolution.extension.kenburn.min.js: {}
+    light/js/rev-slider/revolution.extension.layeranimation.min.js: {}
+    light/js/rev-slider/revolution.extension.migration.min.js: {}
+    light/js/rev-slider/revolution.extension.navigation.min.js: {}
+    light/js/rev-slider/revolution.extension.parallax.min.js: {}
+    light/js/rev-slider/revolution.extension.slideanims.min.js: {}
+    light/js/rev-slider/revolution.extension.video.min.js: {}
+    light/js/interface.js: {}
+    'https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyBgxenYq2JCn4-xIGt5RAg3okFC4A0Aqms': {}
+    light/js/gmap.js: {}
+    js/update.js: {}
+  dependencies:
+    - core/jquery
+#dark
+dark-arch-lib:
+  version: VERSION
+  css:
+    theme:
+      dark/css/style.css: {}
+      css/update.css: {}
+  js:
+    #js/jquery.min.js: {}
+    dark/js/bootstrap.min.js: {}
+    dark/js/smoothscroll.js: {}
+    dark/js/jquery.validate.min.js: {}
+    dark/js/wow.min.js: {}
+    dark/js/jquery.stellar.min.js: {}
+    dark/js/jquery.magnific-popup.js: {}
+    dark/js/owl.carousel.min.js: {}
+
+    # SLIDER REVOLUTION
+    dark/js/rev-slider/jquery.themepunch.tools.min.js: {}
+    dark/js/rev-slider/jquery.themepunch.revolution.min.js: {}
+
+    # SLIDER REVOLUTION 5.0 EXTENSIONS
+    dark/js/rev-slider/revolution.extension.actions.min.js: {}
+    dark/js/rev-slider/revolution.extension.carousel.min.js: {}
+    dark/js/rev-slider/revolution.extension.kenburn.min.js: {}
+    dark/js/rev-slider/revolution.extension.layeranimation.min.js: {}
+    dark/js/rev-slider/revolution.extension.migration.min.js: {}
+    dark/js/rev-slider/revolution.extension.navigation.min.js: {}
+    dark/js/rev-slider/revolution.extension.parallax.min.js: {}
+    dark/js/rev-slider/revolution.extension.slideanims.min.js: {}
+    dark/js/rev-slider/revolution.extension.video.min.js: {}
+    dark/js/interface.js: {}
+    'https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyBgxenYq2JCn4-xIGt5RAg3okFC4A0Aqms': {}
+    dark/js/gmap.js: {}
+    js/update.js: {}
+  dependencies:
+    - core/jquery

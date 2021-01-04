@@ -1,0 +1,37 @@
+<!-- Header -->
+<header id="top" class="header-inner">
+  <div class="brand-panel">
+    {% if text_logo_status == TRUE %}
+    <a href="#top" class="brand js-target-scroll">
+      <span class="text-primary">.</span>{% if text_logo %}{{ text_logo|t }}{% endif %}
+    </a>
+    {% else %}
+      {{ page.header_logo }}
+    {% endif %}
+    {% if brand_name %}
+    <div class="brand-name">{{ brand_name }}</div>
+    {% endif %}
+  </div>
+  {% if header_phone %}
+  <div class="header-phone">{{ header_phone|t }}</div>
+  {% endif %}
+  <div class="vertical-panel-content">
+    <div class="vertical-panel-info">
+        <div class="vertical-panel-title">{% if vertical_panel_title %}{{ vertical_panel_title|t }}{% endif %}</div>
+        <div class="line"></div>
+    </div>
+    {% if header_social_networks %}
+    <ul class="social-list">
+      {{ header_social_networks|t }}
+    </ul>  
+    {% endif %}
+  </div> 
+
+  <!-- Navigation Desctop -->
+
+  {{ page.main_menu }}
+
+  <!-- Navigation Mobile -->
+
+  {{ page.mobile_menu }}
+</header>

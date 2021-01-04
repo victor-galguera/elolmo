@@ -1,0 +1,19 @@
+{% set count_comments = comments|length - 3 %}
+{% if count_comments < 0 %}
+  {% set count_comments = 0 %}
+{% endif %}
+{% if count_comments != 0 %}
+<div class="kopa-comments">
+	<h4>{{ 'COMMENTS'|t }}</h4>
+	<ul class="rs-ul">
+	   {{ comments }}
+	</ul>
+</div>
+{% endif %}
+{% if comment_form %}
+<div class="empty-space col-xs-b15 col-sm-b30"></div>
+<div class="h4 small" style="padding-top: 35px"><b>{{ 'LEAVE A REPLY'|t }}</b></div>
+<div class="empty-space col-xs-b15"></div>
+<div class="arch-comment-form">{{ comment_form }}</div>
+<div class="empty-space col-xs-b55 col-sm-b110"></div>
+{% endif %}

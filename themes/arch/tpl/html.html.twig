@@ -1,0 +1,66 @@
+{%
+  set body_classes = [
+    logged_in ? 'user-logged-in',
+    not root_path ? 'path-frontpage' : 'path-' ~ root_path|clean_class,
+    node_type ? 'page-node-type-' ~ node_type|clean_class,
+    db_offline ? 'db-offline',
+  ]
+%}
+
+<!DOCTYPE HTML>
+<html{{ html_attributes }}>
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ head_title|safe_join(' | ') }}</title> 
+<head-placeholder token="{{ placeholder_token|raw }}">
+<css-placeholder token="{{ placeholder_token|raw }}">
+<js-placeholder token="{{ placeholder_token|raw }}">
+<script src="//code.tidio.co/snkm3l3ipjypohlokuwgn6uny2w6qbwv.js"></script>
+{% if general_setting_tracking_code %}
+  {{ general_setting_tracking_code|t }}
+{% endif %}
+{% if custom_css %}
+  <style type="text/css" media="all">
+    {{ custom_css|t }}
+  </style>
+{% endif %}
+</head>
+<body{{ attributes.addClass(body_classes) }}>
+  
+    <!-- Loader -->
+
+    <div class="loader">
+      <div class="page-lines">
+        <div class="container">
+          <div class="col-line col-xs-4">
+            <div class="line"></div>
+          </div>
+          <div class="col-line col-xs-4">
+            <div class="line"></div>
+          </div>
+          <div class="col-line col-xs-4">
+            <div class="line"></div>
+            <div class="line"></div>
+          </div>
+        </div>
+      </div>
+      <div class="loader-brand"> 
+        <div class="sk-folding-cube">
+          <div class="sk-cube1 sk-cube"></div>
+          <div class="sk-cube2 sk-cube"></div>
+          <div class="sk-cube4 sk-cube"></div>
+          <div class="sk-cube3 sk-cube"></div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#main-content" class="visually-hidden focusable">
+        {{ 'Skip to main content'|t }}
+    </a>
+    {{ page_top }}
+    {{ page }}
+    {{ page_bottom }}
+
+<js-bottom-placeholder token="{{ placeholder_token|raw }}">
+</body>
+</html>

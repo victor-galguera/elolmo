@@ -1,0 +1,22 @@
+calendar.colorpicker:
+  version: VERSION
+  js:
+    js/calendar_colorpicker.js: {}
+  dependencies:
+    - core/jquery.farbtastic
+
+calendar.overlap:
+  version: 1.x
+  js:
+    js/calendar_overlap.js: {}
+  dependencies:
+    - core/jquery
+
+calendar.theme:
+  version: VERSION
+  css:
+    theme:
+      css/calendar.css: {}
+      css/calendar-overlap.css: {}
+      css/calendar-overlap-no-scroll.css: {}
+      css/calendar_multiday.css: {}

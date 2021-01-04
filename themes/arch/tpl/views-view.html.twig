@@ -1,0 +1,109 @@
+{#
+/**
+ * @file
+ * Default theme implementation for main view template.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes for the element.
+ * - css_name: A css-safe version of the view name.
+ * - css_class: The user-specified classes names, if any.
+ * - header: The optional header.
+ * - footer: The optional footer.
+ * - rows: The results of the view query, if any.
+ * - empty: The content to display if there are no rows.
+ * - pager: The optional pager next/prev links to display.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Optional feed icons to display.
+ * - more: An optional link to the next page of results.
+ * - title: Title of the view, only used when displaying in the admin preview.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the view title.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the view title.
+ * - attachment_before: An optional attachment view to be displayed before the
+ *   view content.
+ * - attachment_after: An optional attachment view to be displayed after the
+ *   view content.
+ * - dom_id: Unique id for every view being printed to give unique class for
+ *   Javascript.
+ *
+ * @see template_preprocess_views_view()
+ *
+ * @ingroup themeable
+ */
+#}
+
+	
+
+{% if id == '_arch_section_content' %}
+    {% if display_id == 'recent_posts' %}
+        {{ rows }}
+    {% elseif display_id == 'portfolio' %}
+        <div class="js-projects-gallery">
+          <div class="row">
+            {{ rows }}
+          </div>
+        </div>
+        {% if pager %}
+        <div class="section-content text-center">
+          {{ pager }}
+        </div>
+        {% endif %}
+    {% elseif display_id == 'front_page_portfolio' %}
+        <div class="container">
+          {{ header }}
+        </div>
+        <div class="section-content">
+          <div class="projects-carousel js-projects-carousel js-projects-gallery">
+            {{ rows }}
+          </div>
+        </div>
+    {% elseif display_id == 'front_page_clients' %}
+      <section class="clients section">
+        <div class="container">
+          <header class="section-header">
+            {{ header }}
+          </header>
+          <div class="section-content">
+            <ul class="clients-list">
+              {{ rows }}
+            </ul>
+          </div>
+          <div class="section-content">
+            {{ footer }}
+          </div>
+        </div>
+      </section>
+	  {% else %}
+        {{ rows }}
+    {% endif %}
+{% elseif id == '_arch_taxonomy_terms' %}
+    {% if display_id == 'block_on_sidebar_blog_tags' %}
+        <div class="blog-tags">
+            {{ rows }}   
+        </div>
+    {% else %}
+        {{ header }}
+        {{ rows }}
+        {{ attachment_after }}
+        {{ empty }}
+        {{ footer }}
+        {{ pager }}
+    {% endif %}
+{% elseif id == 'blog' %}
+    {{ title_suffix }}
+    {{ rows }}
+    {% if pager %}
+        <div class="section-content text-center">
+            {{ pager }}
+        </div>
+    {% endif %}
+
+{% else %}
+	{{ header }}
+  	{{ rows }}
+  	{{ attachment_after }}
+  	{{ empty }}
+  	{{ footer }}
+  	{{ pager }}
+{% endif %}
