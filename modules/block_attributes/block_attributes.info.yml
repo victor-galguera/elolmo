@@ -1,7 +1,0 @@
-name: Block Attributes
-type: module
-description: 'Allows you to add attributes to blocks.'
-core: 8.x
-dependencies:
-  - block
-configure: block_attributes.config
