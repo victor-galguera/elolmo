@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\page_manager_test\Controller\PageManagerTestController.
+ */
+
 namespace Drupal\page_manager_test\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

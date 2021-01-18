@@ -16,9 +16,9 @@
     attach: function (context) {
       $('#edit-import-url--description a', context)
         .once('webform-export-import-test')
-        .on('click', function () {
+        .click(function () {
           $('#edit-import-url').val(this.href);
-          $('#webform-submission-export-import-upload-form').trigger('submit');
+          $('#webform-submission-export-import-upload-form').submit();
           return false;
         });
     }

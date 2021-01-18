@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\monitoring\SensorPlugin\PendingSensorPlugin.
+ */
 
 namespace Drupal\simplenews\Plugin\monitoring\SensorPlugin;
 
@@ -27,7 +31,6 @@ class PendingSensorPlugin extends SensorPluginBase {
    * {@inheritdoc}
    */
   public function runSensor(SensorResultInterface $result) {
-    $result->setValue(\Drupal::service('simplenews.spool_storage')->countMails(['status' => SpoolStorageInterface::STATUS_PENDING]));
+    $result->setValue(\Drupal::service('simplenews.spool_storage')->countMails(array('status' => SpoolStorageInterface::STATUS_PENDING)));
   }
-
 }

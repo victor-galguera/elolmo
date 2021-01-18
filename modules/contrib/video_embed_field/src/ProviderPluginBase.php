@@ -1,17 +1,22 @@
 <?php
 
+/**
+ * @file
+ * Contains Drupal\video_embed_field\ProviderPluginBase
+ */
+
 namespace Drupal\video_embed_field;
 
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\PluginBase;
+use Drupal\image\Entity\ImageStyle;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ClientException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A base for the provider plugins.
  */
-abstract class ProviderPluginBase extends PluginBase implements ProviderPluginInterface, ContainerFactoryPluginInterface {
+abstract class ProviderPluginBase implements ProviderPluginInterface, ContainerFactoryPluginInterface {
 
   /**
    * The directory where thumbnails are stored.
@@ -42,26 +47,16 @@ abstract class ProviderPluginBase extends PluginBase implements ProviderPluginIn
   protected $httpClient;
 
   /**
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Create a plugin with the given input.
    *
-   * @param array $configuration
+   * @param string $configuration
    *   The configuration of the plugin.
-   * @param string $plugin_id
-   *   The plugin id.
-   * @param array $plugin_definition
-   *   The plugin definition.
    * @param \GuzzleHttp\ClientInterface $http_client
    *    An HTTP client.
    *
    * @throws \Exception
    */
-  public function __construct($configuration, $plugin_id, $plugin_definition, ClientInterface $http_client) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  public function __construct($configuration, ClientInterface $http_client) {
     if (!static::isApplicable($configuration['input'])) {
       throw new \Exception('Tried to create a video provider plugin with invalid input.');
     }
@@ -78,19 +73,6 @@ abstract class ProviderPluginBase extends PluginBase implements ProviderPluginIn
    */
   protected function getVideoId() {
     return $this->videoId;
-  }
-
-  /**
-   * Get the file system service.
-   *
-   * @return \Drupal\Core\File\FileSystemInterface
-   *   The file system service.
-   */
-  protected function getFileSystem() {
-    if (!isset($this->fileSystem)) {
-      $this->fileSystem = \Drupal::service('file_system');
-    }
-    return $this->fileSystem;
   }
 
   /**
@@ -115,16 +97,11 @@ abstract class ProviderPluginBase extends PluginBase implements ProviderPluginIn
    * {@inheritdoc}
    */
   public function renderThumbnail($image_style, $link_url) {
+    $this->downloadThumbnail();
     $output = [
       '#theme' => 'image',
-      '#uri' => $this->getLocalThumbnailUri(),
+      '#uri' => !empty($image_style) ? ImageStyle::load($image_style)->buildUrl($this->getLocalThumbnailUri()) : $this->getLocalThumbnailUri(),
     ];
-
-    if (!empty($image_style)) {
-      $output['#theme'] = 'image_style';
-      $output['#style_name'] = $image_style;
-    }
-
     if ($link_url) {
       $output = [
         '#type' => 'link',
@@ -136,17 +113,16 @@ abstract class ProviderPluginBase extends PluginBase implements ProviderPluginIn
   }
 
   /**
-   * {@inheritdoc}
+   * Download the remote thumbnail to the local file system.
    */
-  public function downloadThumbnail() {
+  protected function downloadThumbnail() {
     $local_uri = $this->getLocalThumbnailUri();
     if (!file_exists($local_uri)) {
-      $this->getFileSystem()->prepareDirectory($this->thumbsDirectory, FileSystemInterface::CREATE_DIRECTORY);
+      file_prepare_directory($this->thumbsDirectory, FILE_CREATE_DIRECTORY);
       try {
         $thumbnail = $this->httpClient->request('GET', $this->getRemoteThumbnailUrl());
-        $this->getFileSystem()->saveData((string) $thumbnail->getBody(), $local_uri);
-      }
-      catch (\Exception $e) {
+        file_unmanaged_save_data((string) $thumbnail->getBody(), $local_uri);
+      } catch(\Exception $e) {
       }
     }
   }
@@ -162,14 +138,7 @@ abstract class ProviderPluginBase extends PluginBase implements ProviderPluginIn
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static($configuration, $plugin_id, $plugin_definition, $container->get('http_client'));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() {
-    return $this->t('@provider Video (@id)', ['@provider' => $this->getPluginDefinition()['title'], '@id' => $this->getVideoId()]);
+    return new static($configuration, $container->get('http_client'));
   }
 
 }

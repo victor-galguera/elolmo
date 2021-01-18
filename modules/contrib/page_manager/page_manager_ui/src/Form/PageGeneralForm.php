@@ -1,11 +1,17 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Form\PageGeneralForm.
+ */
 
 namespace Drupal\page_manager_ui\Form;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+
+use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Display\VariantManager;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\page_manager\PageVariantInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PageGeneralForm extends FormBase {
@@ -18,23 +24,23 @@ class PageGeneralForm extends FormBase {
   protected $variantManager;
 
   /**
-   * The page entity storage handler.
+   * The entity query factory.
    *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
+   * @var \Drupal\Core\Entity\Query\QueryFactory
    */
-  protected $pageStorage;
+  protected $entityQuery;
 
   /**
    * Constructs a new PageGeneralForm.
    *
    * @param \Drupal\Core\Display\VariantManager $variant_manager
    *   The variant manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
+   *   The entity query factory.
    */
-  public function __construct(VariantManager $variant_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(VariantManager $variant_manager, QueryFactory $entity_query) {
     $this->variantManager = $variant_manager;
-    $this->pageStorage = $entity_type_manager->getStorage('page');
+    $this->entityQuery = $entity_query;
   }
 
   /**
@@ -43,7 +49,7 @@ class PageGeneralForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('plugin.manager.display_variant'),
-      $container->get('entity_type.manager')
+      $container->get('entity.query')
     );
   }
 
@@ -71,7 +77,6 @@ class PageGeneralForm extends FormBase {
       '#title' => $this->t('Path'),
       '#maxlength' => 255,
       '#default_value' => $page->getPath(),
-      '#description' => $this->t('Path to your custom page. Beginning and Ending slashes are automatically removed.'),
       '#required' => TRUE,
       '#element_validate' => [[$this, 'validatePath']],
     ];
@@ -132,7 +137,7 @@ class PageGeneralForm extends FormBase {
       if (empty($cached_values['variant_plugin_id'])) {
         $variant_plugin_id = $cached_values['variant_plugin_id'] = $form_state->getValue('variant_plugin_id');
         /* @var \Drupal\page_manager\PageVariantInterface $page_variant */
-        $page_variant = \Drupal::entityTypeManager()
+        $page_variant = \Drupal::entityManager()
           ->getStorage('page_variant')
           ->create([
             'variant' => $form_state->getValue('variant_plugin_id'),
@@ -166,24 +171,18 @@ class PageGeneralForm extends FormBase {
     $page = $cached_values['page'];
 
     // Ensure the path has a leading slash.
-    if ($value = trim($element['#value'], '/')) {
-      $value = '/' . $value;
-      $form_state->setValueForElement($element, $value);
+    $value = '/' . trim($element['#value'], '/');
+    $form_state->setValueForElement($element, $value);
 
-      // Ensure each path is unique.
-      $path_query = $this->pageStorage->getQuery()
-        ->condition('path', $value);
-      if (!$page->isNew()) {
-        $path_query->condition('id', $page->id(), '<>');
-      }
-      $path = $path_query->execute();
-      if ($path) {
-        $form_state->setErrorByName('path', $this->t('The page path must be unique.'));
-      }
+    // Ensure each path is unique.
+    $path_query = $this->entityQuery->get('page')
+      ->condition('path', $value);
+    if (!$page->isNew()) {
+      $path_query->condition('id', $page->id(), '<>');
     }
-    // Check to make sure the path exists after stripping slashes.
-    else {
-      $form_state->setErrorByName('path', $this->t("Path is required."));
+    $path = $path_query->execute();
+    if ($path) {
+      $form_state->setErrorByName('path', $this->t('The page path must be unique.'));
     }
   }
 

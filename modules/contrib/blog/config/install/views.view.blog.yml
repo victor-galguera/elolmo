@@ -1,3 +1,4 @@
+uuid: 6e29822e-3926-44a1-a034-527d07fe0991
 langcode: en
 status: true
 dependencies:
@@ -7,6 +8,8 @@ dependencies:
   module:
     - node
     - user
+_core:
+  default_config_hash: FmHXh-fgHF0gANWcIh16RLDz9fqXqhPj8yZ6NtCs4RU
 id: blog
 label: Blog
 module: views
@@ -125,7 +128,7 @@ display:
           field_api_classes: false
       filters:
         status:
-          value: '1'
+          value: true
           table: node_field_data
           field: status
           plugin_id: boolean
@@ -173,7 +176,7 @@ display:
           admin_label: ''
           empty: true
           tokenize: true
-          content: 'No blog entries have been created.'
+          content: '{{ arguments.uid }} has not created any blog entries.'
           plugin_id: text_custom
       relationships: {  }
       arguments: {  }
@@ -273,16 +276,11 @@ display:
             sort_order: asc
             number_of_records: 0
             format: default_summary
-          specify_validation: true
+          specify_validation: false
           validate:
-            type: 'entity:user'
+            type: none
             fail: 'not found'
-          validate_options:
-            operation: view
-            multiple: 0
-            access: false
-            restrict_roles: false
-            roles: {  }
+          validate_options: {  }
           break_phrase: false
           not: false
           entity_type: user
@@ -291,7 +289,6 @@ display:
       defaults:
         arguments: false
         relationships: false
-        empty: false
       relationships:
         uid:
           id: uid
@@ -304,18 +301,6 @@ display:
           entity_type: node
           entity_field: uid
           plugin_id: standard
-      empty:
-        area_text_custom:
-          id: area_text_custom
-          table: views
-          field: area_text_custom
-          relationship: none
-          group_type: group
-          admin_label: ''
-          empty: true
-          tokenize: true
-          content: '{{ arguments.uid }} has not created any blog entries.'
-          plugin_id: text_custom
     cache_metadata:
       max-age: -1
       contexts:
@@ -406,16 +391,11 @@ display:
             sort_order: asc
             number_of_records: 0
             format: default_summary
-          specify_validation: true
+          specify_validation: false
           validate:
-            type: 'entity:user'
+            type: none
             fail: 'not found'
-          validate_options:
-            operation: view
-            multiple: 0
-            access: false
-            restrict_roles: false
-            roles: {  }
+          validate_options: {  }
           break_phrase: false
           not: false
           entity_type: user
@@ -424,7 +404,6 @@ display:
       defaults:
         arguments: false
         relationships: false
-        empty: true
       relationships:
         uid:
           id: uid

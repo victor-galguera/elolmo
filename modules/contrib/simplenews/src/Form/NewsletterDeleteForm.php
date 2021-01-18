@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\NewsletterDeleteForm.
+ */
+
 namespace Drupal\simplenews\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
@@ -15,7 +20,7 @@ class NewsletterDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete %name?', ['%name' => $this->entity->label()]);
+    return t('Are you sure you want to delete %name?', array('%name' => $this->entity->label()));
   }
 
   /**
@@ -29,7 +34,7 @@ class NewsletterDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getConfirmText() {
-    return $this->t('Delete');
+    return t('Delete');
   }
 
   /**
@@ -37,8 +42,8 @@ class NewsletterDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $this->messenger()->addMessage($this->t('Newsletter %label has been deleted.', ['%label' => $this->entity->label()]));
-    \Drupal::logger('simplenews')->notice('Newsletter %label has been deleted.', ['%label' => $this->entity->label()]);
+    drupal_set_message(t('Newsletter %label has been deleted.', array('%label' => $this->entity->label())));
+    \Drupal::logger('simplenews')->notice('Newsletter %label has been deleted.', array('%label' => $this->entity->label()));
     $form_state->setRedirect('simplenews.newsletter_list');
   }
 

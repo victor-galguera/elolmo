@@ -181,7 +181,6 @@ display:
           hide_alter_empty: true
           entity_type: file
           plugin_id: entity_browser_select
-          use_field_cardinality: false
         filename:
           id: filename
           table: file_managed
@@ -436,6 +435,8 @@ display:
       relationships: {  }
       arguments: {  }
       display_extenders: {  }
+      field_langcode: '***LANGUAGE_language_content***'
+      field_langcode_add_to_query: null
     cache_metadata:
       contexts:
         - 'languages:language_content'
@@ -451,6 +452,8 @@ display:
     position: 2
     display_options:
       display_extenders: {  }
+      field_langcode: '***LANGUAGE_language_content***'
+      field_langcode_add_to_query: null
     cache_metadata:
       contexts:
         - 'languages:language_content'

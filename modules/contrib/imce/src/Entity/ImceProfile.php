@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\Entity\ImceProfile.
+ */
+
 namespace Drupal\imce\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
@@ -29,12 +34,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "edit-form" = "/admin/config/media/imce/{imce_profile}",
  *     "delete-form" = "/admin/config/media/imce/{imce_profile}/delete",
  *     "duplicate-form" = "/admin/config/media/imce/{imce_profile}/duplicate"
- *   },
- *   config_export = {
- *     "id",
- *     "label",
- *     "description",
- *     "conf"
  *   }
  * )
  */
@@ -66,7 +65,7 @@ class ImceProfile extends ConfigEntityBase {
    *
    * @var array
    */
-  protected $conf = [];
+  protected $conf = array();
 
   /**
    * Returns configuration options.

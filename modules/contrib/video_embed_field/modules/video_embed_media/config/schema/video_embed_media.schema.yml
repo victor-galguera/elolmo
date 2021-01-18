@@ -1,3 +1,7 @@
-media.source.video_embed_field:
-  type: media.source.field_aware
-  label: '"Video Embed Field" media source configuration'
+media_entity.bundle.type.video_embed_field:
+  type: mapping
+  label: 'Video Embed Field Bundle'
+  mapping:
+    source_field:
+      label: 'Source Field'
+      type: string

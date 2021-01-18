@@ -1,6 +1,11 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Form\PageVariantConfigureForm.
+ */
 
 namespace Drupal\page_manager_ui\Form;
+
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormState;
@@ -37,7 +42,7 @@ class PageVariantConfigureForm extends FormBase {
     ];
 
     $variant_plugin = $page_variant->getVariantPlugin();
-    $form['variant_settings'] = $variant_plugin->buildConfigurationForm([], (new FormState())->setValues($form_state->getValue('variant_settings', []) + ['page_variant' => $page_variant]));
+    $form['variant_settings'] = $variant_plugin->buildConfigurationForm([], (new FormState())->setValues($form_state->getValue('variant_settings', [])));
     $form['variant_settings']['#tree'] = TRUE;
 
     if (!$page->isNew()) {

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\Annotation\EntityBrowserWidget.
+ */
+
 namespace Drupal\entity_browser\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,9 +28,9 @@ class EntityBrowserWidget extends Plugin {
   /**
    * The human-readable name of the widget.
    *
-   * @var \Drupal\Core\Annotation\Translation
-   *
    * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation
    */
   public $label;
 
@@ -34,17 +39,10 @@ class EntityBrowserWidget extends Plugin {
    *
    * This will be shown when adding or configuring this widget.
    *
-   * @var \Drupal\Core\Annotation\Translation
-   *
    * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation (optional)
    */
   public $description = '';
-
-  /**
-   * Indicates that widget supports auto selection of entities.
-   *
-   * @var bool
-   */
-  public $auto_select = FALSE;
 
 }

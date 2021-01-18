@@ -59,7 +59,7 @@
               $row = $row[direction]();
               $cell = $row.find('td').eq(index).find(tagName);
               if ($cell.length) {
-                $cell.trigger('focus');
+                $cell.focus();
                 break;
               }
             }
@@ -81,12 +81,12 @@
               if (direction === 'next' &&
                 this.tagName === 'A' &&
                 $(this).parent('.dropbutton-action').length) {
-                $cell.find('button').trigger('focus');
+                $cell.find('button').focus();
                 event.preventDefault();
                 return;
               }
               else if (direction === 'prev' && this.tagName === 'BUTTON') {
-                $cell.find('a').trigger('focus');
+                $cell.find('a').focus();
                 event.preventDefault();
                 return;
               }
@@ -96,7 +96,7 @@
               $cell = $cell[direction]();
               $focus = $cell.find('a:visible, input:visible, select:visible');
               if ($focus.length) {
-                $focus.trigger('focus');
+                $focus.focus();
                 event.preventDefault();
                 return;
               }

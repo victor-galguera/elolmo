@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Mail\MailCacheInterface.
+ */
+
 namespace Drupal\simplenews\Mail;
 
 /**
@@ -26,12 +31,12 @@ interface MailCacheInterface {
    *     - final: The final returned data. Caching this means that newsletter
    *       can not be personalized anymore.
    * @param string $key
-   *   Identifies the requested element, e.g. body or attachments.
+   *   Identifies the requested element, e.g. body, footer or attachments.
    *
    * @return mixed
    *   The cached data or NULL.
    */
-  public function get(MailInterface $mail, $group, $key);
+  function get(MailInterface $mail, $group, $key);
 
   /**
    * Write an element to the cache.
@@ -50,10 +55,9 @@ interface MailCacheInterface {
    *     - final: The final returned data. Caching this means that newsletter
    *       can not be personalized anymore.
    * @param string $key
-   *   Identifies the requested element, e.g. body or attachments.
+   *   Identifies the requested element, e.g. body, footer or attachments.
    * @param mixed $data
    *   The data to be saved in the cache.
    */
-  public function set(MailInterface $mail, $group, $key, $data);
-
+  function set(MailInterface $mail, $group, $key, $data);
 }

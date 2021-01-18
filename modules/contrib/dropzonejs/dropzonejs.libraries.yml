@@ -11,17 +11,12 @@ dropzonejs:
   css:
     component:
       /libraries/dropzone/dist/min/dropzone.min.css: {}
-widget:
-  version: VERSION
-  css:
-    theme:
-      css/dropzone.widget.css: {}
 integration:
   version: VERSION
   js:
     js/dropzone.integration.js: {}
   dependencies:
-    - core/jquery.once
+    - core/jquery
     - core/drupal
     - core/drupalSettings
     - core/underscore

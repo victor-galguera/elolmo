@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\VoteResultInterface.
+ */
+
 namespace Drupal\votingapi;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -95,5 +100,4 @@ interface VoteResultInterface extends ContentEntityInterface, EntityOwnerInterfa
    * {@inheritdoc}
    */
   public function setFunction($function);
-
 }

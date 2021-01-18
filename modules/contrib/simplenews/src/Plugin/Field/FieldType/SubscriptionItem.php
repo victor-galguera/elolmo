@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\Field\FieldType\SubscriptionItem.
+ */
+
 namespace Drupal\simplenews\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
@@ -40,7 +45,7 @@ class SubscriptionItem extends EntityReferenceItem {
     $properties['status'] = DataDefinition::create('integer')
       ->setLabel(t('Status'))
       ->setSetting('unsigned', TRUE);
-
+    
     $properties['timestamp'] = DataDefinition::create('timestamp')
       ->setLabel(t('Timestamp'));
 
@@ -56,25 +61,24 @@ class SubscriptionItem extends EntityReferenceItem {
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $schema = parent::schema($field_definition);
 
-    $schema['columns']['status'] = [
-      'description' => 'A flag indicating whether the user is unsubscribed (0), subscribed (1) or unconfirmed (2).',
+    $schema['columns']['status'] = array(
+      'description' => 'A flag indicating whether the user is subscribed (1) or unsubscribed (0).',
       'type' => 'int',
       'size' => 'tiny',
       'not null' => FALSE,
-    ];
-    $schema['columns']['timestamp'] = [
+    );
+    $schema['columns']['timestamp'] = array(
       'description' => 'UNIX timestamp of when the user is (un)subscribed.',
       'type' => 'int',
       'unsigned' => TRUE,
       'not null' => FALSE,
-    ];
-    $schema['columns']['source'] = [
+    );
+    $schema['columns']['source'] = array(
       'description' => 'The source via which the user is (un)subscription.',
       'type' => 'varchar',
       'length' => 24,
       'not null' => FALSE,
-    ];
+    );
     return $schema;
   }
-
 }

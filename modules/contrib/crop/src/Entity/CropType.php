@@ -1,8 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\crop\Entity\CropType.
+ */
+
 namespace Drupal\crop\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Entity\EntityConstraintViolationList;
 use Drupal\crop\CropTypeInterface;
 use Symfony\Component\Validator\ConstraintViolationList;
 
@@ -28,22 +34,12 @@ use Symfony\Component\Validator\ConstraintViolationList;
  *     "label" = "label",
  *   },
  *   links = {
- *     "edit-form" = "/admin/config/media/crop/manage/{crop_type}",
- *     "delete-form" = "/admin/config/media/crop/manage/{crop_type}/delete",
+ *     "edit-form" = "/admin/structure/crop/manage/{crop_type}",
+ *     "delete-form" = "/admin/structure/crop/manage/{crop_type}/delete",
  *   },
  *   constraints = {
  *     "CropTypeMachineNameValidation" = {},
  *     "CropTypeAspectRatioValidation" = {},
- *   },
- *    config_export = {
- *     "id",
- *     "label",
- *     "description",
- *     "aspect_ratio",
- *     "soft_limit_width",
- *     "soft_limit_height",
- *     "hard_limit_width",
- *     "hard_limit_height",
  *   }
  * )
  */
@@ -139,10 +135,8 @@ class CropType extends ConfigEntityBundleBase implements \IteratorAggregate, Cro
    */
   public static function getCropTypeNames() {
     return array_map(
-      function ($bundle_info) {
-        return $bundle_info['label'];
-      },
-      \Drupal::service('entity_type.bundle.info')->getBundleInfo('crop')
+      function ($bundle_info) { return $bundle_info['label'];},
+      \Drupal::entityManager()->getBundleInfo('crop')
     );
   }
 

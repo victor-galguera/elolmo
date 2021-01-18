@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Tests\crop\Kernel\CropEffectTest.
+ */
+
 namespace Drupal\Tests\crop\Kernel;
 
 /**
@@ -36,7 +41,7 @@ class CropEffectTest extends CropUnitTestBase {
       'height' => '50',
     ];
     /** @var \Drupal\crop\CropInterface $crop */
-    $crop = $this->container->get('entity_type.manager')->getStorage('crop')->create($values);
+    $crop = $this->container->get('entity.manager')->getStorage('crop')->create($values);
     $crop->save();
 
     $derivative_uri = $this->testStyle->buildUri($file->getFileUri());
@@ -60,39 +65,6 @@ class CropEffectTest extends CropUnitTestBase {
       }
     }
     $this->assertTrue($matches, 'Cropped image looks the same as region on original.');
-  }
-
-  /**
-   * Test image crop effect dimensions.
-   */
-  public function testCropDimenssions() {
-    // Create image to be cropped.
-    $file = $this->getTestFile();
-    $file->save();
-    $file_uri = $file->getFileUri();
-
-    // Create crop.
-    $values = [
-      'type' => $this->cropType->id(),
-      'entity_id' => $file->id(),
-      'entity_type' => 'file',
-      'uri' => $file_uri,
-      'x' => '190',
-      'y' => '120',
-      'width' => '50',
-      'height' => '50',
-    ];
-    $dimensions = ['width' => 0, 'height' => 0];
-
-    /** @var \Drupal\crop\CropInterface $crop */
-    $crop = $this->container->get('entity_type.manager')->getStorage('crop')->create($values);
-    $crop->save();
-
-    /** @var $effect \Drupal\crop\Plugin\ImageEffect\CropEffect */
-    $effect = $this->imageEffectManager->createInstance('crop_crop', ['data' => ['crop_type' => $this->cropType->id()]]);
-    $effect->transformDimensions($dimensions, $file_uri);
-
-    $this->assertEquals($crop->size(), $dimensions, t('CropEffect::transformDimensions() transform image dimensions correctly.'));
   }
 
 }

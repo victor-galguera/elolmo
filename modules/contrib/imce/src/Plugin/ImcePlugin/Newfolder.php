@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\Plugin\ImcePlugin\Newfolder.
+ */
+
 namespace Drupal\imce\Plugin\ImcePlugin;
 
 use Drupal\imce\Imce;
@@ -24,9 +29,9 @@ class Newfolder extends ImcePluginBase {
    * {@inheritdoc}
    */
   public function permissionInfo() {
-    return [
+    return array(
       'create_subfolders' => $this->t('Create subfolders'),
-    ];
+    );
   }
 
   /**
@@ -46,15 +51,15 @@ class Newfolder extends ImcePluginBase {
     if (!$folder || !$folder->getPermission('create_subfolders')) {
       return;
     }
-    // Create folder.
+    // Create folder
     $name = $fm->getPost('newfolder');
     if (is_string($name) && $fm->validateFileName($name)) {
-      // Check existence.
+      // Check existence
       $uri = Imce::joinPaths($folder->getUri(), $name);
       if (file_exists($uri)) {
-        $fm->setMessage($this->t('%filename already exists.', ['%filename' => $name]));
+        $fm->setMessage(t('%filename already exists.', array('%filename' => $name)));
       }
-      // Create and add to js.
+      // Create and add to js
       elseif (mkdir($uri, $fm->getConf('chmod_directory', 0775))) {
         $folder->addSubfolder($name)->addToJs();
       }

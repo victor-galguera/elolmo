@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\token\Routing\RouteSubscriber.
+ */
+
 namespace Drupal\token\Routing;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -71,5 +76,4 @@ class RouteSubscriber extends RouteSubscriberBase {
     $events[RoutingEvents::ALTER] = array('onAlterRoutes', 100);
     return $events;
   }
-
 }

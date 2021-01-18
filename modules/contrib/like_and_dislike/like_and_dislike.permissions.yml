@@ -3,4 +3,4 @@ administer like and dislike:
   description: 'Manage administrative options of the like/dislike module.'
 
 permission_callbacks:
-  - \Drupal\like_and_dislike\LikeDislikePermissions::buildPermissions
+  - \Drupal\like_and_dislike\LikeDislikePermissions::voteTypePermissions

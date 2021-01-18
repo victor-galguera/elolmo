@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains Drupal\Tests\video_embed_field\Unit\ProviderManagerTest.
+ */
+
 namespace Drupal\Tests\video_embed_field\Unit;
 
 use Drupal\Tests\UnitTestCase;
@@ -44,9 +49,9 @@ class ProviderManagerTest extends UnitTestCase {
   }
 
   /**
-   * Test filtering the definition list from user input via checkboxes.
-   *
    * @dataProvider optionsWithExpectedProviders
+   *
+   * Test filtering the definition list from user input via checkboxes.
    */
   public function testDefinitionListFromOptionsList($user_input, $expected_providers) {
     $this->assertEquals($expected_providers, $this->getManagerMock()
@@ -82,7 +87,7 @@ class ProviderManagerTest extends UnitTestCase {
         [
           'provider_b' => $this->mockProviders['provider_b'],
           'provider_c' => $this->mockProviders['provider_c'],
-        ],
+        ]
       ],
       'One provider' => [
         [
@@ -92,8 +97,8 @@ class ProviderManagerTest extends UnitTestCase {
         ],
         [
           'provider_a' => $this->mockProviders['provider_a'],
-        ],
-      ],
+        ]
+      ]
     ];
   }
 

@@ -1,4 +1,0 @@
-blog.myblog_link:
-  title: 'My blog'
-  class: Drupal\blog\Plugin\Menu\MyBlogLink
-  menu_name: account

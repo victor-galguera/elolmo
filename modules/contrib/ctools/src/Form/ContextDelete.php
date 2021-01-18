@@ -1,10 +1,16 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools\Form\ContextDelete.
+ */
+
 namespace Drupal\ctools\Form;
+
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\ConfirmFormBase;
-use Drupal\Core\TempStore\SharedTempStoreFactory;
+use Drupal\user\SharedTempStoreFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -13,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class ContextDelete extends ConfirmFormBase {
 
   /**
-   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
+   * @var \Drupal\user\SharedTempStoreFactory
    */
   protected $tempstore;
 
@@ -35,7 +41,7 @@ abstract class ContextDelete extends ConfirmFormBase {
   protected $context_id;
 
   public static function create(ContainerInterface $container) {
-    return new static($container->get('tempstore.shared'));
+    return new static($container->get('user.shared_tempstore'));
   }
 
   public function __construct(SharedTempStoreFactory $tempstore) {

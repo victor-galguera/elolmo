@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\token\Plugin\Derivative\DevelLocalTask.
+ */
+
 namespace Drupal\token\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;

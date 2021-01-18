@@ -12,14 +12,11 @@ core.entity_view_display.*.*.*.third_party.field_group:
             - type: string
               label: 'The field name'
         label:
-          type: label
+          type: string
           label: Readable name of the group
         parent_name:
           type: string
           label: 'The parent group of this group'
-        region:
-          type: string
-          label: 'The region of this group'
         weight:
           type: integer
           label: 'The weight of the group'
@@ -43,11 +40,8 @@ core.entity_form_display.*.*.*.third_party.field_group:
             - type: string
               label: 'The field name'
         label:
-          type: label
-          label: Readable name of the group
-        region:
           type: string
-          label: 'The region of this group'
+          label: Readable name of the group
         parent_name:
           type: string
           label: 'The parent group of this group'

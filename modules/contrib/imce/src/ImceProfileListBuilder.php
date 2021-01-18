@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\ImceProfileListBuilder.
+ */
+
 namespace Drupal\imce;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
@@ -35,12 +40,11 @@ class ImceProfileListBuilder extends ConfigEntityListBuilder {
    */
   public function getDefaultOperations(EntityInterface $imce_profile) {
     $operations = parent::getDefaultOperations($imce_profile);
-    $operations['duplicate'] = [
-      'title' => $this->t('Duplicate'),
+    $operations['duplicate'] = array(
+      'title' => t('Duplicate'),
       'weight' => 15,
       'url' => $imce_profile->toUrl('duplicate-form'),
-    ];
-
+    );
     return $operations;
   }
 

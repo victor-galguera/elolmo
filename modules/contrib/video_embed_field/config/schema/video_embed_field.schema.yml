@@ -20,15 +20,15 @@ field.formatter.settings.video_embed_field_video:
       type: boolean
       label: 'Responsive'
     width:
-      type: integer
+      type: string
       label: 'Width'
     height:
-      type: integer
+      type: string
       label: 'Height'
 
-field.formatter.settings.video_embed_hybrid:
+field.formatter.settings.video_embed_field_colorbox:
   type: mapping
-  label: 'Colorbox hybrid formatter settings.'
+  label: 'Colorbox formatter settings.'
   mapping:
     autoplay:
       type: boolean
@@ -37,10 +37,10 @@ field.formatter.settings.video_embed_hybrid:
       type: boolean
       label: 'Responsive'
     width:
-      type: integer
+      type: string
       label: 'Width'
     height:
-      type: integer
+      type: string
       label: 'Height'
     image_style:
       type: string
@@ -48,21 +48,6 @@ field.formatter.settings.video_embed_hybrid:
     link_image_to:
       type: string
       label: 'Link image to'
-    modal_max_width:
-      type: integer
-      label: 'Modal max width'
-
-field.formatter.settings.video_embed_field_lazyload:
-  type: field.formatter.settings.video_embed_hybrid
-  label: 'Lazy load formatter settings.'
-
-field.formatter.settings.video_embed_field_colorbox:
-  type: field.formatter.settings.video_embed_hybrid
-  label: 'Colorbox formatter settings.'
-  mapping:
-    modal_max_width:
-      type: integer
-      label: 'Modal max width'
 
 field.field_settings.video_embed_field:
   type: mapping
@@ -73,10 +58,3 @@ field.field_settings.video_embed_field:
       label: 'Allowed Providers'
       sequence:
         type: string
-
-field.value.video_embed_field:
-  type: mapping
-  mapping:
-    value:
-      type: string
-      label: 'Video URL'

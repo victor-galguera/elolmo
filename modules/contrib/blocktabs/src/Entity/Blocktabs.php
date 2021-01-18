@@ -1,8 +1,12 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Entity\Blocktabs.
+ */
+
 namespace Drupal\blocktabs\Entity;
 
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityWithPluginCollectionInterface;
@@ -39,8 +43,6 @@ use Drupal\blocktabs\TabPluginCollection;
  *     "name",
  *     "label",
  *     "tabs",
- *     "event",
- *     "style"
  *   }
  * )
  */
@@ -62,25 +64,11 @@ class Blocktabs extends ConfigEntityBase implements BlocktabsInterface, EntityWi
   protected $label;
 
   /**
-   * Selected event Hover or Click.
-   *
-   * @var string
-   */
-  protected $event;
-
-  /**
-   * The blocktabs style, default, vertical.
-   *
-   * @var string
-   */
-  protected $style;
-
-  /**
    * The array of tabs for this blocktabs.
    *
    * @var array
    */
-  protected $tabs = [];
+  protected $tabs = array();
 
   /**
    * Holds the collection of tabs that are used by this blocktabs.
@@ -106,12 +94,22 @@ class Blocktabs extends ConfigEntityBase implements BlocktabsInterface, EntityWi
       if (!empty($this->original) && $this->id() !== $this->original->id()) {
         // Update field settings if necessary.
         if (!$this->isSyncing()) {
-
+          //static::replaceBlockTabs($this);
         }
       }
       else {
 
       }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+
+    foreach ($entities as $blocktabs) {
     }
   }
 
@@ -146,7 +144,7 @@ class Blocktabs extends ConfigEntityBase implements BlocktabsInterface, EntityWi
    * {@inheritdoc}
    */
   public function getPluginCollections() {
-    return ['tabs' => $this->getTabs()];
+    return array('tabs' => $this->getTabs());
   }
 
   /**
@@ -183,51 +181,6 @@ class Blocktabs extends ConfigEntityBase implements BlocktabsInterface, EntityWi
     return \Drupal::service('plugin.manager.blocktabs.tab');
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts() {
-    $contexts = parent::getCacheContexts();
-    foreach ($this->getTabs() as $tab) {
-      $contexts = Cache::mergeContexts($tab->getCacheContexts());
-    }
-    return $contexts;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    $tags = parent::getCacheTags();
-    foreach ($this->getTabs() as $tab) {
-      $tags = Cache::mergeTags($tab->getCacheTags());
-    }
-    return $tags;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge() {
-    $max_age = parent::getCacheMaxAge();
-    foreach ($this->getTabs() as $tab) {
-      $max_age = Cache::mergeMaxAges($max_age, $tab->getCacheMaxAge());
-    }
-    return $max_age;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEvent() {
-    return $this->get('event');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStyle() {
-    return $this->get('style');
-  }
 
 }

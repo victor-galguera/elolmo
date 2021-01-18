@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "357ae647d7ba6565b07569e65487d505",
+    "content-hash": "58a509a674fccd19991340f2375091fc",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1177,8 +1177,7 @@
             "support": {
                 "source": "https://github.com/axe312ger/block_attributes/tree/8.x-1.x",
                 "issues": "https://github.com/axe312ger/block_attributes/issues"
-            },
-            "time": "2019-11-29T19:39:49+00:00"
+            }
         },
         {
             "name": "drupal/block_class",
@@ -1845,6 +1844,121 @@
             "homepage": "https://www.drupal.org/project/contact_storage",
             "support": {
                 "source": "https://git.drupalcode.org/project/contact_storage"
+            }
+        },
+        {
+            "name": "drupal/context",
+            "version": "4.0.0-beta5",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/context.git",
+                "reference": "8.x-4.0-beta5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/context-8.x-4.0-beta5.zip",
+                "reference": "8.x-4.0-beta5",
+                "shasum": "893d7e6ce07b23764baa6fd609da811ec80c5a04"
+            },
+            "require": {
+                "drupal/core": "^8.8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-4.0-beta5",
+                    "datestamp": "1600783508",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Beta releases are not covered by Drupal security advisories."
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christoffer Palm",
+                    "homepage": "http://www.oddhill.se/",
+                    "email": "christoffer.palm@oddhill.se",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Steven Jones",
+                    "homepage": "https://www.drupal.org/user/99644"
+                },
+                {
+                    "name": "alex_b",
+                    "homepage": "https://www.drupal.org/user/53995"
+                },
+                {
+                    "name": "boshtian",
+                    "homepage": "https://www.drupal.org/user/1773456"
+                },
+                {
+                    "name": "colan",
+                    "homepage": "https://www.drupal.org/user/58704"
+                },
+                {
+                    "name": "emanaton",
+                    "homepage": "https://www.drupal.org/user/120853"
+                },
+                {
+                    "name": "febbraro",
+                    "homepage": "https://www.drupal.org/user/43670"
+                },
+                {
+                    "name": "fizk",
+                    "homepage": "https://www.drupal.org/user/473174"
+                },
+                {
+                    "name": "hass",
+                    "homepage": "https://www.drupal.org/user/85918"
+                },
+                {
+                    "name": "hefox",
+                    "homepage": "https://www.drupal.org/user/426416"
+                },
+                {
+                    "name": "jmiccolis",
+                    "homepage": "https://www.drupal.org/user/31731"
+                },
+                {
+                    "name": "nedjo",
+                    "homepage": "https://www.drupal.org/user/4481"
+                },
+                {
+                    "name": "patricksettle",
+                    "homepage": "https://www.drupal.org/user/26618"
+                },
+                {
+                    "name": "paulocs",
+                    "homepage": "https://www.drupal.org/user/3640109"
+                },
+                {
+                    "name": "tekante",
+                    "homepage": "https://www.drupal.org/user/640024"
+                },
+                {
+                    "name": "yhahn",
+                    "homepage": "https://www.drupal.org/user/264833"
+                }
+            ],
+            "description": "Manage contextual conditions and reactions for different portions of your site.",
+            "homepage": "https://github.com/oddhill/context",
+            "keywords": [
+                "Drupal",
+                "block",
+                "conditions",
+                "context",
+                "visibility"
+            ],
+            "support": {
+                "source": "https://github.com/oddhill/context",
+                "issues": "https://github.com/oddhill/context/issues",
+                "docs": "https://github.com/oddhill/context"
             }
         },
         {
@@ -3371,8 +3485,7 @@
             "homepage": "https://www.drupal.org/project/image_raw_formatter",
             "support": {
                 "source": "https://git.drupalcode.org/project/image_raw_formatter"
-            },
-            "time": "2015-11-18T13:05:08+00:00"
+            }
         },
         {
             "name": "drupal/imagefield_slideshow",
@@ -4829,8 +4942,7 @@
             "support": {
                 "source": "https://git.drupalcode.org/project/typed_data",
                 "issues": "https://www.drupal.org/project/issues/typed_data"
-            },
-            "time": "2020-10-30T06:56:14+00:00"
+            }
         },
         {
             "name": "drupal/video_embed_field",
@@ -4939,8 +5051,7 @@
             "homepage": "https://www.drupal.org/project/views_load_more",
             "support": {
                 "source": "https://git.drupalcode.org/project/views_load_more"
-            },
-            "time": "2015-05-01T21:09:34+00:00"
+            }
         },
         {
             "name": "drupal/views_php",
@@ -4993,8 +5104,7 @@
             "homepage": "https://www.drupal.org/project/views_php",
             "support": {
                 "source": "https://git.drupalcode.org/project/views_php"
-            },
-            "time": "2015-11-12T01:16:46+00:00"
+            }
         },
         {
             "name": "drupal/views_templates",
@@ -8809,6 +8919,7 @@
         "drupal/block_attributes": 20,
         "drupal/blocktabs": 10,
         "drupal/calendar": 15,
+        "drupal/context": 10,
         "drupal/field_collection": 15,
         "drupal/image_raw_formatter": 20,
         "drupal/like_and_dislike": 10,

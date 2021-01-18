@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools_wizard_test\Entity\ExampleConfigEntity.
+ */
+
 namespace Drupal\ctools_wizard_test\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
@@ -33,12 +38,6 @@ use Drupal\ctools_wizard_test\ExampleConfigEntityInterface;
  *     "edit-form" = "/admin/structure/ctools_wizard_test_config_entity/{machine_name}/{step}",
  *     "delete-form" = "/admin/structure/ctools_wizard_test_config_entity/{ctools_wizard_test_config_entity}/delete",
  *     "collection" = "/admin/structure/ctools_wizard_test_config_entity"
- *   },
- *   config_export = {
- *     "id",
- *     "label",
- *     "one",
- *     "two",
  *   }
  * )
  */

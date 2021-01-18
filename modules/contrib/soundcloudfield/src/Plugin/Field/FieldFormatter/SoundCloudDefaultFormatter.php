@@ -193,7 +193,8 @@ class SoundCloudDefaultFormatter extends FormatterBase {
       // - classic player: track default is 166px, set default is 450px.
       // - visual player: player height it's the same for tracks and sets.
       if ($visual_player == 'true') {
-        $iframe_height = $settings['visual_player']['visual_player_height'];
+        //kint($settings);
+        $iframe_height = $settings['soundcloud_player_visual_height'];
       }
       else {
         $parsed_url = parse_url($item->url);

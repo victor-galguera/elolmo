@@ -1,11 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\Imce.
+ */
+
 namespace Drupal\imce;
 
-use Drupal\Component\Utility\Environment;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\Render\BubbleableMetadata;
 
 /**
  * Imce container class for helper methods.
@@ -29,7 +32,6 @@ class Imce {
   /**
    * Returns a file manager instance for a user.
    */
-  // @codingStandardsIgnoreLine
   public static function userFM(AccountProxyInterface $user = NULL, $scheme = NULL, Request $request = NULL) {
     if ($conf = static::userConf($user, $scheme)) {
       return new ImceFM($conf, $user, $request);
@@ -40,35 +42,27 @@ class Imce {
    * Returns imce configuration profile for a user.
    */
   public static function userProfile(AccountProxyInterface $user = NULL, $scheme = NULL) {
-    $profiles = &drupal_static(__METHOD__, []);
+    $profiles = &drupal_static(__METHOD__, array());
     $user = $user ?: \Drupal::currentUser();
-    $scheme = isset($scheme) ? $scheme : \Drupal::config('system.file')->get('default_scheme');
+    $scheme = isset($scheme) ? $scheme : file_default_scheme();
     $profile = &$profiles[$user->id()][$scheme];
-
-    if (isset($profile)) {
-      return $profile;
-    }
-    $profile = FALSE;
-
-    if (\Drupal::service('stream_wrapper_manager')->getViaScheme($scheme)) {
-      $storage = \Drupal::entityTypeManager()->getStorage('imce_profile');
-      if ($user->id() == 1 && $profile = $storage->load('admin')) {
-        return $profile;
-      }
-      $imce_settings = \Drupal::config('imce.settings');
-      $roles_profiles = $imce_settings->get('roles_profiles');
-      $user_roles = array_flip($user->getRoles());
-      // Order roles from more permissive to less permissive.
-      $roles = array_reverse(user_roles());
-      foreach ($roles as $rid => $role) {
-        if (isset($user_roles[$rid]) && !empty($roles_profiles[$rid][$scheme])) {
-          if ($profile = $storage->load($roles_profiles[$rid][$scheme])) {
-            return $profile;
+    if (!isset($profile)) {
+      // Check stream wrapper
+      if ($wrapper = \Drupal::service('stream_wrapper_manager')->getViaScheme($scheme)) {
+        $imce_settings = \Drupal::config('imce.settings');
+        $roles_profiles = $imce_settings->get('roles_profiles', array());
+        $user_roles = array_flip($user->getRoles());
+        $storage = \Drupal::entityTypeManager()->getStorage('imce_profile');
+        foreach ($roles_profiles as $rid => $profiles) {
+          if (isset($user_roles[$rid]) && !empty($profiles[$scheme])) {
+            if ($profile = $storage->load($profiles[$scheme])) {
+              return $profile;
+            }
           }
         }
       }
+      $profile = FALSE;
     }
-
     return $profile;
   }
 
@@ -77,7 +71,7 @@ class Imce {
    */
   public static function userConf(AccountProxyInterface $user = NULL, $scheme = NULL) {
     $user = $user ?: \Drupal::currentUser();
-    $scheme = isset($scheme) ? $scheme : \Drupal::config('system.file')->get('default_scheme');
+    $scheme = isset($scheme) ? $scheme : file_default_scheme();
     if ($profile = static::userProfile($user, $scheme)) {
       $conf = $profile->getConf();
       $conf['pid'] = $profile->id();
@@ -90,26 +84,21 @@ class Imce {
    * Processes raw profile configuration of a user.
    */
   public static function processUserConf(array $conf, AccountProxyInterface $user) {
-    // Convert MB to bytes.
+    // Convert MB to bytes
     $conf['maxsize'] *= 1048576;
     $conf['quota'] *= 1048576;
-    // Check php max upload size.
-    $phpmaxsize = Environment::getUploadMaxSize();
-    if ($phpmaxsize && (!$conf['maxsize'] || $phpmaxsize < $conf['maxsize'])) {
-      $conf['maxsize'] = $phpmaxsize;
-    }
-    // Set root uri and url.
+    // Set root uri and url
     $conf['root_uri'] = $conf['scheme'] . '://';
-    // file_create_url requires a filepath for some schemes like private:// .
+    // file_create_url requires a filepath for some schemes like private://
     $conf['root_url'] = preg_replace('@/(?:%2E|\.)$@i', '', file_create_url($conf['root_uri'] . '.'));
-    // Convert to relative.
+    // Convert to relative
     if (!\Drupal::config('imce.settings')->get('abs_urls')) {
       $conf['root_url'] = file_url_transform_relative($conf['root_url']);
     }
     $conf['token'] = $user->isAnonymous() ? 'anon' : \Drupal::csrfToken()->get('imce');
-    // Process folders.
+    // Process folders
     $conf['folders'] = static::processUserFolders($conf['folders'], $user);
-    // Call plugin processors.
+    // Call plugin processors
     \Drupal::service('plugin.manager.imce.plugin')->processUserConf($conf, $user);
     return $conf;
   }
@@ -118,12 +107,12 @@ class Imce {
    * Processes user folders.
    */
   public static function processUserFolders(array $folders, AccountProxyInterface $user) {
-    $ret = [];
+    $ret = array();
     $token_service = \Drupal::token();
-    $meta = new BubbleableMetadata();
-    $token_data = ['user' => $user];
+    $meta = new \Drupal\Core\Render\BubbleableMetadata();
+    $token_data = array('user' => $user);
     foreach ($folders as $folder) {
-      $path = $token_service->replace($folder['path'], $token_data, [], $meta);
+      $path = $token_service->replace($folder['path'], $token_data, array(), $meta);
       if (static::regularPath($path)) {
         $ret[$path] = $folder;
         unset($ret[$path]['path']);
@@ -158,17 +147,14 @@ class Imce {
   }
 
   /**
-   * Returns predefined/inherited configuration.
-   *
-   * Returns predefined/inherited configuration
-   *   of a folder path in a profile conf.
+   * Returns predefined/inherited configuration of a folder path in a profile conf.
    */
   public static function folderInConf($path, array $conf) {
-    // Predefined.
+    // Predefined
     if (isset($conf['folders'][$path])) {
       return $conf['folders'][$path];
     }
-    // Inherited.
+    // Inherited
     if (!empty($conf['folders']) && static::regularPath($path) && is_dir(static::joinPaths($conf['root_uri'], $path))) {
       foreach ($conf['folders'] as $folder_path => $folder_conf) {
         $is_root = $folder_path === '.';
@@ -183,7 +169,7 @@ class Imce {
                 }
               }
             }
-            return $folder_conf + ['inherited' => TRUE];
+            return $folder_conf + array('inherited' => TRUE);
           }
         }
       }
@@ -194,7 +180,7 @@ class Imce {
    * Returns name filtering regexp from a profile conf.
    */
   public static function nameFilterInConf(array $conf) {
-    $filters = isset($conf['name_filters']) ? $conf['name_filters'] : [];
+    $filters = isset($conf['name_filters']) ? $conf['name_filters'] : array();
     if (empty($conf['allow_dot_files'])) {
       $filters[] = '^\.|\.$';
     }
@@ -210,7 +196,7 @@ class Imce {
       $filename = array_pop($parts);
       $dirpath = implode('/', $parts);
       if ($filename !== '') {
-        return [$dirpath === '' ? '.' : $dirpath, $filename];
+        return array($dirpath === '' ? '.' : $dirpath, $filename);
       }
     }
   }
@@ -233,7 +219,6 @@ class Imce {
 
   /**
    * Checks the structure of a folder path.
-   *
    * Forbids current/parent directory notations.
    */
   public static function regularPath($path) {
@@ -243,17 +228,17 @@ class Imce {
   /**
    * Returns the contents of a directory.
    */
-  public static function scanDir($diruri, array $options = []) {
-    $content = ['files' => [], 'subfolders' => []];
+  public static function scanDir($diruri, array $options = array()) {
+    $content = array('files' => array(), 'subfolders' => array());
     $browse_files = isset($options['browse_files']) ? $options['browse_files'] : TRUE;
     $browse_subfolders = isset($options['browse_subfolders']) ? $options['browse_subfolders'] : TRUE;
     if (!$browse_files && !$browse_subfolders) {
       return $content;
     }
     if (!$opendir = opendir($diruri)) {
-      return $content + ['error' => TRUE];
+      return $content + array('error' => TRUE);
     }
-    // Prepare filters.
+    // Prepare filters
     $name_filter = empty($options['name_filter']) ? FALSE : $options['name_filter'];
     $callback = empty($options['filter_callback']) ? FALSE : $options['filter_callback'];
     $uriprefix = substr($diruri, -1) === '/' ? $diruri : $diruri . '/';
@@ -275,12 +260,8 @@ class Imce {
       // Execute callback.
       if ($callback) {
         $result = $callback($filename, $is_dir, $fileuri, $options);
-        if ($result === 'continue') {
-          continue;
-        }
-        elseif ($result === 'break') {
-          break;
-        }
+        if ($result === 'continue') continue;
+        elseif ($result === 'break') break;
       }
       $content[$is_dir ? 'subfolders' : 'files'][$filename] = $fileuri;
     }
@@ -290,12 +271,11 @@ class Imce {
 
   /**
    * Returns a managed file entity by uri.
-   *
    * Optionally creates it.
    */
   public static function getFileEntity($uri, $create = FALSE, $save = FALSE) {
     $file = FALSE;
-    if ($files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(['uri' => $uri])) {
+    if ($files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(array('uri' => $uri))) {
       $file = reset($files);
     }
     elseif ($create) {
@@ -308,14 +288,14 @@ class Imce {
    * Creates a file entity with an uri.
    */
   public static function createFileEntity($uri, $save = FALSE) {
-    $values = [
+    $values = array(
       'uri' => $uri,
       'uid' => \Drupal::currentUser()->id(),
       'status' => 1,
       'filesize' => filesize($uri),
       'filename' => \Drupal::service('file_system')->basename($uri),
       'filemime' => \Drupal::service('file.mime_type.guesser')->guess($uri),
-    ];
+    );
     $file = \Drupal::entityTypeManager()->getStorage('file')->create($values);
     if ($save) {
       $file->save();
@@ -325,11 +305,10 @@ class Imce {
 
   /**
    * Checks if the selected file paths are accessible by a user with Imce.
-   *
    * Returns the accessible paths.
    */
   public static function accessFilePaths(array $paths, AccountProxyInterface $user = NULL, $scheme = NULL) {
-    $ret = [];
+    $ret = array();
     if ($fm = static::userFM($user, $scheme)) {
       foreach ($paths as $path) {
         if ($fm->checkFile($path)) {
@@ -345,7 +324,7 @@ class Imce {
    */
   public static function accessFileUri($uri, AccountProxyInterface $user = NULL) {
     list($scheme, $path) = explode('://', $uri, 2);
-    return $scheme && $path && Imce::accessFilePaths([$path], $user, $scheme);
+    return $scheme && $path && Imce::accessFilePaths(array($path), $user, $scheme);
   }
 
 }

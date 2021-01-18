@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\SubscriptionsBlockForm.
+ */
+
 namespace Drupal\simplenews\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -9,11 +14,6 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class SubscriptionsBlockForm extends SubscriptionsFormBase {
 
-  /**
-   * Form unique ID.
-   *
-   * @var string
-   */
   protected $uniqueId;
 
   /**
@@ -34,10 +34,7 @@ class SubscriptionsBlockForm extends SubscriptionsFormBase {
   }
 
   /**
-   * Setup unique ID.
-   *
-   * @param string $id
-   *   Subscription block unique form ID.
+   * {@inheritdoc}
    */
   public function setUniqueId($id) {
     $this->uniqueId = $id;
@@ -54,12 +51,10 @@ class SubscriptionsBlockForm extends SubscriptionsFormBase {
 
     $form = parent::form($form, $form_state);
 
-    if ($this->message) {
-      $form['message'] = [
-        '#type' => 'item',
-        '#markup' => $this->message,
-      ];
-    }
+    $form['message'] = array(
+      '#type' => 'item',
+      '#markup' => $this->message,
+    );
 
     return $form;
   }
@@ -68,9 +63,14 @@ class SubscriptionsBlockForm extends SubscriptionsFormBase {
    * {@inheritdoc}
    */
   protected function actions(array $form, FormStateInterface $form_state) {
+    // If only one newsletter, show Subscribe/Unsubscribe instead of Update.
     $actions = parent::actions($form, $form_state);
-    $actions[static::SUBMIT_UPDATE]['#value'] = $this->t('Update');
-    return $actions;
+    if ($this->getOnlyNewsletterId() != NULL) {
+      $actions[static::SUBMIT_UPDATE]['#access'] = FALSE;
+      $actions[static::SUBMIT_SUBSCRIBE]['#access'] = !$this->entity->isSubscribed($this->getOnlyNewsletterId());
+      $actions[static::SUBMIT_UNSUBSCRIBE]['#access'] = $this->entity->isSubscribed($this->getOnlyNewsletterId());
+    }
+    return parent::actions($form, $form_state);
   }
 
   /**
@@ -79,7 +79,7 @@ class SubscriptionsBlockForm extends SubscriptionsFormBase {
   protected function getSubmitMessage(FormStateInterface $form_state, $op, $confirm) {
     switch ($op) {
       case static::SUBMIT_UPDATE:
-        return $this->t('The newsletter subscriptions for %mail have been updated.', ['%mail' => $form_state->getValue('mail')[0]['value']]);
+        return $this->t('The newsletter subscriptions for %mail have been updated.', array('%mail' => $form_state->getValue('mail')[0]['value']));
 
       case static::SUBMIT_SUBSCRIBE:
         if ($confirm) {

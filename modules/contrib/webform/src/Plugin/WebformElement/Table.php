@@ -3,11 +3,10 @@
 namespace Drupal\webform\Plugin\WebformElement;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\webform\Plugin\WebformElementBase;
-use Drupal\webform\Utility\WebformElementHelper;
 use Drupal\webform\WebformInterface;
 use Drupal\webform\WebformSubmissionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a 'table' element.
@@ -21,22 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class Table extends WebformElementBase {
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
-    $instance->renderer = $container->get('renderer');
-    return $instance;
-  }
 
   /**
    * {@inheritdoc}
@@ -123,13 +106,13 @@ class Table extends WebformElementBase {
   protected function formatHtmlItem(array $element, WebformSubmissionInterface $webform_submission, array $options = []) {
     $rows = [];
     foreach ($element as $row_key => $row_element) {
-      if (WebformElementHelper::property($row_key)) {
+      if (Element::property($row_key)) {
         continue;
       }
 
       $element[$row_key] = [];
       foreach ($row_element as $column_key => $column_element) {
-        if (WebformElementHelper::property($column_key)) {
+        if (Element::property($column_key)) {
           continue;
         }
 
@@ -159,7 +142,7 @@ class Table extends WebformElementBase {
   protected function formatTextItem(array $element, WebformSubmissionInterface $webform_submission, array $options = []) {
     // Render the HTML table.
     $build = $this->formatHtml($element, $webform_submission, $options);
-    $html = $this->renderer->renderPlain($build);
+    $html = \Drupal::service('renderer')->renderPlain($build);
 
     // Convert table in pipe delimited plain text.
     $html = preg_replace('#\s*</td>\s*<td[^>]*>\s*#', ' | ', $html);

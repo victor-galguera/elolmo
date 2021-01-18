@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\views_templates\Plugin\ViewsBuilderPluginManager.
+ */
+
 namespace Drupal\views_templates\Plugin;
 
 use Drupal\Core\Cache\CacheBackendInterface;

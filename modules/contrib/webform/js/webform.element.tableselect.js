@@ -59,7 +59,7 @@
         return true;
       }
 
-      $checkbox.trigger('click');
+      $checkbox.click();
     });
   };
 

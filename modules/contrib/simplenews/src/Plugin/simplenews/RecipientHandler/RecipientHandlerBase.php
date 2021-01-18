@@ -1,161 +1,75 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\simplenews\RecipientHandler\RecipientHandlerBase.
+ */
 
 namespace Drupal\simplenews\Plugin\simplenews\RecipientHandler;
 
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\simplenews\RecipientHandler\RecipientHandlerInterface;
-use Drupal\simplenews\Spool\SpoolStorageInterface;
+use Drupal\simplenews\SubscriberInterface;
 
 /**
  * Base class for all Recipient Handler classes.
+ *
+ * This handler sends a newsletter issue to all subscribers of a given
+ * newsletter.
+ *
+ * @RecipientHandler(
+ *   id = "simplenews_all",
+ *   title = @Translation("All newsletter subscribers")
+ * )
  */
-abstract class RecipientHandlerBase extends PluginBase implements RecipientHandlerInterface {
+class RecipientHandlerBase extends PluginBase implements RecipientHandlerInterface  {
 
   /**
-   * The newsletter issue.
+   * The newsletter entity.
    *
-   * @var \Drupal\Core\Entity\ContentEntityInterface
+   * @var SimplenewsNewsletter
    */
-  protected $issue;
+  public $newsletter;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The newsletter IDs.
-   *
-   * @var array
-   */
-  protected $newsletterIds;
-
-  /**
-   * RecipientHandlerBase constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
+   * @param SimplenewsNewsletter $newsletter
+   *   The simplenews newsletter.
+   * @param String $handler
+   *   The name of the handler plugin to use.
+   * @param array $settings
+   *   An array of settings used by the handler to build the list of recipients.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->issue = $configuration['_issue'];
-    $this->connection = $configuration['_connection'];
-    $this->newsletterIds = $configuration['_newsletter_ids'];
+    $this->newsletter = $configuration['newsletter'];
   }
 
   /**
-   * {@inheritdoc}
+   * Implements SimplenewsRecipientHandlerInterface::buildRecipientQuery()
+   */
+  public function buildRecipientQuery() {
+    $select = db_select('simplenews_subscriber', 's');
+    $select->innerJoin('simplenews_subscriber__subscriptions', 't', 's.id = t.entity_id');
+    $select->addField('s', 'id', 'snid');
+    $select->addField('s', 'mail');
+    $select->addField('t', 'subscriptions_target_id', 'newsletter_id');
+    $select->condition('t.subscriptions_target_id', $this->newsletter->id());
+    $select->condition('t.subscriptions_status', SIMPLENEWS_SUBSCRIPTION_STATUS_SUBSCRIBED);
+    $select->condition('s.status', SubscriberInterface::ACTIVE);
+
+    return $select;
+  }
+
+  /**
+   * Implements SimplenewsRecipientHandlerInterface::buildRecipientCountQuery()
+   */
+  public function buildRecipientCountQuery() {
+    return $this->buildRecipientQuery()->countQuery();
+  }
+
+  /**
+   * Implements Countable::count().
    */
   public function count() {
-    $cache = &drupal_static(__METHOD__, []);
-    $cid = $this->pluginId . ':' . implode(':', $this->newsletterIds);
-    if (isset($cache[$cid])) {
-      return $cache[$cid];
-    }
-
-    $count = $this->doCount();
-    if ($this->cacheCount()) {
-      $cache[$cid] = $count;
-    }
-
-    return $count;
+    return $this->buildRecipientCountQuery()->execute()->fetchField();
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm() {
-    return [];
-  }
-
-  /**
-   * Counts the number of recipients.
-   *
-   * Internal count function allowing the caller to perform caching.
-   *
-   * @return int
-   *   Number of recipients.
-   */
-  abstract protected function doCount();
-
-  /**
-   * Checks if the recipient count can be cached.
-   *
-   * Caching is allowed if the count depends only on the newsletter IDs, and
-   * does not vary with a specific issue or handler settings.
-   *
-   * @return bool
-   *   TRUE if the count can be cached.
-   */
-  protected function cacheCount() {
-    return FALSE;
-  }
-
-  /**
-   * Returns the newsletter ID.
-   *
-   * @return int
-   *   Newsletter ID.
-   *
-   * @throws \Exception
-   *   The configuration doesn't specify a single newsletter ID.
-   */
-  protected function getNewsletterId() {
-    if (count($this->newsletterIds) != 1) {
-      throw new \Exception("Recipient handler requires a single newsletter ID.");
-    }
-    return $this->newsletterIds[0];
-  }
-
-  /**
-   * Adds an array of entries to the spool.
-   *
-   * The caller specifies the values for a field to define the recipient.  The
-   * other fields are automatically defaulted based on the issue and
-   * newsletter.
-   *
-   * @param string $field
-   *   Field to set: 'snid', 'data' (automatically serialised) or 'uid'
-   *   (automatically stored in 'data' array with key 'uid').
-   * @param array $values
-   *   Values to set for field.
-   */
-  protected function addArrayToSpool($field, array $values) {
-    if (empty($values)) {
-      return;
-    }
-
-    $template = [
-      'entity_type' => $this->issue->getEntityTypeId(),
-      'entity_id' => $this->issue->id(),
-      'status' => SpoolStorageInterface::STATUS_PENDING,
-      'timestamp' => REQUEST_TIME,
-      'newsletter_id' => $this->getNewsletterId(),
-    ];
-
-    if ($field == 'uid') {
-      $field = 'data';
-      $values = array_map(function ($v) {
-        return ['uid' => $v];
-      }, $values);
-    }
-
-    $insert = $this->connection->insert('simplenews_mail_spool')
-      ->fields(array_merge(array_keys($template), [$field]));
-
-    foreach ($values as $value) {
-      $row = $template;
-      $row[$field] = ($field == 'data') ? serialize($value) : $value;
-      $insert->values($row);
-    }
-
-    $insert->execute();
-  }
-
 }

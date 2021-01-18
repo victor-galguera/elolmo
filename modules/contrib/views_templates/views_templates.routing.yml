@@ -13,3 +13,5 @@ views_templates.list:
     _title: 'Add view from template'
   requirements:
     _permission: 'administer views'
+
+

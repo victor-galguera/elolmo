@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\WidgetManager.
+ */
+
 namespace Drupal\entity_browser;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -27,21 +32,6 @@ class WidgetManager extends DefaultPluginManager {
 
     $this->alterInfo('entity_browser_widget_info');
     $this->setCacheBackend($cache_backend, 'entity_browser_widget_plugins');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function findDefinitions() {
-    $definitions = parent::findDefinitions();
-
-    // Our own "media_image_upload" widget should only be available if the
-    // "Media" module is enabled.
-    if (!$this->moduleHandler->moduleExists('media')) {
-      unset($definitions['media_image_upload']);
-    }
-
-    return $definitions;
   }
 
 }

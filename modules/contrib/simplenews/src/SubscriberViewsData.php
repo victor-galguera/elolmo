@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\SubscriberViewsData.
+ */
 
 namespace Drupal\simplenews;
 
@@ -15,43 +19,30 @@ class SubscriberViewsData extends EntityViewsData {
   public function getViewsData() {
     $data = parent::getViewsData();
 
-    $data['simplenews_subscriber']['edit_link'] = [
-      'field' => [
+    $data['simplenews_subscriber']['edit_link'] = array(
+      'field' => array(
         'title' => $this->t('Link to edit'),
         'help' => $this->t('Provide a simple link to edit the subscriber.'),
         'id' => 'subscriber_link_edit',
-      ],
-    ];
+      ),
+    );
 
-    $data['simplenews_subscriber']['delete_link'] = [
-      'field' => [
+    $data['simplenews_subscriber']['delete_link'] = array(
+      'field' => array(
         'title' => $this->t('Link to delete'),
         'help' => $this->t('Provide a simple link to delete the subscriber.'),
         'id' => 'subscriber_link_delete',
-      ],
-    ];
-
+      ),
+    );
     // @todo Username obtained through custom plugin due to core issue.
-    $data['simplenews_subscriber']['user_name'] = [
+    $data['simplenews_subscriber']['user_name'] = array(
       'real field' => 'uid',
-      'field' => [
+      'field' => array(
         'title' => $this->t('Username'),
-        'help' => $this->t("Provide a simple link to the subscriber's user account."),
+        'help' => $this->t('Provide a simple link to the subscriber\'s user account .'),
         'id' => 'simplenews_user_name',
-      ],
-    ];
-
-    $data['simplenews_subscriber__subscriptions']['subscriptions_status']['filter'] = [
-      'id' => 'in_operator',
-      'options callback' => 'simplenews_subscriber_status_list',
-    ];
-
-    $data['simplenews_subscriber__subscriptions']['subscriptions_target_id']['filter'] = [
-      'id' => 'in_operator',
-      'options callback' => 'simplenews_newsletter_list',
-    ];
-
+      ),
+    );
     return $data;
   }
-
 }

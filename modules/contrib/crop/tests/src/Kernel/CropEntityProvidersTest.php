@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Tests\crop\Kernel\CropEntityProvidersTest.
+ */
+
 namespace Drupal\Tests\crop\Kernel;
 
 use Drupal\crop\EntityProviderNotFoundException;
@@ -17,6 +22,16 @@ class CropEntityProvidersTest extends CropUnitTestBase {
    * @var array
    */
   public static $modules = ['crop', 'file', 'image', 'user', 'system'];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->container->get('entity.manager')
+      ->onEntityTypeCreate($this->container->get('entity.manager')->getDefinition('file'));
+  }
 
   /**
    * Tests file provider plugin.
@@ -37,7 +52,7 @@ class CropEntityProvidersTest extends CropUnitTestBase {
       'height' => '50',
     ];
     /** @var \Drupal\crop\CropInterface $crop */
-    $crop = $this->container->get('entity_type.manager')->getStorage('crop')->create($values);
+    $crop = $this->container->get('entity.manager')->getStorage('crop')->create($values);
     $crop->save();
 
     try {
@@ -48,7 +63,7 @@ class CropEntityProvidersTest extends CropUnitTestBase {
       $this->assertTrue(FALSE, 'File entity provider plugin was found.');
     }
 
-    $this->assertEquals($provider->uri($file), $file->getFileUri(), 'File provider plugin returned correct URI.');
+    $this->assertEqual($provider->uri($file), $file->getFileUri(), 'File provider plugin returned correct URI.');
   }
 
 }

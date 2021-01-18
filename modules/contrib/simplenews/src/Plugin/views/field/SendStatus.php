@@ -1,8 +1,12 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\views\field\SendStatus.
+ */
+
 namespace Drupal\simplenews\Plugin\views\field;
 
-use Drupal\node\Entity\Node;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 
@@ -24,21 +28,19 @@ class SendStatus extends FieldPluginBase {
       // Get elements to render.
       $message = $this->getMessage($node);
       if (!empty($message['uri'])) {
-        $output['image'] = [
+        $output['image'] = array(
           '#theme' => 'image',
           '#uri' => $message['uri'],
           '#alt' => $message['description'],
           '#title' => $message['description'],
           '#getsize' => TRUE,
-        ];
+        );
       }
-
-      $error_count = $message['error_count'] ? ' ❌{{ error_count }}' : '';
-      $output['text'] = [
+      $output['text'] = array(
         '#type' => 'inline_template',
-        '#template' => "<span title=\"{{ description }}\">{{ sent_count }}/{{ count }}$error_count</span>",
+        '#template' => '<span title="{{ description }}">{{ count }}</span>',
         '#context' => $message,
-      ];
+      );
       return $output;
     }
   }
@@ -46,28 +48,41 @@ class SendStatus extends FieldPluginBase {
   /**
    * Return a compiled message to display.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param $node
    *   The node object.
    *
    * @return array
    *   An array containing the elements of the message to be rendered.
    */
-  protected function getMessage(Node $node) {
+  protected function getMessage($node) {
     $status = $node->simplenews_issue->status;
-    $message = \Drupal::service('simplenews.spool_storage')->issueSummary($node);
-
-    $images = [
+    $sent_count = (int) $node->simplenews_issue->sent_count;
+    $published = $node->isPublished();
+    $subscriber_count = $node->simplenews_issue->status == SIMPLENEWS_STATUS_SEND_READY ? $node->simplenews_issue->subscribers : simplenews_count_subscriptions($node->simplenews_issue->target_id);
+    $message = array();
+    $message['count'] = $subscriber_count;
+    $message['uri'] = NULL;
+    $images = array(
       SIMPLENEWS_STATUS_SEND_PENDING => 'images/sn-cron.png',
       SIMPLENEWS_STATUS_SEND_READY => 'images/sn-sent.png',
-    ];
-    if (isset($images[$status])) {
+    );
+    if ($status == SIMPLENEWS_STATUS_SEND_READY) {
+      $message['description'] = t('Newsletter issue sent to @sent_count subscribers.', ['@sent_count' => $sent_count]);
       $message['uri'] = drupal_get_path('module', 'simplenews') . '/' . $images[$status];
     }
-    else {
-      $message['uri'] = NULL;
+    elseif ($status == SIMPLENEWS_STATUS_SEND_PENDING) {
+      $message['description'] = t('Newsletter issue is pending, @sent_count mails sent out of @count.', array(
+        '@sent_count' => $sent_count,
+        '@count' => $subscriber_count
+      ));
+      $message['uri'] = drupal_get_path('module', 'simplenews') . '/' . $images[$status];
     }
-
+    elseif (($status == SIMPLENEWS_STATUS_SEND_NOT)) {
+      $message['description'] = t('Newsletter issue will be sent to @count subscribers.', array('@count' => $subscriber_count));
+    }
+    if (!$published) {
+      $message['description'] = t('Newsletter issue will be sent to @count subscribers on publish.', array('@count' => $subscriber_count));
+    }
     return $message;
   }
-
 }

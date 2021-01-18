@@ -1,7 +1,11 @@
 <?php
 
-namespace Drupal\entity_browser;
+/**
+ * @file
+ * Contains \Drupal\entity_browser\PluginConfigurationFormTrait
+ */
 
+namespace Drupal\entity_browser;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -19,8 +23,7 @@ trait PluginConfigurationFormTrait {
   /**
    * Implements PluginFormInterface::validateConfigurationForm().
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-  }
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {}
 
   /**
    * Implements PluginFormInterface::submitConfigurationForm().
@@ -33,12 +36,12 @@ trait PluginConfigurationFormTrait {
     $values = $form_state->getValues();
 
     if ($this instanceof WidgetInterface) {
-      $values = $values['table'][$this->uuid()]['form'];
+      $values = $values['table'][$this->uuid()];
     }
 
     if (!empty($values)) {
       foreach ($values as $key => $value) {
-        if (array_key_exists($key, $this->configuration)) {
+        if (isset($this->configuration[$key])) {
           $this->configuration[$key] = $value;
         }
       }

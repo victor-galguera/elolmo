@@ -1,10 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Form\TabDeleteForm.
+ */
+
 namespace Drupal\blocktabs\Form;
 
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\blocktabs\BlocktabsInterface;
+use Drupal\blocktabs\BlockTabsInterface;
 
 /**
  * Form for deleting a tab.
@@ -14,7 +19,7 @@ class TabDeleteForm extends ConfirmFormBase {
   /**
    * The blocktabs containing the tab to be deleted.
    *
-   * @var \Drupal\blocktabs\BlocktabsInterface
+   * @var \Drupal\blocktabs\BlockTabsInterface
    */
   protected $blockTabs;
 
@@ -29,7 +34,7 @@ class TabDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete the @tab tab from the %blocktabs blocktabs?', ['%blocktabs' => $this->blockTabs->label(), '@tab' => $this->tab->label()]);
+    return $this->t('Are you sure you want to delete the @tab tab from the %blocktabs blocktabs?', array('%blocktabs' => $this->blockTabs->label(), '@tab' => $this->tab->label()));
   }
 
   /**
@@ -43,7 +48,7 @@ class TabDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return $this->blockTabs->toUrl('edit-form');
+    return $this->blockTabs->urlInfo('edit-form');
   }
 
   /**
@@ -56,7 +61,7 @@ class TabDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, BlocktabsInterface $blocktabs = NULL, $tab = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, BlockTabsInterface $blocktabs = NULL, $tab = NULL) {
     $this->blockTabs = $blocktabs;
     $this->tab = $this->blockTabs->getTab($tab);
 
@@ -68,8 +73,8 @@ class TabDeleteForm extends ConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->blockTabs->deleteTab($this->tab);
-    \Drupal::messenger()->addMessage($this->t('The tab %name has been deleted.', ['%name' => $this->tab->label()]));
-    $form_state->setRedirectUrl($this->blockTabs->toUrl('edit-form'));
+    drupal_set_message($this->t('The tab %name has been deleted.', array('%name' => $this->tab->label())));
+    $form_state->setRedirectUrl($this->blockTabs->urlInfo('edit-form'));
   }
 
 }

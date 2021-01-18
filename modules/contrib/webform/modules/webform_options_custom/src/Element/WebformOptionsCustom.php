@@ -13,7 +13,6 @@ use Drupal\Core\Render\Markup;
 use Drupal\webform\Element\WebformCompositeFormElementTrait;
 use Drupal\webform\Utility\WebformArrayHelper;
 use Drupal\webform\Utility\WebformElementHelper;
-use Drupal\webform\Utility\WebformFormHelper;
 use Drupal\webform\Utility\WebformOptionsHelper;
 use Drupal\webform_options_custom\Entity\WebformOptionsCustom as WebformOptionsCustomEntity;
 
@@ -112,8 +111,8 @@ class WebformOptionsCustom extends FormElement implements WebformOptionsCustomIn
     // @see webform_options_custom.element.js#initializeTemplateTooltip
     $descriptions = [];
     foreach ($element['#options'] as $option_value => $option_text) {
-      if (WebformOptionsHelper::hasOptionDescription($option_text)) {
-        list($option_text, $option_description) = WebformOptionsHelper::splitOption($option_text);
+      if (strpos($option_text, WebformOptionsHelper::DESCRIPTION_DELIMITER) !== FALSE) {
+        list($option_text, $option_description) = explode(WebformOptionsHelper::DESCRIPTION_DELIMITER, $option_text);
         $element['#options'][$option_value] = $option_text;
         $descriptions[$option_value] = Xss::filterAdmin($option_description);
       }
@@ -213,7 +212,7 @@ class WebformOptionsCustom extends FormElement implements WebformOptionsCustomIn
     }
 
     // Process states.
-    WebformFormHelper::processStates($element, '#wrapper_attributes');
+    webform_process_states($element, '#wrapper_attributes');
 
     return $element;
   }
@@ -298,8 +297,8 @@ class WebformOptionsCustom extends FormElement implements WebformOptionsCustomIn
     $options_by_text = [];
     foreach ($options as $option_value => $option_text) {
       $option_description = '';
-      if (WebformOptionsHelper::hasOptionDescription($option_text)) {
-        list($option_text, $option_description) = WebformOptionsHelper::splitOption($option_text);
+      if (strpos($option_text, WebformOptionsHelper::DESCRIPTION_DELIMITER) !== FALSE) {
+        list($option_text, $option_description) = explode(WebformOptionsHelper::DESCRIPTION_DELIMITER, $option_text);
       }
       $options_by_text[$option_text] = ['value' => $option_value, 'text' => $option_text, 'description' => $option_description];
     }

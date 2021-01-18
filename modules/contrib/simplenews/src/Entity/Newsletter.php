@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Definition of Drupal\simplenews\Entity\Newsletter.
+ */
+
 namespace Drupal\simplenews\Entity;
 
 use Drupal\block\Entity\Block;
@@ -38,7 +43,6 @@ use Drupal\simplenews\NewsletterInterface;
  *     "subject",
  *     "from_address",
  *     "hyperlinks",
- *     "allowed_handlers",
  *     "new_account",
  *     "opt_inout",
  *     "weight",
@@ -80,7 +84,7 @@ class Newsletter extends ConfigEntityBase implements NewsletterInterface {
   public $format;
 
   /**
-   * Priority indicator.
+   * Priority indicator
    *
    * @var int
    */
@@ -89,7 +93,7 @@ class Newsletter extends ConfigEntityBase implements NewsletterInterface {
   /**
    * TRUE if a read receipt should be requested.
    *
-   * @var bool
+   * @var boolean
    */
   public $receipt;
 
@@ -117,18 +121,9 @@ class Newsletter extends ConfigEntityBase implements NewsletterInterface {
   /**
    * Indicates if hyperlinks should be kept inline or extracted.
    *
-   * @var bool
+   * @var boolean
    */
   public $hyperlinks = TRUE;
-
-  /**
-   * Allowed recipient handlers.
-   *
-   * If none are selected, then all of them will be available.
-   *
-   * @var array
-   */
-  public $allowed_handlers = [];
 
   /**
    * Indicates how to integrate with the register form.
@@ -156,13 +151,13 @@ class Newsletter extends ConfigEntityBase implements NewsletterInterface {
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     $config = \Drupal::config('simplenews.settings');
-    $values += [
+    $values += array(
       'format' => $config->get('newsletter.format'),
       'priority' => $config->get('newsletter.priority'),
       'receipt' => $config->get('newsletter.receipt'),
       'from_name' => $config->get('newsletter.from_name'),
       'from_address' => $config->get('newsletter.from_address'),
-    ];
+    );
     parent::preCreate($storage, $values);
   }
 
@@ -172,13 +167,12 @@ class Newsletter extends ConfigEntityBase implements NewsletterInterface {
   public static function postDelete(EntityStorageInterface $storage, array $entities) {
     parent::postDelete($storage, $entities);
 
-    /** @var \Drupal\simplenews\Subscription\SubscriptionStorageInterface $subscription_storage */
-    $subscription_storage = \Drupal::entityTypeManager()
-      ->getStorage('simplenews_subscriber');
+    /** @var \Drupal\simplenews\Subscription\SubscriptionManagerInterface $subscription_manager */
+    $subscription_manager = \Drupal::service('simplenews.subscription_manager');
 
     foreach ($entities as $newsletter) {
-      $subscription_storage->deleteSubscriptions(['subscriptions_target_id' => $newsletter->id()]);
-      \Drupal::messenger()->addMessage(t('All subscriptions to newsletter %newsletter have been deleted.', ['%newsletter' => $newsletter->label()]));
+      $subscription_manager->deleteSubscriptions(array('subscriptions_target_id' => $newsletter->id()));
+      drupal_set_message(t('All subscriptions to newsletter %newsletter have been deleted.', array('%newsletter' => $newsletter->label())));
     }
 
     if (\Drupal::moduleHandler()->moduleExists('block')) {

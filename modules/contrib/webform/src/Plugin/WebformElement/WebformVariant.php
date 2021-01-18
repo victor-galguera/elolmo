@@ -14,7 +14,7 @@ use Drupal\webform\WebformSubmissionInterface;
  *
  * @WebformElement(
  *   id = "webform_variant",
- *   label = @Translation("Variant"),
+ *   label = @Translation("Variant [EXPERIMENTAL]"),
  *   description = @Translation("Provides a form element for enabling and tracking webform variants."),
  *   category = @Translation("Advanced elements"),
  * )

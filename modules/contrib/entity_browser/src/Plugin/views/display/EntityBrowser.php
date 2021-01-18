@@ -1,17 +1,17 @@
 <?php
 
+/**
+ * @file
+ * Definition of Drupal\entity_browser\Plugin\views\display\EntityBrowser.
+ */
+
 namespace Drupal\entity_browser\Plugin\views\display;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 
 /**
  * The plugin that handles entity browser display.
- *
- * "entity_browser_display" is a custom property, used with
- * \Drupal\views\Views::getApplicableViews() to retrieve all views with a
- * 'Entity Browser' display.
  *
  * @ingroup views_display_plugins
  *
@@ -20,14 +20,13 @@ use Drupal\views\Plugin\views\display\DisplayPluginBase;
  *   title = @Translation("Entity browser"),
  *   help = @Translation("Displays a view as Entity browser widget."),
  *   theme = "views_view",
- *   admin = @Translation("Entity browser"),
- *   entity_browser_display = TRUE
+ *   admin = @Translation("Entity browser")
  * )
  */
-class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterface {
+class EntityBrowser extends DisplayPluginBase {
 
   /**
-   * {@inheritdoc}
+   * {@inheritdoc}.
    */
   public function execute() {
     parent::execute();
@@ -43,22 +42,6 @@ class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterfac
     // Force AJAX as this Display Plugin will almost always be embedded inside
     // EntityBrowserForm, which breaks normal exposed form submits.
     return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOption($option) {
-    // @todo remove upon resolution of https://www.drupal.org/node/2904798
-    // This overrides getOption() instead of ajaxEnabled() because
-    // \Drupal\views\Controller\ViewAjaxController::ajaxView() currently calls
-    // that directly.
-    if ($option == 'use_ajax') {
-      return TRUE;
-    }
-    else {
-      return parent::getOption($option);
-    }
   }
 
   /**
@@ -99,19 +82,15 @@ class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterfac
   }
 
   /**
-   * {@inheritdoc}
+   * {@inheritdoc}.
    */
-  public function preview() {
+  function preview() {
     return $this->execute();
   }
 
   /**
-   * {@inheritdoc}
-   *
-   * Pre render callback for a view.
-   *
-   * Based on DisplayPluginBase::elementPreRender() except that we removed form
-   * part which need to handle by our own.
+   * Pre render callback for a view. Based on DisplayPluginBase::elementPreRender()
+   * except that we removed form part which need to handle by our own.
    */
   public function elementPreRender(array $element) {
     $view = $element['#view'];
@@ -146,21 +125,15 @@ class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterfac
 
   /**
    * Handles form elements on a view.
-   *
-   * @param array $render
-   *   Rendered content.
    */
-  protected function handleForm(array &$render) {
+  protected function handleForm(&$render) {
     if (!empty($this->view->field['entity_browser_select'])) {
-
-      /** @var \Drupal\entity_browser\Plugin\views\field\SelectForm $select */
-      $select = $this->view->field['entity_browser_select'];
-      $select->viewsForm($render);
+      $this->view->field['entity_browser_select']->viewsForm($render);
 
       $render['#post_render'][] = [get_class($this), 'postRender'];
       $substitutions = [];
-      foreach ($this->view->result as $row) {
-        $form_element_row_id = $select->getRowId($row);
+      foreach ($this->view->result as $row_id => $row) {
+        $form_element_row_id = $row_id;
 
         $substitutions[] = [
           'placeholder' => '<!--form-item-entity_browser_select--' . $form_element_row_id . '-->',
@@ -180,18 +153,10 @@ class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterfac
    * Post render callback that moves form elements into the view.
    *
    * Form elements need to be added out of view to be correctly detected by Form
-   * API and then added into the view afterwards. Views use the same approach
-   * for bulk operations.
-   *
-   * @param string $content
-   *   Rendered content.
-   * @param array $element
-   *   Render array.
-   *
-   * @return string
-   *   Rendered content.
+   * API and then added into the view afterwards. Views use the same approach for
+   * bulk operations.
    */
-  public static function postRender($content, array $element) {
+  public static function postRender($content, $element) {
     // Placeholders and their substitutions (usually rendered form elements).
     $search = $replace = [];
 
@@ -201,7 +166,7 @@ class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterfac
       $row_id = $substitution['row_id'];
 
       $search[] = $substitution['placeholder'];
-      $replace[] = isset($element[$field_name][$row_id]) ? \Drupal::service('renderer')->render($element[$field_name][$row_id]) : '';
+      $replace[] = isset($element[$field_name][$row_id]) ? drupal_render($element[$field_name][$row_id]) : '';
     }
     // Add in substitutions from hook_views_form_substitutions().
     $substitutions = \Drupal::moduleHandler()->invokeAll('views_form_substitutions');
@@ -221,12 +186,4 @@ class EntityBrowser extends DisplayPluginBase implements TrustedCallbackInterfac
 
     return $content;
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function trustedCallbacks() {
-    return ['postRender', 'elementPreRender'];
-  }
-
 }

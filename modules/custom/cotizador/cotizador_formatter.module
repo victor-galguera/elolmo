@@ -1,0 +1,29 @@
+<?php
+
+function computed_field_field_precio_cotizacion_compute($entity_type_manager, $entity, $fields, $delta) {
+    
+    $value = 0;
+
+    if (isset($fields['field_propiedad'][0])) {
+        $propiedad =  node_load($fields['field_propiedad'][0]['target_id']);
+        $value = $propiedad->field_precio->value;
+        return $value;
+    }
+
+    return $value;
+
+}
+
+/*function computed_field_field_saldo_a_la_escritura_compute($entity_type_manager, $entity, $fields, $delta) {
+    
+    $value = 0;
+    //dpm($fields);
+    if (isset($fields['field_apartado'][0])) {
+
+    }
+
+    return $value;
+
+}*/
+
+?>

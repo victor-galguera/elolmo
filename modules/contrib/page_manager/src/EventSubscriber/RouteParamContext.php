@@ -1,10 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\page_manager\EventSubscriber\RouteParamContext.
+ */
+
 namespace Drupal\page_manager\EventSubscriber;
 
 use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\page_manager\Context\ContextDefinitionFactory;
 use Drupal\page_manager\Event\PageManagerContextEvent;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Routing\RouteProviderInterface;
@@ -66,7 +71,7 @@ class RouteParamContext implements EventSubscriberInterface {
         }
 
         $parameter = $page->getParameter($route_context_name);
-        $context_name = !empty($parameter['label']) ? $parameter['label'] : $this->t('{@name} from route', ['@name' => $route_context_name]);
+        $context_name = $parameter['label'] ?: $this->t('{@name} from route', ['@name' => $route_context_name]);
         if ($request->attributes->has($route_context_name)) {
           $value = $request->attributes->get($route_context_name);
         }
@@ -76,7 +81,7 @@ class RouteParamContext implements EventSubscriberInterface {
         $cacheability = new CacheableMetadata();
         $cacheability->setCacheContexts(['route']);
 
-        $context = new Context(ContextDefinitionFactory::create($route_context['type'])->setLabel($context_name)->setRequired(FALSE), $value);
+        $context = new Context(new ContextDefinition($route_context['type'], $context_name, FALSE), $value);
         $context->addCacheableDependency($cacheability);
 
         $page->addContext($route_context_name, $context);

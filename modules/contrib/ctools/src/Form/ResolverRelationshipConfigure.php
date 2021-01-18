@@ -1,20 +1,25 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools\Form\ResolverRelationshipConfigure.
+ */
+
 namespace Drupal\ctools\Form;
+
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseModalDialogCommand;
 use Drupal\Core\Ajax\RedirectCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\TempStore\SharedTempStoreFactory;
-use Drupal\Core\Url;
+use Drupal\user\SharedTempStoreFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class ResolverRelationshipConfigure extends FormBase {
 
   /**
-   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
+   * @var \Drupal\user\SharedTempStoreFactory
    */
   protected $tempstore;
 
@@ -32,7 +37,7 @@ abstract class ResolverRelationshipConfigure extends FormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('tempstore.shared'));
+    return new static($container->get('user.shared_tempstore'));
   }
 
   function __construct(SharedTempStoreFactory $tempstore) {
@@ -141,8 +146,7 @@ abstract class ResolverRelationshipConfigure extends FormBase {
     $response = new AjaxResponse();
     $cached_values = $this->tempstore->get($this->tempstore_id)->get($this->machine_name);
     list($route_name, $route_parameters) = $this->getParentRouteInfo($cached_values);
-    $url = Url::fromRoute($route_name, $route_parameters);
-    $response->addCommand(new RedirectCommand($url->toString()));
+    $response->addCommand(new RedirectCommand($this->url($route_name, $route_parameters)));
     $response->addCommand(new CloseModalDialogCommand());
     return $response;
   }

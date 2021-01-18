@@ -1,10 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\TabInterface.
+ */
+
 namespace Drupal\blocktabs;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Component\Plugin\ContextAwarePluginInterface;
 use Drupal\blocktabs\BlocktabsInterface;
 
 /**
@@ -17,12 +21,12 @@ use Drupal\blocktabs\BlocktabsInterface;
  * @see \Drupal\blocktabs\TabManager
  * @see plugin_api
  */
-interface TabInterface extends PluginInspectionInterface, ConfigurableInterface, ContextAwarePluginInterface {
+interface TabInterface extends PluginInspectionInterface, ConfigurablePluginInterface {
 
   /**
    * Applies a tab to the blocktabs.
    *
-   * @param \Drupal\blocktabs\BlocktabsInterface $blocktabs
+   * @param \Drupal\Core\blocktabs\BlocktabsInterface $blocktabs
    *   An blocktabs object.
    *
    * @return bool
@@ -30,8 +34,10 @@ interface TabInterface extends PluginInspectionInterface, ConfigurableInterface,
    */
   public function addTab(BlocktabsInterface $blocktabs);
 
+
   /**
-   * Returns the extension the derivative would have have after adding this tab.
+   * Returns the extension the derivative would have have after adding this
+   * tab.
    *
    * @param string $extension
    *   The tab extension the derivative has before adding.
@@ -99,7 +105,7 @@ interface TabInterface extends PluginInspectionInterface, ConfigurableInterface,
    *
    * @return $this
    */
-  public function setTitle($title);
+  public function setTitle($title);  
 
   /**
    * Returns the content of the tab.
@@ -107,6 +113,6 @@ interface TabInterface extends PluginInspectionInterface, ConfigurableInterface,
    * @return string
    *   The content of the tab.
    */
-  public function getContent();
+  public function getContent();  
 
 }

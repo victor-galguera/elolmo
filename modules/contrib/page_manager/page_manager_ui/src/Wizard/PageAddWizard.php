@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Wizard\PageAddWizard.
+ */
 
 namespace Drupal\page_manager_ui\Wizard;
 

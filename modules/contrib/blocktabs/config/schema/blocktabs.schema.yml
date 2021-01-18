@@ -1,4 +1,4 @@
-blocktabs.blocktabs.*:
+blocktabs.instance.*:
   type: config_entity
   label: 'blocktabs instance'
   mapping:
@@ -7,13 +7,7 @@ blocktabs.blocktabs.*:
     label:
       type: string
       label: 'Label'
-    event:
-      type: string
-      label: 'Event'
-    style:
-      type: string
-      label: 'Tabs Style'      
-    tabs:
+    tab:
       type: sequence
       sequence:
         type: mapping
@@ -21,14 +15,14 @@ blocktabs.blocktabs.*:
           id:
             type: string
           title:
-            type: text
+            type: string
             label: 'Tab title'
           data:
             type: blocktabs.tab.[%parent.id]
           weight:
             type: integer
           uuid:
-            type: string         
+            type: string
 blocktabs.tab.*:
   type: mapping
   label: 'Tab settings'

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\RecipientHandler\RecipientHandlerInterface.
+ */
 
 namespace Drupal\simplenews\RecipientHandler;
 
@@ -10,19 +14,17 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface RecipientHandlerInterface extends \Countable, PluginInspectionInterface {
 
   /**
-   * Adds a newsletter issue to the mail spool.
+   * Build the query that gets the list of recipients.
    *
-   * @return int
-   *   Number of recipients added.
+   * @return A SelectQuery object with the columns 'snid', 'mail' and
+   * 'newsletter_id' for each recipient.
    */
-  public function addToSpool();
+  function buildRecipientQuery();
 
   /**
-   * Returns the elements to add to the settings form for handler settings.
+   * Build a query to count the number of recipients.
    *
-   * @return array
-   *   The form elements.
+   * @return A SelectQuery object to count the number of recipients.
    */
-  public function settingsForm();
-
+  function buildRecipientCountQuery();
 }

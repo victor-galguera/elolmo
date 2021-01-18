@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Annotation\Tab.
+ */
+
 namespace Drupal\blocktabs\Annotation;
 
 use Drupal\Component\Annotation\Plugin;

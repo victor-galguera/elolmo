@@ -1,8 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\node\Form\VoteTypeDeleteConfirm.
+ */
+
 namespace Drupal\votingapi\Form;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Entity\EntityDeleteForm;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -13,20 +18,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class VoteTypeDeleteConfirm extends EntityDeleteForm {
 
   /**
-   * The entity type manager to create entity queries.
+   * The query factory to create entity queries.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\Query\QueryFactory
    */
-  protected $entityTypeManager;
+  protected $queryFactory;
 
   /**
    * Constructs a new VoteTypeDeleteConfirm object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\Query\QueryFactory $query_factory
    *   The entity query object.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(QueryFactory $query_factory) {
+    $this->queryFactory = $query_factory;
   }
 
   /**
@@ -34,7 +39,7 @@ class VoteTypeDeleteConfirm extends EntityDeleteForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity.query')
     );
   }
 
@@ -42,14 +47,14 @@ class VoteTypeDeleteConfirm extends EntityDeleteForm {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $num_nodes = $this->entityTypeManager->getStorage('vote')->getQuery()
+    $num_nodes = $this->queryFactory->get('vote')
       ->condition('type', $this->entity->id())
       ->count()
       ->execute();
     if ($num_nodes) {
-      $caption = '<p>' . $this->formatPlural($num_nodes, '%type is used by 1 piece of content on your site. You can not remove this vote type until you have removed that vote.', '%type is used by @count pieces of content on your site. You may not remove %type until you have removed all of the %type votes.', ['%type' => $this->entity->label()]) . '</p>';
+      $caption = '<p>' . $this->formatPlural($num_nodes, '%type is used by 1 piece of content on your site. You can not remove this vote type until you have removed that vote.', '%type is used by @count pieces of content on your site. You may not remove %type until you have removed all of the %type votes.', array('%type' => $this->entity->label())) . '</p>';
       $form['#title'] = $this->getQuestion();
-      $form['description'] = ['#markup' => $caption];
+      $form['description'] = array('#markup' => $caption);
       return $form;
     }
 

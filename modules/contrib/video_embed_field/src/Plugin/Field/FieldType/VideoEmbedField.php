@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\video_embed_field\Plugin\Field\FieldType\VideoEmbedField.
+ */
+
 namespace Drupal\video_embed_field\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
@@ -17,8 +22,7 @@ use Drupal\Core\TypedData\TraversableTypedDataInterface;
  *   description = @Translation("Stores a video and then outputs some embed code."),
  *   category = @Translation("Media"),
  *   default_widget = "video_embed_field_textfield",
- *   default_formatter = "video_embed_field_video",
- *   constraints = {"VideoEmbedValidation" = {}}
+ *   default_formatter = "video_embed_field_video"
  * )
  */
 class VideoEmbedField extends FieldItemBase {
@@ -29,22 +33,6 @@ class VideoEmbedField extends FieldItemBase {
    * @var \Drupal\video_embed_field\ProviderManagerInterface
    */
   protected $providerManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($definition, $name = NULL, TraversableTypedDataInterface $parent = NULL, $provider_manager = NULL) {
-    parent::__construct($definition, $name, $parent);
-    $this->providerManager = $provider_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function createInstance($definition, $name = NULL, TraversableTypedDataInterface $parent = NULL) {
-    $provider_manager = \Drupal::service('video_embed_field.provider_manager');
-    return new static($definition, $name, $parent, $provider_manager);
-  }
 
   /**
    * {@inheritdoc}
@@ -84,8 +72,8 @@ class VideoEmbedField extends FieldItemBase {
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $form = [];
     $form['allowed_providers'] = [
-      '#title' => $this->t('Allowed Providers'),
-      '#description' => $this->t('Restrict users from entering information from the following providers. If none are selected any video provider can be used.'),
+      '#title' => t('Allowed Providers'),
+      '#description' => t('Restrict users from entering information from the following providers. If none are selected any video provider can be used.'),
       '#type' => 'checkboxes',
       '#default_value' => $this->getSetting('allowed_providers'),
       '#options' => $this->providerManager->getProvidersOptionList(),
@@ -100,6 +88,22 @@ class VideoEmbedField extends FieldItemBase {
     return [
       'allowed_providers' => [],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function __construct($definition, $name = NULL, TraversableTypedDataInterface $parent = NULL, $provider_manager) {
+    parent::__construct($definition, $name, $parent);
+    $this->providerManager = $provider_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function createInstance($definition, $name = NULL, TraversableTypedDataInterface $parent = NULL) {
+    $provider_manager = \Drupal::service('video_embed_field.provider_manager');
+    return new static($definition, $name, $parent, $provider_manager);
   }
 
 }

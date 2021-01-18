@@ -343,7 +343,19 @@ abstract class OptionsBase extends WebformElementBase {
           $value = WebformOptionsHelper::getOptionText($value, $element['#options'], $options_description);
         }
 
-        $build = ['#markup' => $value];
+        // Build a render array that uses #plain_text so that
+        // HTML characters are escaped.
+        // @see \Drupal\Core\Render\Renderer::ensureMarkupIsSafe
+        if ($value === '0') {
+          // Issue #2765609: #plain_text doesn't render empty-like values
+          // (e.g. 0 and "0").
+          // Workaround: Use #markup until this issue is fixed.
+          // @todo Remove workaround once only Drupal 8.7.x is supported.
+          $build = ['#markup' => $value];
+        }
+        else {
+          $build = ['#plain_text' => $value];
+        }
 
         $options += ['prefixing' => TRUE];
         if ($options['prefixing']) {
@@ -445,10 +457,9 @@ abstract class OptionsBase extends WebformElementBase {
       // Build list of checked and unchecked options.
       $build = [];
       $options_description = $this->hasProperty('options_description_display');
-      $options = OptGroup::flattenOptions($element['#options']);
-      foreach ($options as $option_value => $option_text) {
-        if ($options_description && WebformOptionsHelper::hasOptionDescription($option_text)) {
-          list($option_text) = WebformOptionsHelper::splitOption($option_text);
+      foreach ($element['#options'] as $option_value => $option_text) {
+        if ($options_description && strpos($option_text, WebformOptionsHelper::DESCRIPTION_DELIMITER) !== FALSE) {
+          list($option_text) = explode(WebformOptionsHelper::DESCRIPTION_DELIMITER, $option_text);
         }
         $build[$option_value] = [
           '#prefix' => isset($values[$option_value]) ? $checked : $unchecked,
@@ -500,8 +511,8 @@ abstract class OptionsBase extends WebformElementBase {
       $list = [];
       $options_description = $this->hasProperty('options_description_display');
       foreach ($element['#options'] as $option_value => $option_text) {
-        if ($options_description && WebformOptionsHelper::hasOptionDescription($option_text)) {
-          list($option_text) = WebformOptionsHelper::splitOption($option_text);
+        if ($options_description && strpos($option_text, WebformOptionsHelper::DESCRIPTION_DELIMITER) !== FALSE) {
+          list($option_text) = explode(WebformOptionsHelper::DESCRIPTION_DELIMITER, $option_text);
         }
         $list[] = ((isset($values[$option_value])) ? $checked : $unchecked) . ' ' . $option_text;
         unset($values[$option_value]);

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Form\BlocktabsFormBase.
+ */
+
 namespace Drupal\blocktabs\Form;
 
 use Drupal\Core\Entity\EntityForm;
@@ -15,7 +20,7 @@ abstract class BlocktabsFormBase extends EntityForm {
   /**
    * The entity being used by this form.
    *
-   * @var \Drupal\blocktabs\BlocktabsInterface
+   * @var \Drupal\blocktabs\BlockTabsInterface
    */
   protected $entity;
 
@@ -41,7 +46,7 @@ abstract class BlocktabsFormBase extends EntityForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')->getStorage('blocktabs')
+      $container->get('entity.manager')->getStorage('blocktabs')
     );
   }
 
@@ -50,56 +55,21 @@ abstract class BlocktabsFormBase extends EntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
 
-    $form['label'] = [
+    $form['label'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Blocktabs name'),
       '#default_value' => $this->entity->label(),
       '#required' => TRUE,
-    ];
-
-    $form['name'] = [
+    );
+    $form['name'] = array(
       '#type' => 'machine_name',
-      '#machine_name' => [
-        'exists' => [$this->entityStorage, 'load'],
-      ],
+      '#machine_name' => array(
+        'exists' => array($this->entityStorage, 'load'),
+      ),
       '#default_value' => $this->entity->id(),
       '#required' => TRUE,
-    ];
+    );
 
-    $form['#tree'] = FALSE;
-    $form['settings'] = [
-      '#type' => 'details',
-      '#title' => t('Tabs settings'),
-    ];
-
-    $default_event = $this->entity->getEvent();
-    if (empty($default_event)) {
-      $default_event = 'mouseover';
-    }
-    $form['settings']['event'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Select an event'),
-      '#default_value' => $default_event,
-      '#options' => [
-        'mouseover' => $this->t('Mouseover'),
-        'click' => $this->t('Click'),
-      ],
-    ];
-
-    $default_style = $this->entity->getStyle();
-    if (empty($default_style)) {
-      $default_style = 'default';
-    }
-    $form['settings']['style'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Style'),
-      '#default_value' => $default_style,
-      '#options' => [
-        'default' => $this->t('Default tabs'),
-        'vertical' => $this->t('Vertical tabs'),
-        'accordion' => $this->t('Accordion'),
-      ],
-    ];
     return parent::form($form, $form_state);
   }
 
@@ -108,7 +78,7 @@ abstract class BlocktabsFormBase extends EntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     parent::save($form, $form_state);
-    $form_state->setRedirectUrl($this->entity->toUrl('edit-form'));
+    $form_state->setRedirectUrl($this->entity->urlInfo('edit-form'));
   }
 
 }

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\SubscriptionWidgetInterface.
+ */
 
 namespace Drupal\simplenews;
 
@@ -46,6 +50,6 @@ interface SubscriptionWidgetInterface extends WidgetInterface {
    * @return string[]
    *   IDs of selected/deselected newsletters.
    */
-  public function extractNewsletterIds(array $form_state_value, $selected);
+  public function extractNewsletterIds($form_state_value, $selected);
 
 }

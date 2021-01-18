@@ -319,25 +319,9 @@
    */
   Item.onNameChange = function (oldname) {
     var Item = this;
-    var name = Item.formatName();
-    Item.nameEl.innerHTML = name;
-    Item.nameEl.title = name;
+    Item.nameEl.innerHTML = Item.formatName();
     if (Item.parent) {
       Item.parent.onItemNameChange(Item, oldname);
-    }
-  };
-
-  /**
-   * Thumbnail change handler.
-   */
-  Item.onThumbnailChange = function (oldval) {
-    if (this.thumbnail) {
-      this.iconEl.innerHTML = '<img src="' + this.thumbnail + '" alt="thumbnail">';
-      this.iconEl.className += ' imce-item-thumbnail';
-    }
-    else {
-      this.iconEl.innerHTML = '';
-      $(this.iconEl).removeClass('imce-item-thumbnail');
     }
   };
 
@@ -345,36 +329,29 @@
    * Size change handler.
    */
   Item.onSizeChange = function (oldval) {
-    var size = this.formatSize();
-    this.sizeEl.innerHTML = size;
-    this.sizeEl.title = size;
+    this.sizeEl.innerHTML = this.formatSize();
   };
 
   /**
    * Date change handler.
    */
   Item.onDateChange = function (oldval) {
-    var date = this.formatDate(true);
-    this.dateEl.innerHTML = date;
-    this.dateEl.title = date;
+    this.dateEl.innerHTML = this.formatDate(true);
+    this.dateEl.title = this.formatDate();
   };
 
   /**
    * Width change handler.
    */
   Item.onWidthChange = function (oldval) {
-    var width = this.formatWidth();
-    this.widthEl.innerHTML = width;
-    this.widthEl.title = width;
+    this.widthEl.innerHTML = this.formatWidth();
   };
 
   /**
    * Height change handler.
    */
   Item.onHeightChange = function (oldval) {
-    var height = this.formatHeight();
-    this.heightEl.innerHTML = height;
-    this.heightEl.title = height;
+    this.heightEl.innerHTML = this.formatHeight();
   };
 
 
@@ -411,7 +388,7 @@
       infoEl.appendChild(imce.createEl('<div class="date">' + Item.formatDate() + '</div>'));
     }
     // Image
-    if (Item.isImageSource() && imce.getConf('preview_images', 1)) {
+    if (Item.width && imce.getConf('preview_images', 1)) {
       el = imce.createEl('<div class="imce-preview-image"><img src="' + Item.getUrl(false, true) + '"></div>');
       prvEl.appendChild(el);
       prvEl.className += ' image';
@@ -465,13 +442,6 @@
    */
   Item.scrollIntoView = function () {
     imce.scrollToEl(this.el, imce.contentEl, imce.contentHeaderEl.offsetHeight, imce.contentStatusEl.offsetHeight);
-  };
-
-  /**
-   * Check if the item can be used as an image source.
-   */
-  Item.isImageSource = function() {
-    return this.width || this.ext && this.ext.toLowerCase() === 'svg';
   };
 
 

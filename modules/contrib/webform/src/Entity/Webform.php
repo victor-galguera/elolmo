@@ -162,15 +162,6 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   protected $override = FALSE;
 
   /**
-   * The webform translated elements state.
-   *
-   * When set to TRUE the webform can't not be saved.
-   *
-   * @var bool
-   */
-  protected $elementsTranslated = FALSE;
-
-  /**
    * The webform status.
    *
    * @var string
@@ -568,7 +559,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
    * {@inheritdoc}
    */
   public function isOverridden() {
-    return $this->override || $this->elementsTranslated;
+    return $this->override;
   }
 
   /**
@@ -682,8 +673,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
    * {@inheritdoc}
    */
   public function hasRemoteAddr() {
-    $disable_remote_addr = $this->getSetting('form_disable_remote_addr', TRUE);
-    return (!$this->isConfidential() && !$disable_remote_addr) ? TRUE : FALSE;
+    return (!$this->isConfidential() && $this->getSetting('form_remote_addr')) ? TRUE : FALSE;
   }
 
   /**
@@ -1052,7 +1042,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       'form_previous_submissions' => TRUE,
       'form_confidential' => FALSE,
       'form_confidential_message' => '',
-      'form_disable_remote_addr' => FALSE,
+      'form_remote_addr' => TRUE,
       'form_convert_anonymous' => FALSE,
       'form_prepopulate' => FALSE,
       'form_prepopulate_source_entity' => FALSE,
@@ -1161,7 +1151,6 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       'results_customize' => FALSE,
       'token_view' => FALSE,
       'token_update' => FALSE,
-      'token_delete' => FALSE,
       'serial_disabled' => FALSE,
     ];
   }
@@ -1417,15 +1406,13 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
   }
 
   /**
-   * Initialize and parse webform elements.
+   * Initialize parse webform elements.
    */
   protected function initElements() {
     if (isset($this->elementsInitialized)) {
       return;
     }
 
-    // Reset everything excepts pages.
-    // @todo Figure out how we can call ::resetElements.
     // @see \Drupal\webform\Entity\Webform::resetElements
     $this->hasFlexboxLayout = FALSE;
     $this->hasContainer = FALSE;
@@ -1447,11 +1434,28 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     $this->elementsDefaultData = [];
 
     try {
-      // Init element translations.
-      $this->initElementsTranslation();
+      $config_translation = \Drupal::moduleHandler()->moduleExists('config_translation');
+      /** @var \Drupal\webform\WebformTranslationManagerInterface $translation_manager */
+      $translation_manager = \Drupal::service('webform.translation_manager');
+      /** @var \Drupal\Core\Language\LanguageManagerInterface $language_manager */
+      $language_manager = \Drupal::service('language_manager');
+
+      // If current webform is translated, load the base (default) webform and
+      // apply the translation to the elements.
+      if ($config_translation
+        && ($this->langcode !== $language_manager->getCurrentLanguage()->getId())) {
+        // Always get the elements in the original language.
+        $elements = $translation_manager->getElements($this);
+        // For none admin routes get the element (label) translations.
+        if (!$translation_manager->isAdminRoute()) {
+          $this->elementsTranslations = $translation_manager->getElements($this, $language_manager->getCurrentLanguage()->getId());
+        }
+      }
+      else {
+        $elements = WebformYaml::decode($this->elements);
+      }
 
       // Since YAML supports simple values.
-      $elements = WebformYaml::decode($this->elements);
       $elements = (is_array($elements)) ? $elements : [];
       $this->elementsDecoded = $elements;
     }
@@ -1473,101 +1477,6 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     }
 
     $this->elementsInitialized = $elements;
-  }
-
-  /**
-   * Initialize elements translation.
-   *
-   * @param bool $elements_translated
-   *   Set elements translated flag so that translated elements can be alter
-   *   by variants. This parameter is only used before applying variants.
-   *
-   * @see \Drupal\webform\Entity\Webform::applyVariants
-   */
-  protected function initElementsTranslation($elements_translated = FALSE) {
-    // If config translation is not enabled then return.
-    if (!\Drupal::moduleHandler()->moduleExists('config_translation')) {
-      return;
-    }
-
-    // If the webform elements have been translated, then we no longer want
-    // to get and apply element translations.
-    // This allows variants to alter translated elements.
-    // @see \Drupal\webform\Entity\Webform::applyVariants
-    if ($this->elementsTranslated) {
-      return;
-    }
-
-    // Get the current langcode.
-    $current_langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
-
-    // If the current langcode is the same as this webform's langcode
-    // then return.
-    if ($this->langcode === $current_langcode) {
-      return;
-    }
-
-    /** @var \Drupal\webform\WebformTranslationManagerInterface $translation_manager */
-    $translation_manager = \Drupal::service('webform.translation_manager');
-
-    // For admin routes we need to get the original untranslated elements.
-    if ($translation_manager->isAdminRoute()) {
-      $this->elements = WebformYaml::encode($translation_manager->getElements($this));
-      return;
-    }
-
-    // Get the webform's decoded elements and translations.
-    $elements = Yaml::decode($this->elements);
-    $elementsTranslations = $translation_manager->getElements($this, $current_langcode);
-
-    // If the elements are empty or they are equal to the translated elements
-    // then, we need to load the elements in the original language.
-    if (empty($elementsTranslations) || ($elementsTranslations === $elements)) {
-      $elements = $translation_manager->getElements($this);
-      $this->elements = WebformYaml::encode($elements);
-    }
-
-    // Set the element's translations.
-    $this->elementsTranslations = $elementsTranslations;
-
-    // Ensure that translated webform elements are set and can be altered
-    // by a variant.
-    if ($elements_translated && $this->elementsTranslations) {
-      // Init elements and reset them with the translations.
-      $this->initElementsTranslationsRecursive($elements);
-      $this->setElements($elements);
-
-      // Clear the elements translations and stop the elements from
-      // being translated.
-      $this->elementsTranslations = [];
-      $this->elementsTranslated = TRUE;
-    }
-  }
-
-  /**
-   * Init elements translations before variants are applied.
-   *
-   * This method applies translations to raw elements, while
-   * Webform::initElementsRecursive applies translations to elements before
-   * they are initialized.
-   *
-   * @param array $elements
-   *   The webform elements.
-   *
-   * @see \Drupal\webform\Entity\Webform::initElementsRecursive
-   */
-  protected function initElementsTranslationsRecursive(array &$elements) {
-    foreach ($elements as $key => &$element) {
-      if (!WebformElementHelper::isElement($element, $key)) {
-        continue;
-      }
-
-      if (isset($this->elementsTranslations[$key])) {
-        WebformElementHelper::applyTranslation($element, $this->elementsTranslations[$key]);
-      }
-
-      $this->initElementsTranslationsRecursive($element);
-    }
   }
 
   /**
@@ -1617,7 +1526,6 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       }
 
       // Apply translation to element.
-      // @see \Drupal\webform\Entity\Webform::initElementsTranslationsRecursive
       if (isset($this->elementsTranslations[$key])) {
         WebformElementHelper::applyTranslation($element, $this->elementsTranslations[$key]);
       }
@@ -2382,8 +2290,8 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       return;
     }
 
-    $page_submit_path = $this->settings['page_submit_path'];
-    $default_page_base_path = \Drupal::config('webform.settings')->get('settings.default_page_base_path');
+    $page_submit_path = trim($this->settings['page_submit_path'], '/');
+    $default_page_base_path = trim(\Drupal::config('webform.settings')->get('settings.default_page_base_path'), '/');
 
     // Skip generating paths if submit path and base path are empty.
     if (empty($page_submit_path) && empty($default_page_base_path)) {
@@ -2391,13 +2299,13 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     }
 
     // Update webform base, confirmation, submissions and drafts paths.
-    $path_base_alias = ($page_submit_path ?: $default_page_base_path . '/' . str_replace('_', '-', $this->id()));
+    $path_base_alias = '/' . ($page_submit_path ?: $default_page_base_path . '/' . str_replace('_', '-', $this->id()));
     $path_suffixes = ['', '/confirmation', '/submissions', '/drafts'];
     foreach ($path_suffixes as $path_suffix) {
       $path_source = '/webform/' . $this->id() . $path_suffix;
       $path_alias = $path_base_alias . $path_suffix;
       if ($path_suffix === '/confirmation' && $this->settings['page_confirm_path']) {
-        $path_alias = $this->settings['page_confirm_path'];
+        $path_alias = '/' . trim($this->settings['page_confirm_path'], '/');
       }
       $this->updatePath($path_source, $path_alias, $this->langcode);
       $this->updatePath($path_source, $path_alias, LanguageInterface::LANGCODE_NOT_SPECIFIED);
@@ -2907,22 +2815,13 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
       $variants += $this->getVariantsData($webform_submission);
     }
 
-    // Skip if there are no variants that need to be applied.
-    if (empty($variants)) {
-      return;
-    }
-
-    // Ensure that translated webform elements are set and can be altered
-    // by a variant.
-    $this->initElementsTranslation(TRUE);
-
     // Apply variants.
     $is_applied = FALSE;
     $variant_element_keys = $this->getElementsVariant();
-    foreach ($variant_element_keys as $variant_element_key) {
-      if (!empty($variants[$variant_element_key])) {
-        $instance_id = $variants[$variant_element_key];
-        if ($this->applyVariant($variant_element_key, $instance_id, $force)) {
+    foreach ($variant_element_keys as $varient_element_key) {
+      if (!empty($variants[$varient_element_key])) {
+        $instance_id = $variants[$varient_element_key];
+        if ($this->applyVariant($varient_element_key, $instance_id, $force)) {
           $is_applied = TRUE;
         }
       }
@@ -2990,7 +2889,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
     }
 
     // Apply the variant.
-    return $variant_plugin->applyVariant();
+    $variant_plugin->applyVariant();
   }
 
   /****************************************************************************/
@@ -3178,8 +3077,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
         $plugin_definition = $handler->getPluginDefinition();
         $provider = $plugin_definition['provider'];
         if (in_array($provider, $dependencies['module'])) {
-          $handler->setWebform($this);
-          $this->getHandlers()->removeInstanceId($handler->getHandlerId());
+          $this->deleteWebformHandler($handler);
           $changed = TRUE;
         }
       }
@@ -3191,8 +3089,7 @@ class Webform extends ConfigEntityBundleBase implements WebformInterface {
         $plugin_definition = $variant->getPluginDefinition();
         $provider = $plugin_definition['provider'];
         if (in_array($provider, $dependencies['module'])) {
-          $variant->setWebform($this);
-          $this->getVariants()->removeInstanceId($variant->getVariantId());
+          $this->deleteWebformVariant($variant);
           $changed = TRUE;
         }
       }

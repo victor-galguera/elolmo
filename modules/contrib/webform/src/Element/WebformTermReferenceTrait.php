@@ -66,11 +66,6 @@ trait WebformTermReferenceTrait {
         continue;
       }
 
-      // Check depth.
-      if (!empty($element['#depth']) && $item->depth >= $element['#depth']) {
-        continue;
-      }
-
       $breadcrumb[$item->depth] = $item->getName();
       $breadcrumb = array_slice($breadcrumb, 0, $item->depth + 1);
       $options[$item->id()] = implode($element['#breadcrumb_delimiter'], $breadcrumb);
@@ -102,11 +97,6 @@ trait WebformTermReferenceTrait {
       // Set the item in the correct language for display.
       $item = $entity_repository->getTranslationFromContext($item);
       if (!$item->access('view')) {
-        continue;
-      }
-
-      // Check depth.
-      if (!empty($element['#depth']) && $item->depth >= $element['#depth']) {
         continue;
       }
 

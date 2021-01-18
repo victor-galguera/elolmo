@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Mail\MailInterface.
+ */
+
 namespace Drupal\simplenews\Mail;
 
 /**
@@ -10,126 +15,116 @@ namespace Drupal\simplenews\Mail;
 interface MailInterface {
 
   /**
-   * Returns the newsletter issue entity.
+   * Returns the used entity for this mail.
    *
    * @return \Drupal\Core\Entity\ContentEntityInterface
-   *   Newsletter issue entity.
    */
-  public function getIssue();
+  function getEntity();
 
   /**
    * Returns the subscriber object.
    *
    * @return \Drupal\simplenews\SubscriberInterface
-   *   Subscriber object.
    */
-  public function getSubscriber();
+  function getSubscriber();
 
   /**
    * Returns the mail headers.
    *
-   * @param array $headers
+   * @param $headers
    *   The default mail headers.
    *
-   * @return array
+   * @return
    *   Mail headers as an array.
    */
-  public function getHeaders(array $headers);
+  function getHeaders(array $headers);
 
   /**
    * Returns the mail subject.
-   *
-   * @return string
-   *   The mail subject.
    */
-  public function getSubject();
+  function getSubject();
 
   /**
    * Returns the mail body.
    *
-   * @return string
-   *   The body, as plaintext or html depending on the format.
+   * The body should either be plaintext or html, depending on the format.
    */
-  public function getBody();
+  function getBody();
 
   /**
    * Returns the plaintext body.
-   *
-   * @return string
-   *   The body as plain text.
    */
-  public function getPlainBody();
+  function getPlainBody();
+
+  /**
+   * Returns the mail footer.
+   *
+   * The footer should either be plaintext or html, depending on the format.
+   */
+  function getFooter();
+
+  /**
+   * Returns the plain footer.
+   */
+  function getPlainFooter();
 
   /**
    * Returns the mail format.
    *
-   * @return string
+   * @return
    *   The mail format as string, either 'plain' or 'html'.
    */
-  public function getFormat();
+  function getFormat();
 
   /**
-   * Returns the recipient of this newsletter mail.
+   * Returns the recipent of this newsletter mail.
    *
-   * @return string
+   * @return
    *   The recipient mail address(es) of this newsletter as a string.
    */
-  public function getRecipient();
+  function getRecipient();
 
   /**
    * The language that should be used for this newsletter mail.
-   *
-   * @return string
-   *   The langcode.
    */
-  public function getLanguage();
+  function getLanguage();
 
   /**
    * Returns an array of attachments for this newsletter mail.
    *
-   * @return array
+   * @return
    *   An array of managed file objects with properties uri, filemime and so on.
    */
-  public function getAttachments();
+  function getAttachments();
 
   /**
    * Returns the token context to be used with token replacements.
    *
-   * @return array
+   * @return
    *   An array of objects as required by token_replace().
    */
-  public function getTokenContext();
+  function getTokenContext();
 
   /**
    * Returns the mail key to be used for mails.
    *
-   * @return string
+   * @return
    *   The mail key, either test or node.
    */
-  public function getKey();
+  function getKey();
 
   /**
    * Set the mail key.
-   *
-   * @param string $key
-   *   The mail key, either 'test' or 'node'.
    */
-  public function setKey($key);
+  function setKey($key);
 
   /**
    * Returns the formatted from mail address.
-   *
-   * @return string
-   *   The mail address with a name.
    */
-  public function getFromFormatted();
+  function getFromFormatted();
 
   /**
    * Returns the plain mail address.
-   *
-   * @return string
-   *   The mail address.
    */
-  public function getFromAddress();
-
+  function getFromAddress();
 }

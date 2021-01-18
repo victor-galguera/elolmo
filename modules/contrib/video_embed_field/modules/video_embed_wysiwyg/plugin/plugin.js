@@ -1,8 +1,3 @@
-/**
- * @file
- * The JavaScript file for the wysiwyg integration.
- */
-
 (function ($) {
 
   /**
@@ -91,7 +86,7 @@
      */
     upcast: function (element, data) {
       // Upcast check must be sensitive to both HTML encoded and plain text.
-      if (!element.getHtml().match(/^({(?=.*preview_thumbnail\b)(?=.*settings\b)(?=.*video_url\b)(?=.*settings_summary)(.*)})$/)) {
+      if (element.getHtml().indexOf('preview_thumbnail') == -1) {
         return;
       }
       data.json = JSON.parse(element.getHtml());

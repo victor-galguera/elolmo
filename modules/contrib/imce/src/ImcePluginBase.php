@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\ImcePluginBase.
+ */
+
 namespace Drupal\imce;
 
 use Drupal\Core\Plugin\PluginBase;
@@ -20,7 +25,7 @@ abstract class ImcePluginBase extends PluginBase implements ImcePluginInterface 
    * {@inheritdoc}
    */
   public function permissionInfo() {
-    return [];
+    return array();
   }
 
   /**
@@ -46,5 +51,4 @@ abstract class ImcePluginBase extends PluginBase implements ImcePluginInterface 
    */
   public function buildPage(array &$page, ImceFM $fm) {
   }
-
 }

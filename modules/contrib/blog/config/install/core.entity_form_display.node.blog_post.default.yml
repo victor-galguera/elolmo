@@ -1,3 +1,4 @@
+uuid: 33c46dfa-3058-41be-8f00-c42928623c61
 langcode: en
 status: true
 dependencies:
@@ -37,7 +38,6 @@ content:
     weight: 33
     settings:
       match_operator: CONTAINS
-      match_limit: 10
       size: 60
       placeholder: ''
     third_party_settings: {  }
@@ -71,7 +71,6 @@ content:
     weight: 5
     settings:
       match_operator: CONTAINS
-      match_limit: 10
       size: 60
       placeholder: ''
     third_party_settings: {  }

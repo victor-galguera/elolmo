@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools_wizard_test\Wizard\WizardTest.
+ */
+
 namespace Drupal\ctools_wizard_test\Wizard;
 
 
@@ -74,8 +79,8 @@ class WizardTest extends FormWizardBase {
    */
   public function finish(array &$form, FormStateInterface $form_state) {
     $cached_values = $form_state->getTemporaryValue('wizard');
-    $this->messenger()->addMessage($this->t('Value One: @one', ['@one' => $cached_values['one']]));
-    $this->messenger()->addMessage($this->t('Value Two: @two', ['@two' => $cached_values['two']]));
+    drupal_set_message($this->t('Value One: @one', ['@one' => $cached_values['one']]));
+    drupal_set_message($this->t('Value Two: @two', ['@two' => $cached_values['two']]));
     parent::finish($form, $form_state);
   }
 

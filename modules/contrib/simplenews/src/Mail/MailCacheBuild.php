@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Mail\MailCacheBuild.
+ */
+
 namespace Drupal\simplenews\Mail;
 
 /**
@@ -12,7 +17,7 @@ class MailCacheBuild extends MailCacheStatic {
   /**
    * {@inheritdoc}
    */
-  public function isCacheable(MailInterface $mail, $group, $key) {
+  function isCacheable(MailInterface $mail, $group, $key) {
 
     // Only cache for anon users.
     if (\Drupal::currentUser()->isAuthenticated()) {
@@ -20,7 +25,7 @@ class MailCacheBuild extends MailCacheStatic {
     }
 
     // Only cache data and build information.
-    return in_array($group, ['data', 'build']);
+    return in_array($group, array('data', 'build'));
   }
 
 }

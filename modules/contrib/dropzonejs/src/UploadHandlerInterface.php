@@ -1,12 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\dropzonejs\UploadHandlerInterface.
+ */
+
 namespace Drupal\dropzonejs;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-/**
- * Interface UploadHandlerInterface.
- */
 interface UploadHandlerInterface {
 
   /**

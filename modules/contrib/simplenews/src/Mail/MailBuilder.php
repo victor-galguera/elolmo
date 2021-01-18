@@ -1,9 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Mail\MailBuilder.
+ */
+
 namespace Drupal\simplenews\Mail;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Utility\Token;
+use Drupal\simplenews\Mail\MailInterface;
 use Drupal\simplenews\Subscription\SubscriptionManagerInterface;
 
 /**
@@ -12,22 +18,16 @@ use Drupal\simplenews\Subscription\SubscriptionManagerInterface;
 class MailBuilder implements MailBuilderInterface {
 
   /**
-   * The token service.
-   *
    * @var \Drupal\Core\Utility\Token
    */
   protected $token;
 
   /**
-   * The config factory.
-   *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $config;
 
   /**
-   * The subscription manager.
-   *
    * @var \Drupal\simplenews\Subscription\SubscriptionManagerInterface
    */
   protected $subscriptionManager;
@@ -39,8 +39,6 @@ class MailBuilder implements MailBuilderInterface {
    *   The token service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param \Drupal\simplenews\Subscription\SubscriptionManagerInterface $subscription_manager
-   *   The subscription manager.
    */
   public function __construct(Token $token, ConfigFactoryInterface $config_factory, SubscriptionManagerInterface $subscription_manager) {
     $this->token = $token;
@@ -51,11 +49,12 @@ class MailBuilder implements MailBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildNewsletterMail(array &$message, MailInterface $mail) {
+  function buildNewsletterMail(array &$message, MailInterface $mail) {
     // Get message data from the mail.
     $message['headers'] = $mail->getHeaders($message['headers']);
     $message['subject'] = $mail->getSubject();
     $message['body']['body'] = $mail->getBody();
+    $message['body']['footer'] = $mail->getFooter();
 
     if ($mail->getFormat() == 'html') {
       // Set the necessary headers to detect this as an HTML mail. Set both the
@@ -67,7 +66,7 @@ class MailBuilder implements MailBuilderInterface {
 
       // Provide a plain text version, both in params][plaintext (Mime Mail) and
       // plain (Swiftmailer).
-      $message['params']['plaintext'] = $mail->getPlainBody();
+      $message['params']['plaintext'] = $mail->getPlainBody() . "\n" . $mail->getPlainFooter();
       $message['plain'] = $message['params']['plaintext'];
 
       // Add attachments, again, both for the attachments key (Mime Mail) and
@@ -87,36 +86,36 @@ class MailBuilder implements MailBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildSubscribeMail(array &$message, array $params) {
+  function buildSubscribeMail(array &$message, array $params) {
     $context = $params['context'];
 
-    // Use formatted from address "name" <mail_address>.
+    // Use formatted from address "name" <mail_address>
     $message['headers']['From'] = $params['from']['formatted'];
 
     $message['subject'] = $this->config->get('subscription.confirm_subscribe_subject');
-    $message['subject'] = $this->token->replace($message['subject'], $context, ['sanitize' => FALSE]);
+    $message['subject'] = $this->token->replace($message['subject'], $context, array('sanitize' => FALSE));
     if ($context['simplenews_subscriber']->isSubscribed($context['newsletter']->id())) {
       $body = $this->config->get('subscription.confirm_subscribe_subscribed');
     }
     else {
       $body = $this->config->get('subscription.confirm_subscribe_unsubscribed');
     }
-    $message['body'][] = $this->token->replace($body, $context, ['sanitize' => FALSE]);
+    $message['body'][] = $this->token->replace($body, $context, array('sanitize' => FALSE));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildCombinedMail(array &$message, array $params) {
+  function buildCombinedMail(&$message, $params) {
     $context = $params['context'];
     $subscriber = $context['simplenews_subscriber'];
     $langcode = $message['langcode'];
 
-    // Use formatted from address "name" <mail_address>.
+    // Use formatted from address "name" <mail_address>
     $message['headers']['From'] = $params['from']['formatted'];
 
     $message['subject'] = $this->config->get('subscription.confirm_combined_subject');
-    $message['subject'] = $this->token->replace($message['subject'], $context, ['sanitize' => FALSE]);
+    $message['subject'] = $this->token->replace($message['subject'], $context, array('sanitize' => FALSE));
 
     $changes_list = '';
     $actual_changes = 0;
@@ -135,31 +134,31 @@ class MailBuilder implements MailBuilderInterface {
     // one without a confirmation link.
     $body_key = $actual_changes ? 'combined_body' : 'combined_body_unchanged';
 
-    $body = $this->config->get('subscription.confirm_' . $body_key);
+    $body = $this->config->get('subscription.confirm_' .$body_key);
     // The changes list is not an actual token.
     $body = str_replace('[changes-list]', $changes_list, $body);
-    $message['body'][] = $this->token->replace($body, $context, ['sanitize' => FALSE]);
+    $message['body'][] = $this->token->replace($body, $context, array('sanitize' => FALSE));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildUnsubscribeMail(array &$message, array $params) {
+  function buildUnsubscribeMail(&$message, $params) {
     $context = $params['context'];
 
-    // Use formatted from address "name" <mail_address>.
+    // Use formatted from address "name" <mail_address>
     $message['headers']['From'] = $params['from']['formatted'];
 
     $message['subject'] = $this->config->get('subscription.confirm_subscribe_subject');
-    $message['subject'] = $this->token->replace($message['subject'], $context, ['sanitize' => FALSE]);
+    $message['subject'] = $this->token->replace($message['subject'], $context, array('sanitize' => FALSE));
 
     if ($context['simplenews_subscriber']->isSubscribed($context['newsletter']->id())) {
       $body = $this->config->get('subscription.confirm_unsubscribe_subscribed');
-      $message['body'][] = $this->token->replace($body, $context, ['sanitize' => FALSE]);
+      $message['body'][] = $this->token->replace($body, $context, array('sanitize' => FALSE));
     }
     else {
       $body = $this->config->get('subscription.confirm_unsubscribe_unsubscribed');
-      $message['body'][] = $this->token->replace($body, $context, ['sanitize' => FALSE]);
+      $message['body'][] = $this->token->replace($body, $context, array('sanitize' => FALSE));
     }
   }
 

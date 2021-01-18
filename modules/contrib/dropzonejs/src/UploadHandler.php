@@ -1,11 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\dropzonejs\UploadHandler.
+ */
+
 namespace Drupal\dropzonejs;
 
 use Drupal\Component\Transliteration\TransliterationInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -19,15 +22,24 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 class UploadHandler implements UploadHandlerInterface {
 
-  use StringTranslationTrait;
-
   /**
    * The current request.
    *
-   * @var \Symfony\Component\HttpFoundation\Request
+   * @var \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request object.
    */
   protected $request;
+
+  /**
+   * Stores temporary folder URI.
+   *
+   * This is configurable via the configuration variable. It was added for HA
+   * environments where temporary location may need to be a shared across all
+   * servers.
+   *
+   * @var string
+   */
+  protected $temporaryUploadLocation;
 
   /**
    * Transliteration service.
@@ -37,36 +49,38 @@ class UploadHandler implements UploadHandlerInterface {
   protected $transliteration;
 
   /**
-   * Language manager service.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The settings of dropzonejs.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected $dropzoneSettings;
-
-  /**
    * Constructs dropzone upload controller route controller.
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   Config factory.
-   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
+   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
    *   Transliteration service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   LanguageManager service.
    */
-  public function __construct(RequestStack $request_stack, ConfigFactoryInterface $config_factory, TransliterationInterface $transliteration, LanguageManagerInterface $language_manager) {
+  public function __construct(RequestStack $request_stack, ConfigFactoryInterface $config, TransliterationInterface $transliteration) {
     $this->request = $request_stack->getCurrentRequest();
+    $tmp_override = $config->get('dropzonejs.settings')->get('tmp_dir');
+    $this->temporaryUploadLocation = $tmp_override ?: $config->get('system.file')->get('path.temporary');
     $this->transliteration = $transliteration;
-    $this->languageManager = $language_manager;
-    $this->dropzoneSettings = $config_factory->get('dropzonejs.settings');
+  }
+
+  /**
+   * Prepares temporary destination folder for uploaded files.
+   *
+   * @return bool
+   *   TRUE if destination folder looks OK and FALSE otherwise.
+   *
+   * @throws \Drupal\dropzonejs\UploadException
+   */
+  protected function prepareTemporaryUploadDestination() {
+    $writable = file_prepare_directory($this->temporaryUploadLocation, FILE_CREATE_DIRECTORY);
+    if (!$writable) {
+      throw new UploadException(UploadException::DESTINATION_FOLDER_ERROR);
+    }
+
+    // Try to make sure this is private via htaccess.
+    file_save_htaccess($this->temporaryUploadLocation, TRUE);
   }
 
   /**
@@ -81,36 +95,22 @@ class UploadHandler implements UploadHandlerInterface {
       throw new UploadException(UploadException::FILENAME_ERROR);
     }
 
-    if (!$this->dropzoneSettings->get('filename_transliteration')) {
-      return $original_name . '.txt';
-    }
-
-    // @todo The following filename sanitization steps replicate the behaviour
-    //   of the 2492171-28 patch for https://www.drupal.org/node/2492171.
-    //   Try to reuse that code instead, once that issue is committed.
     // Transliterate.
-    $langcode = $this->languageManager->getCurrentLanguage()->getId();
-    $filename = $this->transliteration->transliterate($original_name, $langcode, '');
-
-    // Replace whitespace.
-    $filename = str_replace(' ', '_', $filename);
-    // Remove remaining unsafe characters.
-    $filename = preg_replace('![^0-9A-Za-z_.-]!', '', $filename);
-    // Remove multiple consecutive non-alphabetical characters.
-    $filename = preg_replace('/(_)_+|(\.)\.+|(-)-+/', '\\1\\2\\3', $filename);
-    // Force lowercase to prevent issues on case-insensitive file systems.
-    $filename = strtolower($filename);
+    $processed_filename = $this->transliteration->transliterate($original_name);
 
     // For security reasons append the txt extension. It will be removed in
     // Drupal\dropzonejs\Element::valueCallback when we will know the valid
     // extension and we will be able to properly sanitize the filename.
-    return $filename . '.txt';
+    $processed_filename = $processed_filename . '.txt';
+
+    return $processed_filename;
   }
 
   /**
    * {@inheritdoc}
    */
   public function handleUpload(UploadedFile $file) {
+    $this->prepareTemporaryUploadDestination();
 
     $error = $file->getError();
     if ($error != UPLOAD_ERR_OK) {
@@ -120,25 +120,25 @@ class UploadHandler implements UploadHandlerInterface {
       switch ($error) {
         case UPLOAD_ERR_INI_SIZE:
         case UPLOAD_ERR_FORM_SIZE:
-          $message = $this->t('The file could not be saved because it exceeds the maximum allowed size for uploads.');
-          break;
+          $message = t('The file could not be saved because it exceeds the maximum allowed size for uploads.');
+          continue;
 
         case UPLOAD_ERR_PARTIAL:
         case UPLOAD_ERR_NO_FILE:
-          $message = $this->t('The file could not be saved because the upload did not complete.');
-          break;
+          $message = t('The file could not be saved because the upload did not complete.');
+          continue;
 
         // Unknown error.
         default:
-          $message = $this->t('The file could not be saved. An unknown error has occurred.');
-          break;
+          $message = t('The file could not be saved. An unknown error has occurred.');
+          continue;
       }
 
       throw new UploadException(UploadException::FILE_UPLOAD_ERROR, $message);
     }
 
     // Open temp file.
-    $tmp = $this->dropzoneSettings->get('tmp_upload_scheme') . '://' . $this->getFilename($file);
+    $tmp = "{$this->temporaryUploadLocation}/{$this->getFilename($file)}";
     if (!($out = fopen($tmp, $this->request->request->get('chunk', 0) ? 'ab' : 'wb'))) {
       throw new UploadException(UploadException::OUTPUT_ERROR);
     }
@@ -154,9 +154,7 @@ class UploadHandler implements UploadHandlerInterface {
       fwrite($out, $buff);
     }
 
-    // Be nice and keep everything nice and clean. Initial uploaded files are
-    // automatically removed by PHP at the end of the request so we don't need
-    // to do that.
+    // Be nice and keep everything nice and clean.
     // @todo when implementing multipart don't forget to drupal_unlink.
     fclose($in);
     fclose($out);

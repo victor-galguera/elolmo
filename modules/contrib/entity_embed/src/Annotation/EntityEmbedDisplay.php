@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_embed\Annotation\EntityEmbedDisplay.
+ */
+
 namespace Drupal\entity_embed\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -32,9 +37,9 @@ class EntityEmbedDisplay extends Plugin {
   /**
    * The human-readable name of the Entity Embed Display plugin.
    *
-   * @var \Drupal\Core\Annotation\Translation
-   *
    * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation
    */
   public $label = '';
 
@@ -47,22 +52,5 @@ class EntityEmbedDisplay extends Plugin {
    * @var bool|array
    */
   public $entity_types = FALSE;
-
-  /**
-   * Shows plugin in the UI if this is FALSE.
-   *
-   * @var bool
-   */
-  public $no_ui = FALSE;
-
-  /**
-   * Alt and title access.
-   *
-   * Whether the plugin supports per-embed alt and title overrides for media
-   * entities with an image source.
-   *
-   * @var bool
-   */
-  public $supports_image_alt_and_title = FALSE;
 
 }

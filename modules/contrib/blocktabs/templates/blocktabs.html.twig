@@ -27,8 +27,7 @@
  * @ingroup themeable
  */
 #}
-{{ attach_library('blocktabs/blocktabs') }}
-<div id="{{ tabs_id }}"{{ attributes }}>
+{#<div id="{{ tabs_id }}" class="blocktabs">
 <ul>
 {% for tab in tabs %}
 <li><a href="#{{ tab.id }}">{{ tab.title }}</a></li>
@@ -39,5 +38,30 @@
 <div id="{{ tab.id }}">{{ tab.content }}</div>
 {% endfor %}
 
+</div>#}
+<div class="container">
+    <div class="block-product-tab">
+		<nav>
+		    <ul class="nav nav-tabs nav-justified center">
+		    	{% set i = 1 %}
+		    	{% for tab in tabs %}
+					<li{% if i == 1 %} class="active"{% endif %}><a href="#{{ tab.id }}" data-toggle="tab">{{ tab.title }}</a></li>
+					{% set i = i + 1 %}
+				{% endfor %}
+		    </ul>                            
+		</nav>
+
+
+		<div class="tab-content no-mar">
+			{% set i = 1 %}
+			{% for tab in tabs %}
+		    <div class="tab-pane{{ i == 1 ? ' active ' : ' ' }}animated fadeInDown" id="{{ tab.id }}">
+		     	{{ tab.content }}
+		    </div>
+		    {% set i = i + 1 %}
+		    {% endfor %}
+		</div>
+	</div>
 </div>
+
 

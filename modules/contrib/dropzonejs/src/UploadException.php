@@ -1,12 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\dropzonejs\UploadException.
+ */
+
 namespace Drupal\dropzonejs;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-/**
- * Class UploadException.
- */
 class UploadException extends \Exception {
 
   /**
@@ -42,16 +44,16 @@ class UploadException extends \Exception {
   /**
    * Code to error message mapping.
    *
-   * @var array
+   * @param array $code
    */
-  public $errorMessages = [
+  public $errorMessages = array(
     self::INPUT_ERROR => 'Failed to open input stream.',
     self::OUTPUT_ERROR => 'Failed to open output stream.',
     self::MOVE_ERROR => 'Failed to move uploaded file.',
     self::DESTINATION_FOLDER_ERROR => 'Failed to open temporary directory for write.',
     self::FILENAME_ERROR => 'Invalid temporary file name.',
     self::FILE_UPLOAD_ERROR => 'The file upload resulted in an error on php level. See http://php.net/manual/en/features.file-upload.errors.php',
-  ];
+  );
 
   /**
    * Constructs UploadException.
@@ -74,11 +76,11 @@ class UploadException extends \Exception {
    */
   public function getErrorResponse() {
     return new JsonResponse(
-      [
+      array(
         'jsonrpc' => '2.0',
         'error' => $this->errorMessages[$this->code],
         'id' => 'id',
-      ],
+      ),
       500
     );
   }

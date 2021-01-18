@@ -1,12 +1,17 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Form\TabFormBase.
+ */
+
 namespace Drupal\blocktabs\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\blocktabs\ConfigurableTabInterface;
-use Drupal\blocktabs\BlocktabsInterface;
+use Drupal\blocktabs\BlockTabsInterface;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -18,7 +23,7 @@ abstract class TabFormBase extends FormBase {
   /**
    * The blockTabs.
    *
-   * @var \Drupal\blocktabs\BlocktabsInterface
+   * @var \Drupal\blocktabs\BlockTabsInterface
    */
   protected $blocktabs;
 
@@ -39,7 +44,7 @@ abstract class TabFormBase extends FormBase {
   /**
    * {@inheritdoc}
    *
-   * @param \Drupal\blocktabs\BlocktabsInterface $blocktabs
+   * @param \Drupal\blocktabs\BlockTabsInterface $blocktabs
    *   The block tabs.
    * @param string $tab
    *   The tab ID.
@@ -49,7 +54,7 @@ abstract class TabFormBase extends FormBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
-  public function buildForm(array $form, FormStateInterface $form_state, BlocktabsInterface $blocktabs = NULL, $tab = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, BlockTabsInterface $blocktabs = NULL, $tab = NULL) {
     $this->blocktabs = $blocktabs;
     try {
       $this->tab = $this->prepareTab($tab);
@@ -64,42 +69,44 @@ abstract class TabFormBase extends FormBase {
     }
 
     $form['#attached']['library'][] = 'blocktabs/admin';
-    $form['uuid'] = [
+    $form['uuid'] = array(
       '#type' => 'hidden',
       '#value' => $this->tab->getUuid(),
-    ];
-    $form['id'] = [
+    );
+    $form['id'] = array(
       '#type' => 'hidden',
       '#value' => $this->tab->getPluginId(),
-    ];
-
-    $form['title'] = [
+    );
+	
+    $form['title'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Tab title'),
+      '#title' => t('Tab title'),
       '#default_value' => $this->tab->getTitle(),
       '#required' => TRUE,
-    ];
-
-    $form['data'] = $this->tab->buildConfigurationForm([], $form_state);
+    );	
+	
+    $form['data'] = $this->tab->buildConfigurationForm(array(), $form_state);
     $form['data']['#tree'] = TRUE;
+	
+	//drupal_set_message('term_id:' . var_export($form['data']));
 
     // Check the URL for a weight, then the tab, otherwise use default.
-    $form['weight'] = [
+    $form['weight'] = array(
       '#type' => 'hidden',
       '#value' => $request->query->has('weight') ? (int) $request->query->get('weight') : $this->tab->getWeight(),
-    ];
+    );
 
-    $form['actions'] = ['#type' => 'actions'];
-    $form['actions']['submit'] = [
+    $form['actions'] = array('#type' => 'actions');
+    $form['actions']['submit'] = array(
       '#type' => 'submit',
       '#button_type' => 'primary',
-    ];
-    $form['actions']['cancel'] = [
+    );
+    $form['actions']['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => $this->blocktabs->toUrl('edit-form'),
+      '#url' => $this->blocktabs->urlInfo('edit-form'),
       '#attributes' => ['class' => ['button']],
-    ];
+    );
     return $form;
   }
 
@@ -125,9 +132,6 @@ abstract class TabFormBase extends FormBase {
     // pass that through for submission.
     $tab_data = (new FormState())->setValues($form_state->getValue('data'));
     $this->tab->submitConfigurationForm($form, $tab_data);
-    // $logger = \Drupal::logger('blocktabs');
-    // $logger->notice('submitForm:' . var_export($tab_data, true));
-    // $logger->notice('default_view_name:' . var_export($default_view_name, true));
     // Update the original form values.
     $form_state->setValue('data', $tab_data->getValues());
     $this->tab->setTitle($form_state->getValue('title'));
@@ -135,23 +139,10 @@ abstract class TabFormBase extends FormBase {
     if (!$this->tab->getUuid()) {
       $this->blocktabs->addTab($this->tab->getConfiguration());
     }
-    else {
-      $uuid = $this->tab->getUuid();
-      $config = $this->tab->getConfiguration();
-      $this->blocktabs->getTabs()->setInstanceConfiguration($uuid, $config);
-	}
-    // $config = $this->tab->getConfiguration();
-    // $logger = \Drupal::logger('blocktabs');
-    // $logger->notice('$config:' . var_export($config, true));
-    // $tab = $this->blocktabs->getTab($this->tab->getUuid());
-    // $config1 = $tab->getConfiguration();
-    // $logger = \Drupal::logger('blocktabs');
-    // $logger->notice('$config:' . var_export($config1, true));
-    // $tab = $this->tab;
     $this->blocktabs->save();
 
-    \Drupal::messenger()->addMessage($this->t('The tab was successfully applied.'));
-    $form_state->setRedirectUrl($this->blocktabs->toUrl('edit-form'));
+    drupal_set_message($this->t('The tab was successfully applied.'));
+    $form_state->setRedirectUrl($this->blocktabs->urlInfo('edit-form'));
   }
 
   /**

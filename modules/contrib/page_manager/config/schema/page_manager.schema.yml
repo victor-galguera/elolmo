@@ -102,14 +102,6 @@ page_manager.block_plugin.*:
       sequence:
         - type: string
 
-# @todo Move to core in https://www.drupal.org/node/2838130.
-display_variant.plugin.*:
-  type: display_variant.plugin
-  label: 'Variant settings'
-condition.plugin.*:
-  type: condition.plugin
-  label: 'Condition settings'
-
 display_variant.plugin.block_display:
   type: display_variant.plugin
   label: 'Block variant plugin'
@@ -139,15 +131,3 @@ display_variant.plugin.http_status_code:
     status_code:
       type: integer
       label: 'Status code'
-    redirect_location:
-      type: string
-      label: 'Redirect location'
-
-display_variant.plugin.layout_builder:
-  type: display_variant.plugin
-  label: 'Layout Builder'
-  mapping:
-    sections:
-      type: sequence
-      sequence:
-        type: layout_builder.section

@@ -1,14 +1,16 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_embed\Plugin\entity_embed\EntityEmbedDisplay\ImageFieldFormatter.
+ */
+
 namespace Drupal\entity_embed\Plugin\entity_embed\EntityEmbedDisplay;
 
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Field\FormatterPluginManager;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Image\ImageFactory;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\TypedData\TypedDataManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -30,29 +32,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ImageFieldFormatter extends FileFieldFormatter {
 
   /**
-   * The image factory.
-   *
-   * @var \Drupal\Core\Image\ImageFactory
-   */
-  protected $imageFactory;
+    * The image factory.
+    *
+    * @var \Drupal\Core\Image\ImageFactory
+    */
+    protected $imageFactory;
 
   /**
-   * The messenger.
+   * {@inheritdoc}
    *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
-   * Constructs an ImageFieldFormatter object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
    * @param \Drupal\Core\Field\FormatterPluginManager $formatter_plugin_manager
    *   The field formatter plugin manager.
@@ -60,15 +49,10 @@ class ImageFieldFormatter extends FileFieldFormatter {
    *   The typed data manager.
    * @param \Drupal\Core\Image\ImageFactory $image_factory
    *   The image factory.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FormatterPluginManager $formatter_plugin_manager, TypedDataManager $typed_data_manager, ImageFactory $image_factory, LanguageManagerInterface $language_manager, MessengerInterface $messenger) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $formatter_plugin_manager, $typed_data_manager, $language_manager);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityManagerInterface $entity_manager, FormatterPluginManager $formatter_plugin_manager, TypedDataManager $typed_data_manager, ImageFactory $image_factory) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_manager, $formatter_plugin_manager, $typed_data_manager);
     $this->imageFactory = $image_factory;
-    $this->messenger = $messenger;
   }
 
   /**
@@ -79,12 +63,10 @@ class ImageFieldFormatter extends FileFieldFormatter {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager'),
+      $container->get('entity.manager'),
       $container->get('plugin.manager.field.formatter'),
       $container->get('typed_data_manager'),
-      $container->get('image.factory'),
-      $container->get('language_manager'),
-      $container->get('messenger')
+      $container->get('image.factory')
     );
   }
 
@@ -95,7 +77,7 @@ class ImageFieldFormatter extends FileFieldFormatter {
     $value = parent::getFieldValue();
     // File field support descriptions, but images do not.
     unset($value['description']);
-    $value += array_intersect_key($this->getAttributeValues(), ['alt' => '', 'title' => '']);
+    $value += array_intersect_key($this->getAttributeValues(), array('alt' => '', 'title' => ''));
     return $value;
   }
 
@@ -103,45 +85,15 @@ class ImageFieldFormatter extends FileFieldFormatter {
    * {@inheritdoc}
    */
   public function access(AccountInterface $account = NULL) {
-    return parent::access($account)->andIf($this->isValidImage());
-  }
-
-  /**
-   * Checks if the image is valid.
-   *
-   * @return \Drupal\Core\Access\AccessResult
-   *   Returns the access result.
-   */
-  protected function isValidImage() {
-    // If entity type is not file we have to return early to prevent fatal in
-    // the condition above. Access should already be forbidden at this point,
-    // which means this won't have any effect.
-    // @see EntityEmbedDisplayBase::access()
-    if ($this->getEntityTypeFromContext() != 'file') {
-      return AccessResult::forbidden();
+    if (!parent::access($account)) {
+      return FALSE;
     }
-    $access = AccessResult::allowed();
 
-    // @todo needs cacheability metadata for getEntityFromContext.
-    // @see \Drupal\entity_embed\EntityEmbedDisplay\EntityEmbedDisplayBase::getEntityFromContext()
-    /** @var \Drupal\file\FileInterface $entity */
     if ($entity = $this->getEntityFromContext()) {
-      // Loading large files is slow, make sure it is an image mime type before
-      // doing that.
-      list($type,) = explode('/', $entity->getMimeType(), 2);
-      $is_valid_image = FALSE;
-      if ($type == 'image') {
-        $is_valid_image = $this->imageFactory->get($entity->getFileUri())->isValid();
-        if (!$is_valid_image) {
-          $this->messenger->addMessage($this->t('The selected image "@image" is invalid.', ['@image' => $entity->label()]), 'error');
-        }
-      }
-      $access = AccessResult::allowedIf($type == 'image' && $is_valid_image)
-        // See the above @todo, this is the best we can do for now.
-        ->addCacheableDependency($entity);
+      return $this->imageFactory->get($entity->getFileUri())->isValid();
     }
 
-    return $access;
+    return TRUE;
   }
 
   /**
@@ -178,29 +130,29 @@ class ImageFieldFormatter extends FileFieldFormatter {
       // double quotes in place of empty alt text only if that was filled
       // intentionally by the user.
       if (!empty($entity_element) && $entity_element['data-entity-embed-display'] == 'image:image') {
-        $alt = MediaImageDecorator::EMPTY_STRING;
+        $alt = '""';
       }
     }
 
     // Add support for editing the alternate and title text attributes.
-    $form['alt'] = [
+    $form['alt'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Alternate text'),
       '#default_value' => $alt,
       '#description' => $this->t('This text will be used by screen readers, search engines, or when the image cannot be loaded.'),
-      '#parents' => ['attributes', 'alt'],
+      '#parents' => array('attributes', 'alt'),
       '#required' => TRUE,
       '#required_error' => $this->t('Alternative text is required.<br />(Only in rare cases should this be left empty. To create empty alternative text, enter <code>""</code> — two double quotes without any content).'),
       '#maxlength' => 512,
-    ];
-    $form['title'] = [
+    );
+    $form['title'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Title'),
       '#default_value' => $this->getAttributeValue('title', ''),
       '#description' => t('The title is used as a tool tip when the user hovers the mouse over the image.'),
-      '#parents' => ['attributes', 'title'],
+      '#parents' => array('attributes', 'title'),
       '#maxlength' => 1024,
-    ];
+    );
 
     return $form;
   }
@@ -211,8 +163,8 @@ class ImageFieldFormatter extends FileFieldFormatter {
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     // When the alt attribute is set to two double quotes, transform it to the
     // empty string: two double quotes signify "empty alt attribute". See above.
-    if (trim($form_state->getValue(['attributes', 'alt'])) === MediaImageDecorator::EMPTY_STRING) {
-      $form_state->setValue(['attributes', 'alt'], '');
+    if (trim($form_state->getValue(array('attributes', 'alt'))) === '""') {
+      $form_state->setValue(array('attributes', 'alt'), '');
     }
   }
 

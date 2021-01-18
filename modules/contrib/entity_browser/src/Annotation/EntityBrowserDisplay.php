@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\Annotation\EntityBrowserDisplay.
+ */
+
 namespace Drupal\entity_browser\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -23,9 +28,9 @@ class EntityBrowserDisplay extends Plugin {
   /**
    * The human-readable name of the display.
    *
-   * @var \Drupal\Core\Annotation\Translation
-   *
    * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation
    */
   public $label;
 
@@ -34,9 +39,9 @@ class EntityBrowserDisplay extends Plugin {
    *
    * This will be shown when adding or configuring this display.
    *
-   * @var \Drupal\Core\Annotation\Translation
-   *
    * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation (optional)
    */
   public $description = '';
 

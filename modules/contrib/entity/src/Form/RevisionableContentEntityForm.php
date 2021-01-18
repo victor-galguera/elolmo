@@ -1,24 +1,25 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity\Form\RevisionableContentEntityForm.
+ */
+
 namespace Drupal\entity\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\RevisionableEntityBundleInterface;
 use Drupal\Core\Form\FormStateInterface;
-
-@trigger_error('\Drupal\entity\Form\RevisionableContentEntityForm has been deprecated in favor of \Drupal\Core\Entity\ContentEntityForm. Use that instead.');
+use Drupal\entity\Entity\RevisionableEntityBundleInterface;
 
 /**
  * Extends the base entity form with revision support in the UI.
- *
- * @deprecated Use \Drupal\Core\Entity\ContentEntityForm instead.
  */
 class RevisionableContentEntityForm extends ContentEntityForm {
 
   /**
    * The entity being used by this form.
    *
-   * @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\RevisionLogInterface
+   * @var \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface|\Drupal\entity\Revision\EntityRevisionLogInterface
    */
   protected $entity;
 
@@ -42,14 +43,12 @@ class RevisionableContentEntityForm extends ContentEntityForm {
   }
 
   /**
-   * Gets the bundle entity of the current entity.
+   * Returns the bundle entity of the entity, or NULL if there is none.
    *
    * @return \Drupal\Core\Entity\EntityInterface|null
-   *   The bundle entity, or NULL if there is none.
    */
   protected function getBundleEntity() {
-    if ($this->entity->getEntityType()->getBundleEntityType()) {
-      $bundle_key = $this->entity->getEntityType()->getKey('bundle');
+    if ($bundle_key = $this->entity->getEntityType()->getKey('bundle')) {
       return $this->entity->{$bundle_key}->referencedEntities()[0];
     }
     return NULL;
@@ -130,7 +129,7 @@ class RevisionableContentEntityForm extends ContentEntityForm {
     $insert = $this->entity->isNew();
     $this->entity->save();
     $context = ['@type' => $this->entity->bundle(), '%info' => $this->entity->label()];
-    $logger = $this->logger('content');
+    $logger = $this->logger($this->entity->id());
     $bundle_entity = $this->getBundleEntity();
     $t_args = ['@type' => $bundle_entity ? $bundle_entity->label() : 'None', '%info' => $this->entity->label()];
 

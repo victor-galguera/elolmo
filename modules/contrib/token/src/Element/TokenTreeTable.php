@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\token\Element\TokenTreeTable.
+ */
+
 namespace Drupal\token\Element;
 
 use Drupal\Component\Utility\Html;
@@ -26,7 +31,6 @@ class TokenTreeTable extends Table {
       '#columns' => ['name', 'token', 'description'],
       '#empty' => '',
       '#show_restricted' => FALSE,
-      '#show_nested' => FALSE,
       '#skip_empty_values' => FALSE,
       '#click_insert' => TRUE,
       '#sticky' => FALSE,
@@ -56,11 +60,6 @@ class TokenTreeTable extends Table {
   public static function preRenderTokenTree($element) {
     $multiple_token_types = count($element['#token_tree']) > 1;
     foreach ($element['#token_tree'] as $token_type => $type_info) {
-      // Do not show nested tokens.
-      if (!empty($type_info['nested']) && empty($element['#show_nested'])) {
-        continue;
-      }
-
       if ($multiple_token_types) {
         $row = static::formatRow($token_type, $type_info, $element['#columns'], TRUE);
         $element['#rows'][] = $row;
@@ -115,7 +114,6 @@ class TokenTreeTable extends Table {
   protected static function formatRow($token, $token_info, $columns, $is_group = FALSE) {
     $row = [
       'id' => static::cleanCssIdentifier($token),
-      'data-tt-id' => static::cleanCssIdentifier($token),
       'class' => [],
       'data' => [],
     ];
@@ -146,7 +144,7 @@ class TokenTreeTable extends Table {
       $row['class'][] = 'token-group';
     }
     elseif (!empty($token_info['parent'])) {
-      $row['data-tt-parent-id'] = static::cleanCssIdentifier($token_info['parent']);
+      $row['class'][] = 'child-of-' . static::cleanCssIdentifier($token_info['parent']);
       unset($row['parent']);
     }
 

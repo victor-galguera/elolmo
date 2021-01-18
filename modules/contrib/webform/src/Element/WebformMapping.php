@@ -7,7 +7,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Render\Element\FormElement;
 use Drupal\webform\Utility\WebformElementHelper;
-use Drupal\webform\Utility\WebformFormHelper;
 use Drupal\webform\Utility\WebformOptionsHelper;
 
 /**
@@ -34,7 +33,6 @@ class WebformMapping extends FormElement {
         [$class, 'processAjaxForm'],
       ],
       '#theme_wrappers' => ['form_element'],
-      '#filter' => TRUE,
       '#required' => FALSE,
       '#source' => [],
       '#source__description_display' => 'description',
@@ -60,14 +58,14 @@ class WebformMapping extends FormElement {
     $sources = [];
     foreach ($element['#source'] as $source_key => $source) {
       $source = (string) $source;
-      if (!WebformOptionsHelper::hasOptionDescription($source)) {
+      if (strpos($source, WebformOptionsHelper::DESCRIPTION_DELIMITER) === FALSE) {
         $source_description_property_name = NULL;
         $source_title = $source;
         $source_description = '';
       }
       else {
         $source_description_property_name = ($element['#source__description_display'] === 'help') ? 'help' : 'description';
-        list($source_title, $source_description) = WebformOptionsHelper::splitOption($source);
+        list($source_title, $source_description) = explode(WebformOptionsHelper::DESCRIPTION_DELIMITER, $source);
       }
       $sources[$source_key] = [
         'description_property_name' => $source_description_property_name,
@@ -175,7 +173,7 @@ class WebformMapping extends FormElement {
     array_unshift($element['#element_validate'], [get_called_class(), 'validateWebformMapping']);
 
     if (!empty($element['#states'])) {
-      WebformFormHelper::processStates($element, '#wrapper_attributes');
+      webform_process_states($element, '#wrapper_attributes');
     }
 
     $element['#attached']['library'][] = 'webform/webform.element.mapping';
@@ -188,11 +186,7 @@ class WebformMapping extends FormElement {
    */
   public static function validateWebformMapping(&$element, FormStateInterface $form_state, &$complete_form) {
     $value = NestedArray::getValue($form_state->getValues(), $element['#parents']);
-
-    // Filter values.
-    if ($element['#filter']) {
-      $value = array_filter($value);
-    }
+    $value = array_filter($value);
 
     // Note: Not validating REQUIRED_ALL because each destination element is
     // already required.

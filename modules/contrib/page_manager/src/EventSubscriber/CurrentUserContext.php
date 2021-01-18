@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\page_manager\EventSubscriber\CurrentUserContext.
+ */
+
 namespace Drupal\page_manager\EventSubscriber;
 
-use Drupal\Core\Plugin\Context\LazyContextRepository;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\page_manager\Event\PageManagerContextEvent;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\page_manager\Event\PageManagerEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -12,21 +22,33 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class CurrentUserContext implements EventSubscriberInterface {
 
+  use StringTranslationTrait;
+
+  /**
+   * The account proxy.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $account;
+
+  /**
+   * The user storage.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $userStorage;
+
   /**
    * Constructs a new CurrentUserContext.
    *
-   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current account.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  protected $contextRepository;
-
-  /**
-   * Creates LanguageInterfaceContext object.
-   *
-   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
-   *   The context repository service.
-   */
-  public function __construct(LazyContextRepository $context_repository) {
-    $this->contextRepository = $context_repository;
+  public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_type_manager) {
+    $this->account = $account;
+    $this->userStorage = $entity_type_manager->getStorage('user');
   }
 
   /**
@@ -36,11 +58,14 @@ class CurrentUserContext implements EventSubscriberInterface {
    *   The page entity context event.
    */
   public function onPageContext(PageManagerContextEvent $event) {
-    $contexts = $this->contextRepository->getRuntimeContexts(['@user.current_user_context:current_user']);
-    $context = reset($contexts);
-    $event->getPage()
-      ->addContext('@user.current_user_context:current_user', $context)
-      ->addContext('current_user', $context);
+    $id = $this->account->id();
+    $current_user = $this->userStorage->load($id);
+
+    $context = new Context(new ContextDefinition('entity:user', $this->t('Current user')), $current_user);
+    $cacheability = new CacheableMetadata();
+    $cacheability->setCacheContexts(['user']);
+    $context->addCacheableDependency($cacheability);
+    $event->getPage()->addContext('current_user', $context);
   }
 
   /**

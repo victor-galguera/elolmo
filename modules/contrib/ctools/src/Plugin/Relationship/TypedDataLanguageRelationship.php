@@ -1,7 +1,10 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\ctools\Plugin\Relationship\TypedDataLanguageRelationship.
+ */
 
 namespace Drupal\ctools\Plugin\Relationship;
-
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 

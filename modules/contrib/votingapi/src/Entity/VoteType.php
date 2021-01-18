@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\Entity\VoteType.
+ */
+
 namespace Drupal\votingapi\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
@@ -11,14 +16,7 @@ use Drupal\votingapi\VoteTypeInterface;
  *
  * @ConfigEntityType(
  *   id = "vote_type",
- *   label = @Translation("Vote type"),
- *   label_collection = @Translation("Vote types"),
- *   label_singular = @Translation("vote type"),
- *   label_plural = @Translation("vote types"),
- *   label_count = @PluralTranslation(
- *     singular = "@count vote type",
- *     plural = "@count vote types",
- *   ),
+ *   label = @Translation("Vote Type"),
  *   handlers = {
  *     "access" = "Drupal\votingapi\VoteTypeAccessControlHandler",
  *     "form" = {
@@ -38,12 +36,6 @@ use Drupal\votingapi\VoteTypeInterface;
  *     "edit-form" = "/admin/structure/vote-types/{vote_type}",
  *     "delete-form" = "/admin/structure/vote-types/{vote_type}/delete",
  *     "collection" = "/admin/structure/vote-types",
- *   },
- *   config_export = {
- *     "id",
- *     "label",
- *     "value_type",
- *     "description",
  *   }
  * )
  */

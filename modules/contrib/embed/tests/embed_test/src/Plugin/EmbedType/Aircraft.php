@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\embed_test\Plugin\EmbedType\Aircraft.
+ */
+
 namespace Drupal\embed_test\Plugin\EmbedType;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -10,7 +15,7 @@ use Drupal\embed\EmbedType\EmbedTypeBase;
  *
  * @EmbedType(
  *   id = "embed_test_aircraft",
- *   label = @Translation("Aircraft"),
+ *   label = @Translation("Aircraft")
  * )
  */
 class Aircraft extends EmbedTypeBase {
@@ -59,7 +64,7 @@ class Aircraft extends EmbedTypeBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getValue('aircraft_type') === 'helicopters') {
-      $this->messenger()->addWarning($this->t('Helicopters are just rotorcraft.'));
+      drupal_set_message($this->t('Helicopters are just rotorcraft.'), 'warning');
       $form_state->setValue('aircraft_type', 'rotorcraft');
     }
 

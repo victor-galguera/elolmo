@@ -1,18 +1,25 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Subscription\SubscriptionManager.
+ */
+
 namespace Drupal\simplenews\Subscription;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DestructableInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
-use Psr\Log\LoggerInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Token;
-use Drupal\simplenews\Entity\Newsletter;
 use Drupal\simplenews\Entity\Subscriber;
 use Drupal\simplenews\Mail\MailerInterface;
 use Drupal\simplenews\NewsletterInterface;
 use Drupal\simplenews\SubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\TerminableInterface;
 
 /**
  * Default subscription manager.
@@ -34,60 +41,39 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
   protected $confirmations = [];
 
   /**
-   * Subscribed cache.
-   *
    * @var array
    */
   protected $subscribedCache = [];
 
   /**
-   * The mailer.
-   *
    * @var \Drupal\simplenews\Mail\MailerInterface
    */
   protected $mailer;
 
   /**
-   * The language manager.
-   *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
   protected $languageManager;
 
   /**
-   * Configuration.
-   *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $config;
 
   /**
-   * The token.
-   *
    * @var \Drupal\Core\Utility\Token
    */
   protected $token;
 
   /**
-   * The logger interface.
-   *
-   * @var \Psr\Log\LoggerInterface
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
   protected $logger;
 
   /**
-   * The current user.
-   *
    * @var \Drupal\Core\Session\AccountInterface
    */
   protected $currentUser;
-
-  /**
-   * The subscriber storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $subscriberStorage;
 
   /**
    * Constructs a SubscriptionManager.
@@ -100,29 +86,64 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
    *   The simplenews manager.
    * @param \Drupal\Core\Utility\Token $token
    *   The token service.
-   * @param \Psr\Log\LoggerInterface $logger
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The simplenews logger channel.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
    */
-  public function __construct(LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, MailerInterface $mailer, Token $token, LoggerInterface $logger, AccountInterface $current_user) {
+  public function __construct(LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, MailerInterface $mailer, Token $token, LoggerChannelInterface $logger, AccountInterface $current_user) {
     $this->languageManager = $language_manager;
     $this->config = $config_factory->get('simplenews.settings');
     $this->mailer = $mailer;
     $this->token = $token;
     $this->logger = $logger;
     $this->currentUser = $current_user;
-    $this->subscriberStorage = \Drupal::entityTypeManager()->getStorage('simplenews_subscriber');
   }
 
   /**
    * {@inheritdoc}
    */
   public function subscribe($mail, $newsletter_id, $confirm = NULL, $source = 'unknown', $preferred_langcode = NULL) {
-    // Get/create subscriber entity.
-    $preferred_langcode = $preferred_langcode ?? $this->languageManager->getCurrentLanguage();
-    $subscriber = Subscriber::loadByMail($mail, 'create', $preferred_langcode);
-    $newsletter = Newsletter::load($newsletter_id);
+    // Get current subscriptions if any.
+    $subscriber = simplenews_subscriber_load_by_mail($mail);
+
+    // If user is not subscribed to ANY newsletter, create a subscription account
+    if (!$subscriber) {
+      // To subscribe a user:
+      //   - Fetch the users uid.
+      //   - Determine the user preferred language.
+      //   - Add the user to the database.
+      //   - Get the full subscription object based on the mail address.
+      // Note that step 3 gets subscription data based on mail address because the uid can be 0 (for anonymous users)
+      $account = user_load_by_mail($mail);
+
+      // If the site is multilingual:
+      //  - Anonymous users are subscribed with their preferred language
+      //    equal to the language of the current page.
+      //  - Registered users will be subscribed with their default language as
+      //    set in their account settings.
+      // By default the preferred language is not set.
+      if ($this->languageManager->isMultilingual()) {
+        if ($account) {
+          $preferred_langcode = $account->getPreferredLangcode();
+        }
+        else {
+          $preferred_langcode = isset($preferred_langcode) ? $preferred_langcode : $this->languageManager->getCurrentLanguage();
+        }
+      }
+      else {
+        $preferred_langcode = '';
+      }
+
+      $subscriber = Subscriber::create(array());
+      $subscriber->setMail($mail);
+      if ($account) {
+        $subscriber->setUserId($account->id());
+      }
+      $subscriber->setLangcode($preferred_langcode);
+      $subscriber->setStatus(SubscriberInterface::ACTIVE);
+      $subscriber->save();
+    }
+
+    $newsletter = simplenews_newsletter_load($newsletter_id);
 
     // If confirmation is not explicitly specified, use the newsletter
     // configuration.
@@ -150,15 +171,12 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
   /**
    * {@inheritdoc}
    */
-  public function unsubscribe($mail, $newsletter_id, $confirm = NULL, $source = 'unknown') {
-    $subscriber = Subscriber::loadByMail($mail);
-    if (!$subscriber) {
-      throw new \Exception('The subscriber does not exist.');
-    }
-    // The unlikely case that a user is unsubscribed from a non existing mailing
-    // list is logged.
-    if (!$newsletter = Newsletter::load($newsletter_id)) {
-      $this->logger->error('Attempt to unsubscribe from non existing mailing list ID %id', ['%id' => $newsletter_id]);
+  public function unsubscribe($mail, $newsletter_id, $confirm = TRUE, $source = 'unknown') {
+    $subscriber = simplenews_subscriber_load_by_mail($mail);
+
+    // The unlikely case that a user is unsubscribed from a non existing mailing list is logged
+    if (!$newsletter = simplenews_newsletter_load($newsletter_id)) {
+      $this->logger->error('Attempt to unsubscribe from non existing mailing list ID %id', array('%id' => $newsletter_id));
       return $this;
     }
 
@@ -169,12 +187,19 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
     }
 
     if ($confirm) {
+      // Make sure the mail address is set.
+      if (empty($subscriber)) {
+        $subscriber = Subscriber::create(array());
+        $subscriber->setMail($mail);
+        $subscriber->save();
+      }
       $this->addConfirmation('unsubscribe', $subscriber, $newsletter);
     }
-    elseif ($subscriber->isSubscribed($newsletter_id)) {
+    elseif ($subscriber && $subscriber->isSubscribed($newsletter_id)) {
       // Unsubscribe the user from the mailing list.
       $subscriber->unsubscribe($newsletter_id, $source);
       $subscriber->save();
+
     }
     return $this;
   }
@@ -184,8 +209,8 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
    */
   public function isSubscribed($mail, $newsletter_id) {
     if (!isset($this->subscribedCache[$mail][$newsletter_id])) {
-      $subscriber = Subscriber::loadByMail($mail);
-      // Check that a subscriber was found, it is active and subscribed to the
+      $subscriber = simplenews_subscriber_load_by_mail($mail);
+      // Check that a subscriber was found, he is active and subscribed to the
       // requested newsletter_id.
       $this->subscribedCache[$mail][$newsletter_id] = $subscriber && $subscriber->getStatus() && $subscriber->isSubscribed($newsletter_id);
     }
@@ -195,7 +220,38 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
   /**
    * {@inheritdoc}
    */
-  public function getChangesList(SubscriberInterface $subscriber, array $changes = NULL, $langcode = NULL) {
+  public function getSubscriptionsByNewsletter($newsletter_id) {
+    $query = db_select('simplenews_subscriber', 'sn');
+    $query->innerJoin('simplenews_subscription', 'ss', 'ss.snid = sn.snid');
+    $query->fields('sn', array('mail', 'uid', 'language', 'snid'))
+      ->fields('ss', array('status'))
+      ->condition('sn.activated', SubscriberInterface::ACTIVE)
+      ->condition('ss.newsletter_id', $newsletter_id)
+      ->condition('ss.status', SIMPLENEWS_SUBSCRIPTION_STATUS_SUBSCRIBED);
+    return $query->execute()->fetchAllAssoc('mail');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteSubscriptions($conditions = array()) {
+    // @todo: redo this in a proper way
+    if (!db_table_exists('simplenews_subscriber__subscriptions')) {
+      // This can happen if this is called during uninstall.
+      return;
+    }
+    $query = db_delete('simplenews_subscriber__subscriptions');
+    foreach ($conditions as $key => $condition) {
+      $query->condition($key, $condition);
+    }
+    $query->execute();
+    \Drupal::entityManager()->getStorage('simplenews_subscriber')->resetCache();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getChangesList(SubscriberInterface $subscriber, $changes = NULL, $langcode = NULL) {
     if (empty($langcode)) {
       $language = $this->languageManager->getCurrentLanguage();
       $langcode = $language->getId();
@@ -205,7 +261,7 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
       $changes = $subscriber->getChanges();
     }
 
-    $changes_list = [];
+    $changes_list = array();
     foreach ($changes as $newsletter_id => $action) {
       $subscribed = $subscriber->isSubscribed($newsletter_id);
       // Get text for each possible combination.
@@ -221,11 +277,11 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
       elseif ($action == 'unsubscribe' && $subscribed) {
         $line = $this->config->get('subscription.confirm_combined_line_unsubscribe_subscribed');
       }
-      $newsletter_context = [
+      $newsletter_context = array(
         'simplenews_subscriber' => $subscriber,
-        'newsletter' => Newsletter::load($newsletter_id),
-      ];
-      $changes_list[$newsletter_id] = $this->token->replace($line, $newsletter_context, ['sanitize' => FALSE]);
+        'newsletter' => simplenews_newsletter_load($newsletter_id),
+      );
+      $changes_list[$newsletter_id] = $this->token->replace($line, $newsletter_context, array('sanitize' => FALSE));
     }
     return $changes_list;
   }
@@ -235,18 +291,24 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
    */
   public function sendConfirmations() {
     foreach ($this->confirmations as $mail => $changes) {
-      $subscriber = Subscriber::loadByMail($mail, 'create', $this->languageManager->getCurrentLanguage());
+      $subscriber = simplenews_subscriber_load_by_mail($mail);
+      if (!$subscriber) {
+        $subscriber = Subscriber::create(array());
+        $subscriber->setMail($mail);
+        $subscriber->setLangcode($this->languageManager->getCurrentLanguage());
+        $subscriber->save();
+      }
       $subscriber->setChanges($changes);
 
       $this->mailer->sendCombinedConfirmation($subscriber);
 
-      // Save changes in the subscriber if there is a real subscriber object.
-      if ($subscriber->id()) {
+      // Save the changes in the subscriber if there is a real subscriber object.
+      if ($subscriber && $subscriber->id()) {
         $subscriber->save();
       }
     }
     $sent = !empty($this->confirmations);
-    $this->confirmations = [];
+    $this->confirmations = array();
     return $sent;
   }
 
@@ -255,30 +317,6 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
    */
   public function reset() {
     $this->subscribedCache = [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tidy() {
-    $days = $this->config->get('subscription.tidy_unconfirmed');
-    if (!$days) {
-      return;
-    }
-
-    // Query subscribers with unconfirmed subscriptions due to be tidied.
-    $max_age = strtotime("-$days days");
-    $unconfirmed = \Drupal::entityQuery('simplenews_subscriber')
-      ->condition('subscriptions.status', SIMPLENEWS_SUBSCRIPTION_STATUS_UNCONFIRMED)
-      ->condition('subscriptions.timestamp', $max_age, '<')
-      ->execute();
-
-    // Exclude any subscribers with confirmed subscriptions.
-    $confirmed = \Drupal::entityQuery('simplenews_subscriber')
-      ->condition('subscriptions.status', SIMPLENEWS_SUBSCRIPTION_STATUS_UNCONFIRMED, '<>')
-      ->execute();
-    $delete = array_diff($unconfirmed, $confirmed);
-    $this->subscriberStorage->delete($this->subscriberStorage->loadMultiple($delete));
   }
 
   /**
@@ -326,5 +364,6 @@ class SubscriptionManager implements SubscriptionManagerInterface, DestructableI
       return $newsletter->opt_inout == 'double';
     }
   }
+
 
 }

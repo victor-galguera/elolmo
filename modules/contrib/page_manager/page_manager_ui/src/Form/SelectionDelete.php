@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Form\SelectionDelete.
+ */
 
 namespace Drupal\page_manager_ui\Form;
 
@@ -43,16 +47,14 @@ class SelectionDelete extends ConditionDelete {
       return ['entity.page.add_step_form', [
         'machine_name' => $this->machine_name,
         'step' => 'selection',
-      ],
-      ];
+      ]];
     }
     else {
       $page_variant = $this->getPageVariant($cached_values);
       return ['entity.page.edit_form', [
         'machine_name' => $this->machine_name,
         'step' => 'page_variant__' . $page_variant->id() . '__selection',
-      ],
-      ];
+      ]];
     }
   }
 
@@ -63,6 +65,7 @@ class SelectionDelete extends ConditionDelete {
     $this->variantMachineName = $variant_machine_name;
     return parent::buildForm($form, $form_state, $id, $tempstore_id, $machine_name);
   }
+
 
   /**
    * {@inheritdoc}

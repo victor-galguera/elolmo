@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\Plugin\EntityBrowser\WidgetSelector\Tabs.
+ */
+
 namespace Drupal\entity_browser\Plugin\EntityBrowser\WidgetSelector;
 
 use Drupal\entity_browser\WidgetSelectorBase;
@@ -11,7 +16,7 @@ use Drupal\Core\Form\FormStateInterface;
  * @EntityBrowserWidgetSelector(
  *   id = "tabs",
  *   label = @Translation("Tabs"),
- *   description = @Translation("Creates horizontal tabs on the top of the entity browser, each tab representing one available widget.")
+ *   description = @Translation("Displays entity browser widgets as tabs.")
  * )
  */
 class Tabs extends WidgetSelectorBase {
@@ -19,28 +24,34 @@ class Tabs extends WidgetSelectorBase {
   /**
    * {@inheritdoc}
    */
-  public function getForm(array &$form = [], FormStateInterface &$form_state = NULL) {
+  public function getForm(array &$form = array(), FormStateInterface &$form_state = NULL) {
     $element = [];
-    /** @var \Drupal\entity_browser\EntityBrowserInterface $browser */
-    $browser = $form_state->getFormObject()->getEntityBrowser();
     foreach ($this->widget_ids as $id => $label) {
       $name = 'tab_selector_' . $id;
-      $element[$name] = [
+      $element[$name] = array(
         '#type' => 'button',
         '#attributes' => ['class' => ['tab']],
         '#value' => $label,
         '#disabled' => $id == $this->getDefaultWidget(),
         '#executes_submit_callback' => TRUE,
-        '#limit_validation_errors' => [[$id]],
+        '#limit_validation_errors' => array(array($id)),
         // #limit_validation_errors only takes effect if #submit is present.
-        '#submit' => [],
+        '#submit' => array(),
         '#name' => $name,
         '#widget_id' => $id,
-        '#access' => $browser->getWidget($id)->access(),
-      ];
+      );
     }
 
-    $element['#attached']['library'][] = 'entity_browser/tabs';
+    $element['#attached'] = [
+      'library' => [
+        'entity_browser/tabs',
+      ],
+      'drupalSettings' => [
+        'entityBrowserTabs' => [
+          'tabsClass' => ['tabs', 'secondary'],
+        ],
+      ],
+    ];
 
     return $element;
   }

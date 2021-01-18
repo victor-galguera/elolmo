@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains DDrupal\simplenews\Plugin\Mail\HTMLTestingMailSystem.
+ */
 
 namespace Drupal\simplenews\Plugin\Mail;
 
@@ -34,10 +38,9 @@ class HTMLTestingMailSystem implements MailInterface {
    * Implements MailSystemInterface::mail().
    */
   public function mail(array $message) {
-    $captured_emails = \Drupal::state()->get('system.test_mail_collector') ?: [];
+    $captured_emails = \Drupal::state()->get('system.test_mail_collector') ?: array();
     $captured_emails[] = $message;
     \Drupal::state()->set('system.test_mail_collector', $captured_emails);
     return TRUE;
   }
-
 }

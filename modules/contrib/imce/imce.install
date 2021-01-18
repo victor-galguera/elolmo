@@ -15,7 +15,7 @@ function imce_install() {
   $admin_roles = \Drupal::entityQuery('user_role')->condition('is_admin', TRUE)->execute();
   if ($admin_roles) {
     $config = \Drupal::configFactory()->getEditable('imce.settings');
-    $roles_profiles = $config->get('roles_profiles') ?: [];
+    $roles_profiles = $config->get('roles_profiles', array());
     $wrappers = \Drupal::service('stream_wrapper_manager')->getWrappers(StreamWrapperInterface::WRITE_VISIBLE);
     foreach ($wrappers as $scheme => $info) {
       foreach ($admin_roles as $role) {
@@ -25,11 +25,4 @@ function imce_install() {
     $config->set('roles_profiles', $roles_profiles);
     $config->save(TRUE);
   }
-}
-
-/**
- * Create image style for IMCE browser.
- */
-function imce_update_8001() {
-  // Cancelled.
 }

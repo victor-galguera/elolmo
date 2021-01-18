@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Tests\token\Kernel\UnitTest.
+ */
 namespace Drupal\Tests\token\Kernel;
 
 /**
@@ -33,9 +37,9 @@ class UnitTest extends KernelTestBase {
    * Test invalid tokens.
    */
   public function testGetInvalidTokens() {
-    $tests = [];
-    $tests[] = [
-      'valid tokens' => [
+    $tests = array();
+    $tests[] = array(
+      'valid tokens' => array(
         '[node:title]',
         '[node:created:short]',
         '[node:created:custom:invalid]',
@@ -46,8 +50,8 @@ class UnitTest extends KernelTestBase {
         '[current-date:short]',
         '[current-user:uid]',
         '[current-user:ip-address]',
-      ],
-      'invalid tokens' => [
+      ),
+      'invalid tokens' => array(
         '[node:title:invalid]',
         '[node:created:invalid]',
         '[node:created:short:invalid]',
@@ -62,11 +66,11 @@ class UnitTest extends KernelTestBase {
         '[node:type]',
         '[node:type-name]',
         '[date:short]',
-      ],
-      'types' => ['node'],
-    ];
-    $tests[] = [
-      'valid tokens' => [
+      ),
+      'types' => array('node'),
+    );
+    $tests[] = array(
+      'valid tokens' => array(
         '[node:title]',
         '[node:created:short]',
         '[node:created:custom:invalid]',
@@ -77,8 +81,8 @@ class UnitTest extends KernelTestBase {
         '[user:uid]',
         '[current-date:short]',
         '[current-user:uid]',
-      ],
-      'invalid tokens' => [
+      ),
+      'invalid tokens' => array(
         '[node:title:invalid]',
         '[node:created:invalid]',
         '[node:created:short:invalid]',
@@ -91,9 +95,9 @@ class UnitTest extends KernelTestBase {
         '[node:tnid]',
         '[node:type]',
         '[node:type-name]',
-      ],
-      'types' => ['all'],
-    ];
+      ),
+      'types' => array('all'),
+    );
 
     foreach ($tests as $test) {
       $tokens = array_merge($test['valid tokens'], $test['invalid tokens']);
@@ -103,18 +107,7 @@ class UnitTest extends KernelTestBase {
 
       sort($invalid_tokens);
       sort($test['invalid tokens']);
-      $this->assertEquals($test['invalid tokens'], $invalid_tokens, 'Invalid tokens detected properly: ' . implode(', ', $invalid_tokens));
+      $this->assertEqual($invalid_tokens, $test['invalid tokens'], 'Invalid tokens detected properly: ' . implode(', ', $invalid_tokens));
     }
   }
-
-  /**
-   * Test that tokens are generated only for content entities.
-   */
-  public function testContentEntityOnlyTokens() {
-    // Verify that type and token info for a config entity is not generated.
-    $this->assertNull($this->tokenService->getTokenInfo('user_role', 'original'));
-    $this->assertNull($this->tokenService->getTokenInfo('user_role', 'url'));
-    $this->assertNull($this->tokenService->getTypeInfo('user_role'));
-  }
-
 }

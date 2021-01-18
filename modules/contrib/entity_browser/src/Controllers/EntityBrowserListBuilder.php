@@ -1,9 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\Controllers\EntityBrowserListBuilder.
+ */
+
 namespace Drupal\entity_browser\Controllers;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
+
 
 /**
  * Provides a list controller for entity browser.
@@ -34,34 +40,6 @@ class EntityBrowserListBuilder extends EntityListBuilder {
     $row['id'] = $entity->id();
     $row['name'] = $entity->label();
     return $row + parent::buildRow($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultOperations(EntityInterface $entity) {
-
-    if ($entity->access('update')) {
-      $operations['edit'] = [
-        'title' => $this->t('Edit'),
-        'url' => $entity->toUrl('edit-form'),
-      ];
-    }
-
-    $operations['edit-widgets'] = [
-      'title' => $this->t('Edit Widgets'),
-      'url' => $entity->toUrl('edit-widgets'),
-    ];
-
-    if ($entity->access('delete')) {
-      $operations['delete'] = [
-        'title' => $this->t('Delete'),
-        'url' => $entity->toUrl('delete-form'),
-        'weight' => 100,
-      ];
-    }
-
-    return $operations;
   }
 
 }

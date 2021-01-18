@@ -1,21 +1,21 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\SelectionDisplayInterface.
+ */
+
 namespace Drupal\entity_browser;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
+use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Defines the interface for entity browser selection displays.
- *
- * This plugin type is responsible for displaying the currently selected
- * entities in an entity browser and delivering them upstream. The selections
- * are displayed in a form which delivers the selected entities on submit.
  */
-interface SelectionDisplayInterface extends PluginInspectionInterface, ConfigurableInterface, PluginFormInterface, DependentPluginInterface {
+interface SelectionDisplayInterface extends PluginInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
 
   /**
    * Returns the selection display label.
@@ -59,33 +59,5 @@ interface SelectionDisplayInterface extends PluginInspectionInterface, Configura
    *   Form state object.
    */
   public function submit(array &$form, FormStateInterface $form_state);
-
-  /**
-   * Check does selection display support preselection.
-   *
-   * If preselection is not allowed by entity browser selection display, then
-   * exception will be thrown.
-   *
-   * @deprecated Use ::supportsPreselection instead.
-   *
-   * @throws \Drupal\Core\Config\ConfigException
-   */
-  public function checkPreselectionSupport();
-
-  /**
-   * Check if the plugin supports preselection.
-   *
-   * @returns bool
-   *   Returns TRUE if preselection is supported.
-   */
-  public function supportsPreselection();
-
-  /**
-   * Returns true if selection display supports selection over javascript.
-   *
-   * @return bool
-   *   True if javascript add/remove events are supported.
-   */
-  public function supportsJsCommands();
 
 }

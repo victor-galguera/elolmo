@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\Action\StopIssue.
+ */
+
 namespace Drupal\simplenews\Plugin\Action;
 
 use Drupal\Core\Access\AccessResult;
@@ -20,8 +25,27 @@ class StopIssue extends ActionBase {
   /**
    * {@inheritdoc}
    */
+  public function executeMultiple(array $entities) {
+    foreach ($entities as $node) {
+      if ($node->simplenews_issue->status == SIMPLENEWS_STATUS_SEND_PENDING) {
+        // Delete the mail spool entries of this newsletter issue.
+        $count = \Drupal::service('simplenews.spool_storage')->deleteMails(array('nid' => $node->id()));
+        // Set newsletter issue to not sent yet.
+        $node->simplenews_issue->status = SIMPLENEWS_STATUS_SEND_NOT;
+        $node->save();
+        drupal_set_message(t('Sending of %title was stopped. @count pending email(s) were deleted.', array(
+          '%title' => $node->getTitle(),
+          '@count' => $count,
+        )));
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function execute($node = NULL) {
-    \Drupal::service('simplenews.spool_storage')->deleteIssue($node);
+    $this->executeMultiple(array($node));
   }
 
   /**
@@ -35,5 +59,4 @@ class StopIssue extends ActionBase {
     }
     return AccessResult::neutral();
   }
-
 }

@@ -1,6 +1,13 @@
 <?php
-
+/**
+ * Created by PhpStorm.
+ * User: berdir
+ * Date: 4/25/15
+ * Time: 1:47 PM
+ */
 namespace Drupal\simplenews\Mail;
+
+use Drupal\simplenews\Mail\MailInterface;
 
 /**
  * Builds newsletter and confirmation mails.
@@ -15,7 +22,7 @@ interface MailBuilderInterface {
    * @param \Drupal\simplenews\Mail\MailInterface $mail
    *   The mail object.
    */
-  public function buildNewsletterMail(array &$message, MailInterface $mail);
+  function buildNewsletterMail(array &$message, MailInterface $mail);
 
   /**
    * Build subject and body of the subscribe confirmation email.
@@ -25,7 +32,7 @@ interface MailBuilderInterface {
    * @param array $params
    *   Parameter array as used by hook_mail().
    */
-  public function buildSubscribeMail(array &$message, array $params);
+  function buildSubscribeMail(array &$message, array $params);
 
   /**
    * Build subject and body of the subscribe confirmation email.
@@ -35,7 +42,7 @@ interface MailBuilderInterface {
    * @param array $params
    *   Parameter array as used by hook_mail().
    */
-  public function buildCombinedMail(array &$message, array $params);
+  function buildCombinedMail(&$message, $params);
 
   /**
    * Build subject and body of the unsubscribe confirmation email.
@@ -45,6 +52,5 @@ interface MailBuilderInterface {
    * @param array $params
    *   Parameter array as used by hook_mail().
    */
-  public function buildUnsubscribeMail(array &$message, array $params);
-
+  function buildUnsubscribeMail(&$message, $params);
 }

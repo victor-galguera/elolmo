@@ -15,6 +15,9 @@ core:
   version: VERSION
   js:
     js/field_group.js: {}
+  css:
+    theme:
+      css/field_group.css: {}
   dependencies:
     - core/jquery
     - core/jquery.once
@@ -26,38 +29,22 @@ formatter.accordion:
   js:
     formatters/accordion/accordion.js: {}
   dependencies:
+    - field_group/core
     - core/jquery.ui.accordion
 
 formatter.html_element:
   version: VERSION
   js:
     formatters/html_element/html-element.js: {}
-
-formatter.fieldset:
-  version: VERSION
-  js:
-    formatters/fieldset/fieldset.js: {}
-
-formatter.details:
-  version: VERSION
-  js:
-    formatters/details/details.js: {}
-
-formatter.tabs:
-  version: VERSION
-  js:
-    formatters/tabs/tabs.js: {}
   dependencies:
-    - core/modernizr
+    - field_group/core
 
-element.horizontal_tabs:
+formatter.horizontal_tabs:
   version: VERSION
   js:
-    # Load before field_group/core.
-    formatters/tabs/horizontal-tabs.js: {weight: -1}
+    formatters/horizontal_tabs/horizontal-tabs.js: {}
   css:
     component:
-      formatters/tabs/horizontal-tabs.css: {}
+      formatters/horizontal_tabs/horizontal-tabs.css: {}
   dependencies:
-    - core/drupal.collapse
-    - core/modernizr
+    - field_group/core

@@ -43,7 +43,7 @@
         var $input = $element.find('.webform-location-places');
 
         // Prevent the 'Enter' key from submitting the form.
-        $input.on('keydown', function (event) {
+        $input.keydown(function (event) {
           if (event.keyCode === 13) {
             event.preventDefault();
           }

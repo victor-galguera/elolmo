@@ -8,7 +8,6 @@ entity_browser.edit_form:
   requirements:
     _entity_access: 'entity.update'
   options:
-    _admin_route: TRUE
     parameters:
       entity:
         type: entity:{entity_type}
@@ -16,25 +15,18 @@ entity_browser.edit_form:
 entity.entity_browser.add_form:
   path: '/admin/config/content/entity_browser/add'
   defaults:
-    _entity_form: 'entity_browser.edit'
+    _entity_wizard: 'entity_browser.add'
     _title: 'Add Entity browser'
     tempstore_id: 'entity_browser.config'
   requirements:
     _permission: 'administer entity browsers'
 
 entity.entity_browser.edit_form:
-  path: '/admin/config/content/entity_browser/{entity_browser}/edit'
+  path: '/admin/config/content/entity_browser/{machine_name}/{step}'
   defaults:
-    _entity_form: 'entity_browser.edit'
-    _title: 'Edit Entity Browser'
-  requirements:
-    _permission: 'administer entity browsers'
-
-entity.entity_browser.edit_widgets:
-  path: '/admin/config/content/entity_browser/{entity_browser}/widgets'
-  defaults:
-    _entity_form: 'entity_browser.edit_widgets'
-    _title: 'Edit Widgets'
+    _entity_wizard: 'entity_browser.edit'
+    _title: 'Edit Entity browser'
+    tempstore_id: 'entity_browser.config'
   requirements:
     _permission: 'administer entity browsers'
 

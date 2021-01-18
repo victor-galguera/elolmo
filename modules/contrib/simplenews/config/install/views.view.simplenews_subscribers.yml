@@ -1,6 +1,8 @@
 langcode: en
 status: true
 dependencies:
+  config:
+    - field.storage.simplenews_subscriber.subscriptions
   module:
     - simplenews
     - user
@@ -171,10 +173,10 @@ display:
           hide_alter_empty: true
           entity_type: simplenews_subscriber
           plugin_id: simplenews_user_name
-        subscriptions_target_id:
-          id: subscriptions_target_id
+        subscriptions:
+          id: subscriptions
           table: simplenews_subscriber__subscriptions
-          field: subscriptions_target_id
+          field: subscriptions
           relationship: none
           group_type: group
           admin_label: ''
@@ -480,7 +482,7 @@ display:
           group_type: group
           admin_label: ''
           operator: '='
-          value: '1'
+          value: true
           group: 1
           exposed: true
           expose:
@@ -578,7 +580,7 @@ display:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url
-        - url.query_args
+        - 'url.query_args.pagers:0'
         - user.permissions
       cacheable: false
   page_1:
@@ -589,11 +591,19 @@ display:
     display_options:
       display_extenders: {  }
       path: admin/people/simplenews
+      menu:
+        type: tab
+        title: Subscribers
+        description: ''
+        parent: user.admin_index
+        weight: 11
+        context: '0'
+        menu_name: admin
     cache_metadata:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
         - url
-        - url.query_args
+        - 'url.query_args.pagers:0'
         - user.permissions
       cacheable: false

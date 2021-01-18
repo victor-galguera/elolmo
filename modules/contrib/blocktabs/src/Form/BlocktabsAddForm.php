@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Form\BlocktabsAddForm.
+ */
+
 namespace Drupal\blocktabs\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -14,7 +19,7 @@ class BlocktabsAddForm extends BlocktabsFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
-    \Drupal::messenger()->addMessage($this->t('Blocktabs %name was created.', ['%name' => $this->entity->label()]));
+    drupal_set_message($this->t('Blocktabs %name was created.', array('%name' => $this->entity->label())));
   }
 
   /**

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\Form\ImceProfileDeleteForm.
+ */
+
 namespace Drupal\imce\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
@@ -15,7 +20,7 @@ class ImceProfileDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete the profile %name?', ['%name' => $this->entity->label()]);
+    return $this->t('Are you sure you want to delete the profile %name?', array('%name' => $this->entity->label()));
   }
 
   /**
@@ -37,8 +42,7 @@ class ImceProfileDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $this->messenger()
-      ->addMessage($this->t('Profile %name has been deleted.', ['%name' => $this->entity->label()]));
+    drupal_set_message($this->t('Profile %name has been deleted.', array('%name' => $this->entity->label())));
     $form_state->setRedirectUrl($this->getCancelUrl());
   }
 

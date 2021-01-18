@@ -1,17 +1,22 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\Controllers\EntityBrowserFormController.
+ */
+
 namespace Drupal\entity_browser\Controllers;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Controller\ControllerResolverInterface;
 use Drupal\Core\Controller\HtmlFormController;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface;
 
 /**
  * Standalone entity browser page.
@@ -42,23 +47,23 @@ class EntityBrowserFormController extends HtmlFormController implements Containe
   /**
    * Constructs Entity browser form controller.
    *
-   * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver
-   *   The argument resolver.
+   * @param \Drupal\Core\Controller\ControllerResolverInterface $controller_resolver
+   *   The controller resolver.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder.
    * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
    *   The class resolver.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param RouteMatchInterface $route_match
    *   Current route match service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager service.
+   * @param EntityManagerInterface $entity_manager
+   *   Entity manager service.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Current request.
    */
-  public function __construct(ArgumentResolverInterface $argument_resolver, FormBuilderInterface $form_builder, ClassResolverInterface $class_resolver, RouteMatchInterface $route_match, EntityTypeManagerInterface $entity_type_manager, Request $request) {
-    parent::__construct($argument_resolver, $form_builder, $class_resolver);
+  public function __construct(ControllerResolverInterface $controller_resolver, FormBuilderInterface $form_builder, ClassResolverInterface $class_resolver, RouteMatchInterface $route_match, EntityManagerInterface $entity_manager, Request $request) {
+    parent::__construct($controller_resolver, $form_builder, $class_resolver);
     $this->currentRouteMatch = $route_match;
-    $this->browserStorage = $entity_type_manager->getStorage('entity_browser');
+    $this->browserStorage = $entity_manager->getStorage('entity_browser');
     $this->request = $request;
     $this->formBuilder = $form_builder;
   }
@@ -68,11 +73,11 @@ class EntityBrowserFormController extends HtmlFormController implements Containe
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('http_kernel.controller.argument_resolver'),
+      $container->get('controller_resolver'),
       $container->get('form_builder'),
       $container->get('class_resolver'),
       $container->get('current_route_match'),
-      $container->get('entity_type.manager'),
+      $container->get('entity.manager'),
       $container->get('request_stack')->getCurrentRequest()
     );
   }
@@ -81,12 +86,7 @@ class EntityBrowserFormController extends HtmlFormController implements Containe
    * {@inheritdoc}
    */
   protected function getFormObject(RouteMatchInterface $route_match, $form_arg) {
-    $browser = $this->loadBrowser();
-    if ($original_path = $this->request->get('original_path')) {
-      $browser->addAdditionalWidgetParameters(['path_parts' => explode('/', $original_path)]);
-    }
-
-    return $browser->getFormObject();
+    return $this->loadBrowser()->getFormObject();
   }
 
   /**
@@ -104,9 +104,9 @@ class EntityBrowserFormController extends HtmlFormController implements Containe
    *   Loads the entity browser object
    */
   protected function loadBrowser() {
-    /* @var $route \Symfony\Component\Routing\Route */
+    /** @var $route \Symfony\Component\Routing\Route */
     $route = $this->currentRouteMatch->getRouteObject();
-    /* @var $browser \Drupal\entity_browser\EntityBrowserInterface */
+    /** @var $browser \Drupal\entity_browser\EntityBrowserInterface */
     return $this->browserStorage->load($route->getDefault('entity_browser_id'));
   }
 

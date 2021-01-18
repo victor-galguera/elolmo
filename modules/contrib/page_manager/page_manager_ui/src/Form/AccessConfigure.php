@@ -1,8 +1,14 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Form\AccessConfigure;
+ */
 
 namespace Drupal\page_manager_ui\Form;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\ctools\Form\ConditionConfigure;
+use Drupal\page_manager\PageInterface;
 
 class AccessConfigure extends ConditionConfigure {
 
@@ -14,12 +20,10 @@ class AccessConfigure extends ConditionConfigure {
     $page = $cached_values['page'];
 
     $route_name = $page->isNew() ? 'entity.page.add_step_form' : 'entity.page.edit_form';
-    return [$route_name,
-      [
+    return [$route_name, [
       'machine_name' => $this->machine_name,
       'step' => 'access',
-      ],
-    ];
+    ]];
   }
 
   /**

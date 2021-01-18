@@ -53,3 +53,4 @@ blocktabs.tab_delete:
     _title: 'Delete tab'
   requirements:
     _permission: 'administer blocktabs'
+

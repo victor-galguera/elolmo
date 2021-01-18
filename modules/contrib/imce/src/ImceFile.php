@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\ImceFile.
+ */
+
 namespace Drupal\imce;
 
 /**
@@ -11,5 +16,4 @@ class ImceFile extends ImceItem {
    * {@inheritdoc}
    */
   public $type = 'file';
-
 }

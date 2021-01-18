@@ -1,69 +1,20 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\SubscriberMassSubscribeForm.
+ */
+
 namespace Drupal\simplenews\Form;
 
-use Drupal\Component\Utility\EmailValidatorInterface;
-use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\simplenews\Entity\Newsletter;
-use Drupal\simplenews\Entity\Subscriber;
-use Drupal\simplenews\Subscription\SubscriptionManagerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Do a mass subscription for a list of email addresses.
  */
 class SubscriberMassSubscribeForm extends FormBase {
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The subscription manager.
-   *
-   * @var \Drupal\simplenews\Subscription\SubscriptionManagerInterface
-   */
-  protected $subscriptionManager;
-
-  /**
-   * The email validator.
-   *
-   * @var \Drupal\Component\Utility\EmailValidatorInterface
-   */
-  protected $emailValidator;
-
-  /**
-   * Constructs a new SubscriberMassSubscribeForm.
-   *
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
-   * @param \Drupal\simplenews\Subscription\SubscriptionManagerInterface $subscription_manager
-   *   The subscription manager.
-   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
-   *   The email validator.
-   */
-  public function __construct(LanguageManagerInterface $language_manager, SubscriptionManagerInterface $subscription_manager, EmailValidatorInterface $email_validator) {
-    $this->languageManager = $language_manager;
-    $this->subscriptionManager = $subscription_manager;
-    $this->emailValidator = $email_validator;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('language_manager'),
-      $container->get('simplenews.subscription_manager'),
-      $container->get('email.validator')
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -76,59 +27,59 @@ class SubscriberMassSubscribeForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['emails'] = [
+    $form['emails'] = array(
       '#type' => 'textarea',
-      '#title' => $this->t('Email addresses'),
+      '#title' => t('Email addresses'),
       '#cols' => 60,
       '#rows' => 5,
-      '#description' => $this->t('Email addresses must be separated by comma, space or newline.'),
-    ];
+      '#description' => t('Email addresses must be separated by comma, space or newline.'),
+    );
 
-    $form['newsletters'] = [
+    $form['newsletters'] = array(
       '#type' => 'checkboxes',
-      '#title' => $this->t('Subscribe to'),
+      '#title' => t('Subscribe to'),
       '#options' => simplenews_newsletter_list(),
       '#required' => TRUE,
-    ];
+    );
 
     foreach (simplenews_newsletter_get_all() as $id => $newsletter) {
-      $form['newsletters'][$id]['#description'] = Html::escape($newsletter->description);
+      $form['newsletters'][$id]['#description'] = SafeMarkup::checkPlain($newsletter->description);
     }
 
-    $form['resubscribe'] = [
+    $form['resubscribe'] = array(
       '#type' => 'checkbox',
-      '#title' => $this->t('Force resubscription'),
-      '#description' => $this->t('If checked, previously unsubscribed e-mail addresses will be resubscribed. Consider that this might be against the will of your users.'),
-    ];
+      '#title' => t('Force resubscription'),
+      '#description' => t('If checked, previously unsubscribed e-mail addresses will be resubscribed. Consider that this might be against the will of your users.'),
+    );
 
     // Include language selection when the site is multilingual.
     // Default value is the empty string which will result in receiving emails
     // in the site's default language.
-    if ($this->languageManager->isMultilingual()) {
-      $options[''] = $this->t('Site default language');
-      $languages = $this->languageManager->getLanguages();
+    if (\Drupal::languageManager()->isMultilingual()) {
+      $options[''] = t('Site default language');
+      $languages = \Drupal::languageManager()->getLanguages();
       foreach ($languages as $langcode => $language) {
         $options[$langcode] = $language->getName();
       }
-      $form['language'] = [
+      $form['language'] = array(
         '#type' => 'radios',
-        '#title' => $this->t('Anonymous user preferred language'),
+        '#title' => t('Anonymous user preferred language'),
         '#default_value' => '',
         '#options' => $options,
-        '#description' => $this->t('New subscriptions will be subscribed with the selected preferred language. The language of existing subscribers is unchanged.'),
-      ];
+        '#description' => t('New subscriptions will be subscribed with the selected preferred language. The language of existing subscribers is unchanged.'),
+      );
     }
     else {
-      $form['language'] = [
+      $form['language'] = array(
         '#type' => 'value',
         '#value' => '',
-      ];
+      );
     }
 
-    $form['submit'] = [
+    $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => $this->t('Subscribe'),
-    ];
+      '#value' => t('Subscribe'),
+    );
 
     return $form;
   }
@@ -136,10 +87,17 @@ class SubscriberMassSubscribeForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $added = [];
-    $invalid = [];
-    $unsubscribed = [];
+    $added = array();
+    $invalid = array();
+    $unsubscribed = array();
     $checked_newsletters = array_keys(array_filter($form_state->getValue('newsletters')));
     $langcode = $form_state->getValue('language');
 
@@ -149,17 +107,19 @@ class SubscriberMassSubscribeForm extends FormBase {
       if ($email == '') {
         continue;
       }
-      if ($this->emailValidator->isValid($email)) {
-        $subscriber = Subscriber::loadByMail($email);
+      if (valid_email_address($email)) {
+        $subscriber = simplenews_subscriber_load_by_mail($email);
 
-        /** @var \Drupal\simplenews\Entity\Newsletter $newsletter */
-        foreach (Newsletter::loadMultiple($checked_newsletters) as $newsletter) {
-          // If there is a valid subscriber, check if there is a subscription
-          // for the current newsletter and if this subscription has the status
+        /** @var \Drupal\simplenews\Subscription\SubscriptionManagerInterface $subscription_manager */
+        $subscription_manager = \Drupal::service('simplenews.subscription_manager');
+
+        foreach (simplenews_newsletter_load_multiple($checked_newsletters) as $newsletter) {
+          // If there is a valid subscriber, check if there is a subscription for
+          // the current newsletter and if this subscription has the status
           // unsubscribed.
           $is_unsubscribed = $subscriber ? $subscriber->isUnsubscribed($newsletter->id()) : FALSE;
           if (!$is_unsubscribed || $form_state->getValue('resubscribe') == TRUE) {
-            $this->subscriptionManager->subscribe($email, $newsletter->id(), FALSE, 'mass subscribe', $langcode);
+            $subscription_manager->subscribe($email, $newsletter->id(), FALSE, 'mass subscribe', $langcode);
             $added[] = $email;
           }
           else {
@@ -173,33 +133,32 @@ class SubscriberMassSubscribeForm extends FormBase {
     }
     if ($added) {
       $added = implode(", ", $added);
-      $this->messenger()->addMessage($this->t('The following addresses were added or updated: %added.', ['%added' => $added]));
+      drupal_set_message(t('The following addresses were added or updated: %added.', array('%added' => $added)));
 
-      $list_names = [];
-      foreach (Newsletter::loadMultiple($checked_newsletters) as $newsletter) {
+      $list_names = array();
+      foreach (simplenews_newsletter_load_multiple($checked_newsletters) as $newsletter) {
         $list_names[] = $newsletter->label();
       }
-      $this->messenger()->addMessage($this->t('The addresses were subscribed to the following newsletters: %newsletters.', ['%newsletters' => implode(', ', $list_names)]));
+      drupal_set_message(t('The addresses were subscribed to the following newsletters: %newsletters.', array('%newsletters' => implode(', ', $list_names))));
     }
     else {
-      $this->messenger()->addMessage($this->t('No addresses were added.'));
+      drupal_set_message(t('No addresses were added.'));
     }
     if ($invalid) {
       $invalid = implode(", ", $invalid);
-      $this->messenger()->addError($this->t('The following addresses were invalid: %invalid.', ['%invalid' => $invalid]));
+      drupal_set_message(t('The following addresses were invalid: %invalid.', array('%invalid' => $invalid)), 'error');
     }
 
     foreach ($unsubscribed as $name => $subscribers) {
       $subscribers = implode(", ", $subscribers);
-      $this->messenger()->addWarning($this->t('The following addresses were skipped because they have previously unsubscribed from %name: %unsubscribed.', ['%name' => $name, '%unsubscribed' => $subscribers]));
+      drupal_set_message(t('The following addresses were skipped because they have previously unsubscribed from %name: %unsubscribed.', array('%name' => $name, '%unsubscribed' => $subscribers)), 'warning');
     }
 
     if (!empty($unsubscribed)) {
-      $this->messenger()->addWarning($this->t("If you would like to resubscribe them, use the 'Force resubscription' option."));
+      drupal_set_message(t("If you would like to resubscribe them, use the 'Force resubscription' option."), 'warning');
     }
 
     // Return to the parent page.
-    $form_state->setRedirect('entity.simplenews_subscriber.collection');
+    $form_state->setRedirect('view.simplenews_subscribers.page_1');
   }
-
 }

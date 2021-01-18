@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\VoteTypeInterface.
+ */
+
 namespace Drupal\votingapi;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
@@ -24,5 +29,4 @@ interface VoteTypeInterface extends ConfigEntityInterface {
    *   The type of vote value.
    */
   public function getValueType();
-
 }

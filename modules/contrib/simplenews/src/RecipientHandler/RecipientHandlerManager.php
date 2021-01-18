@@ -1,12 +1,15 @@
 <?php
 
+/**
+ * Contains \Drupal\simplenews\RecipientHandler\RecipientHandlerManager.
+ */
+
 namespace Drupal\simplenews\RecipientHandler;
 
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\simplenews\Entity\Newsletter;
 
 /**
  * Provides an recipient handler plugin manager.
@@ -35,31 +38,18 @@ class RecipientHandlerManager extends DefaultPluginManager {
   }
 
   /**
-   * Returns the options for a recipient handler form field.
-   *
-   * @param string $newsletter_id
-   *   (optional) Restrict to handlers that are valid for the specified
-   *   newsletter ID.
-   *
-   * @return array
-   *   An array with key as handler ID and value as handler label.
+   * Returns the array of recipient handler labels.
+   * @todo documentation
    */
-  public function getOptions($newsletter_id = NULL) {
+  public function getOptions() {
     $handlers = $this->getDefinitions();
 
-    $options = [];
+    $allowed_values = array();
     foreach ($handlers as $handler => $settings) {
-      $options[$handler] = Xss::filter($settings['title']);
+      $allowed_values[$handler] = Xss::filter($settings['title']);
     }
 
-    if ($newsletter_id && ($newsletter = Newsletter::load($newsletter_id))) {
-      $allowed_handlers = array_filter($newsletter->allowed_handlers);
-      if ($allowed_handlers) {
-        $options = array_intersect_key($options, $allowed_handlers);
-      }
-    }
-
-    return $options;
+    return $allowed_values;
   }
 
 }

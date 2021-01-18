@@ -33,7 +33,7 @@ content:
     weight: 15
     third_party_settings: {  }
   simplenews_issue:
-    type: simplenews_issue
+    type: options_select
     weight: 3
     settings: {  }
     third_party_settings: {  }
@@ -57,6 +57,5 @@ content:
       match_operator: CONTAINS
       size: 60
       placeholder: ''
-      match_limit: 10
     third_party_settings: {  }
 hidden: {  }

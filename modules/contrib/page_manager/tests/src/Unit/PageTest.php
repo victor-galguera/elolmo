@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Tests\page_manager\Unit\PageTest.
+ */
+
 namespace Drupal\Tests\page_manager\Unit;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -238,7 +243,7 @@ class PageTest extends UnitTestCase {
         'machine_name' => 'baz',
         'type' => 'integer',
         'label' => 'Baz',
-      ],
+      ]
     ];
     $page = new Page(['id' => 'the_page', 'parameters' => $parameters, 'path' => 'test/{foo}/{bar}'], 'page');
 

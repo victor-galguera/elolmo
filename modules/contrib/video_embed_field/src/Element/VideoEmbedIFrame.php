@@ -1,9 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\video_embed_field\Element\InlineFrameEmbed.
+ */
+
 namespace Drupal\video_embed_field\Element;
 
 use Drupal\Core\Render\Element\RenderElement;
 use Drupal\Core\Template\Attribute;
+use Drupal\Core\Template\AttributeArray;
 
 /**
  * Providers an element design for embedding iframes.
@@ -22,9 +28,8 @@ class VideoEmbedIFrame extends RenderElement {
       '#url' => '',
       '#query' => [],
       '#attributes' => [],
-      '#fragment' => [],
       '#pre_render' => [
-        [static::class, 'preRenderInlineFrameEmbed'],
+        [static::class, 'preRenderInlineFrameEmbed']
       ],
     ];
   }

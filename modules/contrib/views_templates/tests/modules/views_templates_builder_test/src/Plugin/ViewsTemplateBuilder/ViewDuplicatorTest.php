@@ -1,13 +1,18 @@
 <?php
+/**
+ * @file
+ * Contains
+ * \Drupal\views_templates_builder_test\Plugin\ViewsTemplateBuilder\ViewDuplicatorTest.
+ */
+
 
 namespace Drupal\views_templates_builder_test\Plugin\ViewsTemplateBuilder;
+
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views_templates\Plugin\ViewsDuplicateBuilderBase;
 
 /**
- * The ViewsBuilder.
- *
  * @ViewsBuilder(
  *  id = "view_duplicator_test",
  *  view_template_id = "simple_view",
@@ -32,7 +37,7 @@ class ViewDuplicatorTest extends ViewsDuplicateBuilderBase {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm($form, FormStateInterface $form_state) {
     $config_form['pager_count'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Pager Count'),
@@ -40,5 +45,6 @@ class ViewDuplicatorTest extends ViewsDuplicateBuilderBase {
     ];
     return $config_form;
   }
+
 
 }

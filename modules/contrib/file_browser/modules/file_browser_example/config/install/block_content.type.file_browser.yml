@@ -1,8 +1,6 @@
 langcode: en
 status: true
-dependencies:
-  module:
-    - file_browser_example
+dependencies: {  }
 id: file_browser
 label: 'File Browser'
 revision: 1

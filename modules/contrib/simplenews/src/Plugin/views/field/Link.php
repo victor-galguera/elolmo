@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\views\field\Link.
+ */
+
 namespace Drupal\simplenews\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -27,7 +32,7 @@ class Link extends FieldPluginBase {
    */
   protected function defineOptions() {
     $options = parent::defineOptions();
-    $options['text'] = ['default' => ''];
+    $options['text'] = array('default' => '');
     return $options;
   }
 
@@ -35,16 +40,16 @@ class Link extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    $form['text'] = [
+    $form['text'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Text to display'),
       '#default_value' => $this->options['text'],
-    ];
+    );
     parent::buildOptionsForm($form, $form_state);
 
     // The path is set by renderLink function so don't allow to set it.
-    $form['alter']['path'] = ['#access' => FALSE];
-    $form['alter']['external'] = ['#access' => FALSE];
+    $form['alter']['path'] = array('#access' => FALSE);
+    $form['alter']['external'] = array('#access' => FALSE);
   }
 
   /**
@@ -62,5 +67,4 @@ class Link extends FieldPluginBase {
       return $this->renderLink($entity, $values);
     }
   }
-
 }

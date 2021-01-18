@@ -2,10 +2,13 @@
 
 namespace Drupal\webform\Plugin\WebformHandler;
 
-use Drupal\Component\Render\MarkupInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Serialization\Yaml;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
@@ -15,10 +18,14 @@ use Drupal\webform\Plugin\WebformElement\NumericBase;
 use Drupal\webform\Plugin\WebformElement\WebformCompositeBase;
 use Drupal\webform\Plugin\WebformElement\WebformManagedFileBase;
 use Drupal\webform\Plugin\WebformElementInterface;
+use Drupal\webform\Plugin\WebformElementManagerInterface;
 use Drupal\webform\Plugin\WebformHandlerBase;
 use Drupal\webform\WebformInterface;
 use Drupal\webform\WebformMessageManagerInterface;
+use Drupal\webform\WebformSubmissionConditionsValidatorInterface;
 use Drupal\webform\WebformSubmissionInterface;
+use Drupal\webform\WebformTokenManagerInterface;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -75,11 +82,11 @@ class RemotePostWebformHandler extends WebformHandlerBase {
   protected $elementManager;
 
   /**
-   * The request stack.
+   * The current request.
    *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
+   * @var \Symfony\Component\HttpFoundation\Request
    */
-  protected $requestStack;
+  protected $request;
 
   /**
    * The DrupalKernel instance used in the test.
@@ -102,16 +109,37 @@ class RemotePostWebformHandler extends WebformHandlerBase {
   /**
    * {@inheritdoc}
    */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelFactoryInterface $logger_factory, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, WebformSubmissionConditionsValidatorInterface $conditions_validator, ModuleHandlerInterface $module_handler, ClientInterface $http_client, WebformTokenManagerInterface $token_manager, WebformMessageManagerInterface $message_manager, WebformElementManagerInterface $element_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger_factory, $config_factory, $entity_type_manager, $conditions_validator);
+    $this->moduleHandler = $module_handler;
+    $this->httpClient = $http_client;
+    $this->tokenManager = $token_manager;
+    $this->messageManager = $message_manager;
+    $this->elementManager = $element_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
-    $instance->moduleHandler = $container->get('module_handler');
-    $instance->httpClient = $container->get('http_client');
-    $instance->tokenManager = $container->get('webform.token_manager');
-    $instance->messageManager = $container->get('webform.message_manager');
-    $instance->elementManager = $container->get('plugin.manager.webform.element');
+    $instance = new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('logger.factory'),
+      $container->get('config.factory'),
+      $container->get('entity_type.manager'),
+      $container->get('webform_submission.conditions_validator'),
+      $container->get('module_handler'),
+      $container->get('http_client'),
+      $container->get('webform.token_manager'),
+      $container->get('webform.message_manager'),
+      $container->get('plugin.manager.webform.element')
+    );
+
     $instance->request = $container->get('request_stack')->getCurrentRequest();
-    $instance->requestStack = $container->get('request_stack');
     $instance->kernel = $container->get('kernel');
+
     return $instance;
   }
 
@@ -143,7 +171,6 @@ class RemotePostWebformHandler extends WebformHandlerBase {
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    // @todo Determine why entity field manager dependency can't be injected.
     $field_names = array_keys(\Drupal::service('entity_field.manager')->getBaseFieldDefinitions('webform_submission'));
     $excluded_data = array_combine($field_names, $field_names);
     return [
@@ -368,7 +395,7 @@ class RemotePostWebformHandler extends WebformHandlerBase {
     $form['additional']['error_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Custom error response redirect URL'),
-      '#description' => $this->t('The URL or path to redirect to when a remote fails.'),
+      '#description' => $this->t('The URL or path to redirect to when a remote fails.', $t_args),
       '#default_value' => $this->configuration['error_url'],
       '#pattern' => '(https?:\/\/|\/).+',
     ];
@@ -568,22 +595,19 @@ class RemotePostWebformHandler extends WebformHandlerBase {
         continue;
       }
 
-      // Cast markup to string. This only applies to computed Twig values.
-      // @see \Drupal\webform\Element\WebformComputedTwig::computeValue
-      if ($element_value instanceof MarkupInterface) {
-        $data[$element_key] = $element_value = (string) $element_value;
-      }
-
       $element_plugin = $this->elementManager->getElementInstance($element);
 
       if ($element_plugin instanceof WebformManagedFileBase) {
         if ($element_plugin->hasMultipleValues($element)) {
           foreach ($element_value as $fid) {
-            $data['_' . $element_key][] = $this->getRequestFileData($fid);
+            $data['_' . $element_key][] = $this->getResponseFileData($fid);
           }
         }
         else {
-          $data['_' . $element_key] = $this->getRequestFileData($element_value);
+          $data['_' . $element_key] = $this->getResponseFileData($element_value);
+          // @deprecated in Webform 8.x-5.0-rc17. Use new format
+          // This code will be removed in 8.x-6.x.
+          $data += $this->getResponseFileData($element_value, $element_key . '__');
         }
       }
       elseif (!empty($this->configuration['cast'])) {
@@ -735,7 +759,7 @@ class RemotePostWebformHandler extends WebformHandlerBase {
    * @return array
    *   An associative array containing file data (name, uri, mime, and data).
    */
-  protected function getRequestFileData($fid, $prefix = '') {
+  protected function getResponseFileData($fid, $prefix = '') {
     /** @var \Drupal\file\FileInterface $file */
     $file = File::load($fid);
     if (!$file) {
@@ -938,6 +962,7 @@ class RemotePostWebformHandler extends WebformHandlerBase {
             '#suffix' => '</pre>',
           ],
         ];
+
       }
       if ($tokens = $this->getResponseTokens($response_data, ['webform', 'handler', $this->getHandlerId(), $state])) {
         asort($tokens);
@@ -971,7 +996,7 @@ class RemotePostWebformHandler extends WebformHandlerBase {
       '#markup' => $message,
     ];
 
-    $this->messenger()->addMessage($this->renderer->renderPlain($build), $type);
+    $this->messenger()->addMessage(\Drupal::service('renderer')->renderPlain($build), $type);
   }
 
   /**
@@ -1031,12 +1056,11 @@ class RemotePostWebformHandler extends WebformHandlerBase {
         $error_url = $base_url . preg_replace('#^' . $base_path . '#', '/', $error_url);
       }
       $response = new TrustedRedirectResponse($error_url);
-      $request = $this->requestStack->getCurrentRequest();
       // Save the session so things like messages get saved.
-      $request->getSession()->save();
-      $response->prepare($request);
+      $this->request->getSession()->save();
+      $response->prepare($this->request);
       // Make sure to trigger kernel events.
-      $this->kernel->terminate($request, $response);
+      $this->kernel->terminate($this->request, $response);
       $response->send();
     }
   }

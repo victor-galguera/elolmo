@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools_wizard_test\ExampleConfigEntityListBuilder.
+ */
+
 namespace Drupal\ctools_wizard_test;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
@@ -22,7 +27,7 @@ class ExampleConfigEntityListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
+    $row['label'] = $this->getLabel($entity);
     $row['id'] = $entity->id();
     // You probably want a few more properties here...
     return $row + parent::buildRow($entity);

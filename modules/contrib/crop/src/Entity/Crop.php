@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\crop\Entity\ImageCrop.
+ */
+
 namespace Drupal\crop\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
@@ -8,8 +13,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\crop\CropInterface;
 use Drupal\crop\EntityProviderNotFoundException;
-use Drupal\image\Entity\ImageStyle;
-use Drupal\image\ImageStyleInterface;
 
 /**
  * Defines the crop entity class.
@@ -20,14 +23,14 @@ use Drupal\image\ImageStyleInterface;
  *   bundle_label = @Translation("Crop type"),
  *   handlers = {
  *     "storage" = "Drupal\crop\CropStorage",
- *     "storage_schema" = "Drupal\crop\CropStorageSchema",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "access" = "Drupal\Core\Entity\EntityAccessControlHandler",
  *     "form" = {
  *       "default" = "Drupal\Core\Entity\ContentEntityForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityConfirmFormBase",
  *       "edit" = "Drupal\Core\Entity\ContentEntityForm"
- *     }
+ *     },
+ *     "translation" = "Drupal\content_translation\ContentTranslationHandler"
  *   },
  *   base_table = "crop",
  *   data_table = "crop_field_data",
@@ -43,11 +46,6 @@ use Drupal\image\ImageStyleInterface;
  *     "langcode" = "langcode",
  *     "uuid" = "uuid"
  *   },
- *   revision_metadata_keys = {
- *     "revision_timestamp" = "revision_timestamp",
- *     "revision_uid" = "revision_uid",
- *     "revision_log" = "revision_log"
- *   },
  *   bundle_entity_type = "crop_type",
  *   permission_granularity = "entity_type",
  *   admin_permission = "administer crop",
@@ -56,13 +54,6 @@ use Drupal\image\ImageStyleInterface;
  * )
  */
 class Crop extends ContentEntityBase implements CropInterface {
-
-  /**
-   * List of effects per image style.
-   *
-   * @var array
-   */
-  protected static $effectsByImageStyle = [];
 
   /**
    * {@inheritdoc}
@@ -143,77 +134,16 @@ class Crop extends ContentEntityBase implements CropInterface {
    * {@inheritdoc}
    */
   public static function findCrop($uri, $type) {
-    return \Drupal::entityTypeManager()->getStorage('crop')->getCrop($uri, $type);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCropFromImageStyle($uri, ImageStyleInterface $image_style) {
-    @trigger_error('Crop::getCropFromImageStyle() is deprecated, use Crop::getCropFromImageStyleId() instead.', E_USER_DEPRECATED);
-    return static::getCropFromImageStyleId($uri, $image_style->id());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getCropFromImageStyleId($uri, $image_style_id) {
-    $crop = NULL;
-    $effects = self::getEffectsFromImageStyleId($image_style_id);
-
-    if (isset($effects['crop_crop']['type'])) {
-      $crop = self::findCrop($uri, $effects['crop_crop']['type']);
+    $query = \Drupal::entityQuery('crop')
+      ->condition('uri', $uri);
+    if ($type) {
+      $query->condition('type', $type);
     }
+    $crop = $query->sort('cid')
+      ->range(0, 1)
+      ->execute();
 
-    // Fallback to use the provider as a fallback to check if provider name,
-    // match with crop types for modules non-based on "manual crop" effects.
-    if (!$crop) {
-      foreach ($effects as $effect) {
-        $provider = $effect['provider'];
-        // Image doesn't provide a crop, so we can ignore that provider.
-        if ($provider === 'image') {
-          continue;
-        }
-        $crop = self::findCrop($uri, $provider);
-      }
-    }
-
-    return $crop;
-  }
-
-  /**
-   * Returns the effects for an image style.
-   *
-   * @param string $image_style_id
-   *   The image style ID.
-   *
-   * @return array[]
-   *   A list of effects, keyed by plugin ID, each effect has a uuid, provider
-   *   and in case of crop_crop, the type key.
-   */
-  protected static function getEffectsFromImageStyleId($image_style_id) {
-    if (!isset(static::$effectsByImageStyle[$image_style_id])) {
-      $image_style = ImageStyle::load($image_style_id);
-      if ($image_style === NULL) {
-        return [];
-      }
-
-      $effects = [];
-      foreach ($image_style->getEffects() as $uuid => $effect) {
-        /** @var \Drupal\image\ImageEffectInterface $effect */
-        // Store the effects parameters for later use.
-        $effects[$effect->getPluginId()] = [
-          'uuid' => $uuid,
-          'provider' => $effect->getPluginDefinition()['provider'],
-        ];
-
-        if ($effect->getPluginId() === 'crop_crop') {
-          $effects[$effect->getPluginId()]['type'] = $effect->getConfiguration()['data']['crop_type'];
-        }
-      }
-      static::$effectsByImageStyle[$image_style_id] = $effects;
-    }
-    return static::$effectsByImageStyle[$image_style_id];
+    return $crop ? \Drupal::entityTypeManager()->getStorage('crop')->load(current($crop)) : NULL;
   }
 
   /**
@@ -230,7 +160,7 @@ class Crop extends ContentEntityBase implements CropInterface {
 
     // Try to set URI if not yet defined.
     if (empty($this->uri->value) && !empty($this->entity_type->value) && !empty($this->entity_id->value)) {
-      $entity = \Drupal::entityTypeManager()->getStorage($this->entity_type->value)->load($this->entity_id->value);
+      $entity = \Drupal::entityManager()->getStorage($this->entity_type->value)->load($this->entity_id->value);
       if ($uri = $this->provider()->uri($entity)) {
         $this->set('uri', $uri);
       }
@@ -255,20 +185,9 @@ class Crop extends ContentEntityBase implements CropInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
-    parent::postSave($storage, $update);
-
-    // If you are manually generating your image derivatives instead of waiting
-    // for them to be generated on the fly, because you are using a cloud
-    // storage service (like S3), then you may not want your image derivatives
-    // to be flushed. If they are you could end up serving 404s during the time
-    // between the crop entity being saved and the image derivative being
-    // manually generated and pushed to your cloud storage service. In that
-    // case, set this configuration variable to false.
-    $flush_derivative_images = \Drupal::config('crop.settings')->get('flush_derivative_images');
-    if ($flush_derivative_images) {
-      image_path_flush($this->uri->value);
-    }
+  public function save() {
+    parent::save();
+    image_path_flush($this->uri->value);
   }
 
   /**
@@ -372,12 +291,14 @@ class Crop extends ContentEntityBase implements CropInterface {
     $fields['revision_timestamp'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Revision timestamp'))
       ->setDescription(t('The time that the current revision was created.'))
+      ->setQueryable(FALSE)
       ->setRevisionable(TRUE);
 
     $fields['revision_uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Revision author ID'))
       ->setDescription(t('The user ID of the author of the current revision.'))
       ->setSetting('target_type', 'user')
+      ->setQueryable(FALSE)
       ->setRevisionable(TRUE);
 
     $fields['revision_log'] = BaseFieldDefinition::create('string_long')

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\SubscriberDeleteForm.
+ */
+
 namespace Drupal\simplenews\Form;
 
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
@@ -15,21 +20,21 @@ class SubscriberDeleteForm extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete %name?', ['%name' => $this->entity->label()]);
+    return t('Are you sure you want to delete %name?', array('%name' => $this->entity->label()));
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.simplenews_subscriber.collection');
+    return new Url('view.simplenews_subscribers.page_1');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getConfirmText() {
-    return $this->t('Delete');
+    return t('Delete');
   }
 
   /**
@@ -37,9 +42,9 @@ class SubscriberDeleteForm extends ContentEntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $this->messenger()->addMessage($this->t('Subscriber %label has been deleted.', ['%label' => $this->entity->label()]));
-    \Drupal::logger('simplenews')->notice('Subscriber %label has been deleted.', ['%label' => $this->entity->label()]);
-    $form_state->setRedirect('entity.simplenews_subscriber.collection');
+    drupal_set_message(t('Subscriber %label has been deleted.', array('%label' => $this->entity->label())));
+    \Drupal::logger('simplenews')->notice('Subscriber %label has been deleted.', array('%label' => $this->entity->label()));
+    $form_state->setRedirect('view.simplenews_subscribers.page_1');
   }
 
 }

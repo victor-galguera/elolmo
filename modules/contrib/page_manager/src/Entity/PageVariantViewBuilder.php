@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\page_manager\Entity\PageVariantViewBuilder.
+ */
+
 namespace Drupal\page_manager\Entity;
 
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
@@ -64,14 +69,14 @@ class PageVariantViewBuilder implements EntityViewBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function viewField(FieldItemListInterface $items, $display_options = []) {
+  public function viewField(FieldItemListInterface $items, $display_options = array()) {
     throw new \LogicException();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function viewFieldItem(FieldItemInterface $item, $display_options = []) {
+  public function viewFieldItem(FieldItemInterface $item, $display_options = array()) {
     throw new \LogicException();
   }
 

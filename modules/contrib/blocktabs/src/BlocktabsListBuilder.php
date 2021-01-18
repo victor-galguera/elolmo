@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\BlocktabsListBuilder.
+ */
+
 namespace Drupal\blocktabs;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
@@ -26,7 +31,7 @@ class BlocktabsListBuilder extends ConfigEntityListBuilder {
   /**
    * Constructs a new BlocktabsListBuilder object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   * @param EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $entity_storage
    *   The blocktabs entity storage class.
@@ -44,7 +49,7 @@ class BlocktabsListBuilder extends ConfigEntityListBuilder {
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity_type.manager')->getStorage($entity_type->id()),
+      $container->get('entity.manager')->getStorage($entity_type->id()),
       $container->get('url_generator'),
       $container->get('string_translation')
     );
@@ -70,13 +75,7 @@ class BlocktabsListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function getDefaultOperations(EntityInterface $entity) {
-    $operations = parent::getDefaultOperations($entity);
-
-    // Remove destination URL from the edit link to allow editing tabs.
-    if (isset($operations['edit'])) {
-      $operations['edit']['url'] = $entity->toUrl('edit-form');
-    }
-    return $operations;
+    return parent::getDefaultOperations($entity);
   }
 
   /**
@@ -84,9 +83,9 @@ class BlocktabsListBuilder extends ConfigEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    $build['#empty'] = $this->t('There are currently no blocktabs. <a href=":url">Add a new one</a>.', [
+    $build['#empty'] = $this->t('There are currently no blocktabs. <a href=":url">Add a new one</a>.', array(
       ':url' => $this->urlGenerator->generateFromRoute('blocktabs.add'),
-    ]);
+    ));
     return $build;
   }
 

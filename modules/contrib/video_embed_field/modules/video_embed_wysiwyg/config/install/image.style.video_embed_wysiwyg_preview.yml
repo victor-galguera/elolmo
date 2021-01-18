@@ -1,9 +1,6 @@
 langcode: en
 status: true
-dependencies:
-  enforced:
-    module:
-      - video_embed_wysiwyg
+dependencies: {  }
 name: video_embed_wysiwyg_preview
 label: 'Video Embed Wysiwyg: Thumbnail Preview'
 effects:

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\TabPluginCollection.
+ */
+
 namespace Drupal\blocktabs;
 
 use Drupal\Core\Plugin\DefaultLazyPluginCollection;

@@ -3,9 +3,9 @@
 namespace Drupal\webform_access\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
-
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\webform\EntityStorage\WebformEntityStorageTrait;
+use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -18,8 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class WebformAccessGroupEntityBlock extends BlockBase implements ContainerFactoryPluginInterface {
-
-  use WebformEntityStorageTrait;
 
   /**
    * The current user.
@@ -36,21 +34,36 @@ class WebformAccessGroupEntityBlock extends BlockBase implements ContainerFactor
   protected $webformAccessGroupStorage;
 
   /**
-   * The 'language_manager' service.
+   * Creates a WebformAccessGroupEntityBlock instance.
    *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  protected $languageManager;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->currentUser = $current_user;
+    $this->webformAccessGroupStorage = $entity_type_manager->getStorage('webform_access_group');
+  }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $instance = new static($configuration, $plugin_id, $plugin_definition);
-    $instance->currentUser = $container->get('current_user');
-    $instance->entityTypeManager = $container->get('entity_type.manager');
-    $instance->languageManager = $container->get('language_manager');
-    return $instance;
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('current_user'),
+      $container->get('entity_type.manager')
+    );
   }
 
   /**
@@ -58,18 +71,14 @@ class WebformAccessGroupEntityBlock extends BlockBase implements ContainerFactor
    */
   public function build() {
     /** @var \Drupal\node\NodeInterface[] $nodes */
-    $nodes = $this->getEntityStorage('webform_access_group')->getUserEntities($this->currentUser, 'node');
+    $nodes = $this->webformAccessGroupStorage->getUserEntities($this->currentUser, 'node');
     if (empty($nodes)) {
       return NULL;
     }
 
-    $langcode = $this->languageManager->getCurrentLanguage()->getId();
     $items = [];
     foreach ($nodes as $node) {
       if ($node->access()) {
-        if ($node->hasTranslation($langcode)) {
-          $node = $node->getTranslation($langcode);
-        }
         $items[] = $node->toLink()->toRenderable();
       }
     }

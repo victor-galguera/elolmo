@@ -4,4 +4,3 @@ type_id: 'embed_test_default'
 dependencies:
   module:
     - embed_test
-icon: { }

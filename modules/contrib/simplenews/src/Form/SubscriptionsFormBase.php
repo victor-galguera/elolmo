@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\SubscriberFormBase.
+ */
 
 namespace Drupal\simplenews\Form;
 
@@ -6,7 +10,6 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\simplenews\Entity\Newsletter;
-use Drupal\simplenews\Entity\Subscriber;
 
 /**
  * Entity form for Subscriber with common routines.
@@ -40,13 +43,6 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
    * @var \Drupal\simplenews\Entity\Newsletter[]
    */
   protected $newsletters;
-
-  /**
-   * Allow delete button.
-   *
-   * @var bool
-   */
-  protected $allowDelete = FALSE;
 
   /**
    * Set the newsletters available to select from.
@@ -140,12 +136,13 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
 
     // Modify UI texts.
     if ($mail = $this->entity->getMail()) {
-      $form['subscriptions']['widget']['#title'] = $this->t('Subscriptions for %mail', ['%mail' => $mail]);
-      $form['subscriptions']['widget']['#description'] = $this->t('Check the newsletters you want to subscribe to. Uncheck the ones you want to unsubscribe from.');
+      $form['mail']['#access'] = FALSE;
+      $form['subscriptions']['widget']['#title'] = t('Subscriptions for %mail', array('%mail' => $mail));
+      $form['subscriptions']['widget']['#description'] = t('Check the newsletters you want to subscribe to. Uncheck the ones you want to unsubscribe from.');
     }
     else {
-      $form['subscriptions']['widget']['#title'] = $this->t('Manage your newsletter subscriptions');
-      $form['subscriptions']['widget']['#description'] = $this->t('Select the newsletter(s) to which you want to subscribe or unsubscribe.');
+      $form['subscriptions']['widget']['#title'] = t('Manage your newsletter subscriptions');
+      $form['subscriptions']['widget']['#description'] = t('Select the newsletter(s) to which you want to subscribe or unsubscribe.');
     }
 
     return $form;
@@ -155,56 +152,35 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
    * {@inheritdoc}
    */
   protected function actions(array $form, FormStateInterface $form_state) {
-    // There are three user groups for subscriptions forms:
-    // 1) An authenticated subscriber updating existing subscriptions. The main
-    // case is a logged in user, but it could also be an anonymous subscription
-    // authenticated by means of a hash. In both cases, the email address is
-    // set.
-    // 2) An unauthenticated user who enters an email address in the form and
-    // requests to subscribe or unsubscribe. In this case the email address
-    // is not set.
-    // 3) An administrator adding a new subscription. In this case the email
-    // address is not set, but there is a logged in user.
-    $has_widget = !$this->getSubscriptionWidget($form_state)->isHidden();
-    $has_mail = (bool) $this->entity->getMail();
+    // Set up some flags from which submit button visibility can be determined.
+    $options = !$this->getSubscriptionWidget($form_state)->isHidden();
+    $mail = (bool) $this->entity->getMail();
+    $subscribed = !$options && $mail && $this->entity->isSubscribed($this->getOnlyNewsletterId());
 
-    $actions = parent::actions($form, $form_state);
-
-    if ($has_widget && ($has_mail || \Drupal::currentUser()->isAuthenticated())) {
-      // 1a) When authenticated with a widget
-      // 3) An administrator adding a new subscription.
-      // In both cases, show a single update button.
-      $actions[static::SUBMIT_UPDATE] = $actions['submit'];
-      $actions[static::SUBMIT_UPDATE]['#submit'][] = '::submitUpdate';
-    }
-    else {
-      // 2) When not authenticated, show subscribe and unsubscribe buttons. The
-      // user can check which newsletters to alter.
-      //
-      // 1b) The final case is when authenticated with no widget which is for a
-      // form that applies to a single newsletter. In this case there will be a
-      // single button either subscribe or unsubscribe depending on the current
-      // subscription state.
-      if ($has_widget || !$this->entity->isSubscribed($this->getOnlyNewsletterId())) {
-        // Subscribe button.
-        $actions[static::SUBMIT_SUBSCRIBE] = $actions['submit'];
-        $actions[static::SUBMIT_SUBSCRIBE]['#value'] = $this->t('Subscribe');
-        $actions[static::SUBMIT_SUBSCRIBE]['#submit'][] = '::submitSubscribe';
-      }
-
-      if ($has_widget || $this->entity->isSubscribed($this->getOnlyNewsletterId())) {
-        // Unsubscribe button.
-        $actions[static::SUBMIT_UNSUBSCRIBE] = $actions['submit'];
-        $actions[static::SUBMIT_UNSUBSCRIBE]['#value'] = $this->t('Unsubscribe');
-        $actions[static::SUBMIT_UNSUBSCRIBE]['#submit'][] = '::submitUnsubscribe';
-      }
-    }
-
-    unset($actions['submit']);
-    if (!$this->allowDelete) {
-      unset($actions['delete']);
-    }
-
+    // Add all buttons, but conditionally set #access.
+    $actions = array(
+      static::SUBMIT_SUBSCRIBE => array(
+        // Show 'Subscribe' if not subscribed, or user is unknown.
+        '#access' => (!$options && !$subscribed) || !$mail,
+        '#type' => 'submit',
+        '#value' => t('Subscribe'),
+        '#submit' => array('::submitForm', '::save', '::submitSubscribe'),
+      ),
+      static::SUBMIT_UNSUBSCRIBE => array(
+        // Show 'Unsubscribe' if subscribed, or unknown and can select.
+        '#access' => (!$options && $subscribed) || (!$mail && $options),
+        '#type' => 'submit',
+        '#value' => t('Unsubscribe'),
+        '#submit' => array('::submitForm', '::save', '::submitUnsubscribe'),
+      ),
+      static::SUBMIT_UPDATE => array(
+        // Show 'Update' if user is known and can select newsletters.
+        '#access' => $options && $mail,
+        '#type' => 'submit',
+        '#value' => t('Update'),
+        '#submit' => array('::submitForm', '::save', '::submitUpdate'),
+      ),
+    );
     return $actions;
   }
 
@@ -212,12 +188,12 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $mail = $form_state->getValue(['mail', 0, 'value']);
+    $mail = $form_state->getValue(array('mail', 0, 'value'));
     // Users should login to manage their subscriptions.
     if (\Drupal::currentUser()->isAnonymous() && $user = user_load_by_mail($mail)) {
       $message = $user->isBlocked() ?
-        $this->t('The email address %mail belongs to a blocked user.', ['%mail' => $mail]) :
-        $this->t('There is an account registered for the e-mail address %mail. Please log in to manage your newsletter subscriptions.', ['%mail' => $mail]);
+        $this->t('The email address %mail belongs to a blocked user.', array('%mail' => $mail)) :
+        $this->t('There is an account registered for the e-mail address %mail. Please log in to manage your newsletter subscriptions.', array('%mail' => $mail));
       $form_state->setErrorByName('mail', $message);
     }
 
@@ -225,7 +201,7 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
     // available, at least one must be checked.
     $update = in_array('::submitUpdate', $form_state->getSubmitHandlers());
     if (!$update && !$this->getSubscriptionWidget($form_state)->isHidden() && !count($form_state->getValue('subscriptions'))) {
-      $form_state->setErrorByName('subscriptions', $this->t('You must select at least one newsletter.'));
+      $form_state->setErrorByName('subscriptions', t('You must select at least one newsletter.'));
     }
 
     parent::validateForm($form, $form_state);
@@ -238,8 +214,8 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
     // Subclasses try to load an existing subscriber in different ways in
     // buildForm. For anonymous user the email is unknown in buildForm, but here
     // we can try again to load an existing subscriber.
-    $mail = $form_state->getValue(['mail', 0, 'value']);
-    if ($this->entity->isNew() && $subscriber = Subscriber::loadByMail($mail)) {
+    $mail = $form_state->getValue(array('mail', 0, 'value'));
+    if ($this->entity->isNew() && isset($mail) && $subscriber = simplenews_subscriber_load_by_mail($mail)) {
       $this->setEntity($subscriber);
     }
 
@@ -274,7 +250,7 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
       $subscription_manager->subscribe($this->entity->getMail(), $newsletter_id, NULL, 'website');
     }
     $sent = $subscription_manager->sendConfirmations();
-    $this->messenger()->addMessage($this->getSubmitMessage($form_state, static::SUBMIT_SUBSCRIBE, $sent));
+    drupal_set_message($this->getSubmitMessage($form_state, static::SUBMIT_SUBSCRIBE, $sent));
   }
 
   /**
@@ -292,7 +268,7 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
       $subscription_manager->unsubscribe($this->entity->getMail(), $newsletter_id, NULL, 'website');
     }
     $sent = $subscription_manager->sendConfirmations();
-    $this->messenger()->addMessage($this->getSubmitMessage($form_state, static::SUBMIT_UNSUBSCRIBE, $sent));
+    drupal_set_message($this->getSubmitMessage($form_state, static::SUBMIT_UNSUBSCRIBE, $sent));
   }
 
   /**
@@ -311,13 +287,10 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
     foreach ($this->extractNewsletterIds($form_state, TRUE) as $newsletter_id) {
       $subscription_manager->subscribe($this->entity->getMail(), $newsletter_id, FALSE, 'website');
     }
-
-    if (!$this->entity->isNew()) {
-      foreach ($this->extractNewsletterIds($form_state, FALSE) as $newsletter_id) {
-        $subscription_manager->unsubscribe($this->entity->getMail(), $newsletter_id, FALSE, 'website');
-      }
+    foreach ($this->extractNewsletterIds($form_state, FALSE) as $newsletter_id) {
+      $subscription_manager->unsubscribe($this->entity->getMail(), $newsletter_id, FALSE, 'website');
     }
-    $this->messenger()->addMessage($this->getSubmitMessage($form_state, static::SUBMIT_UPDATE, FALSE));
+    drupal_set_message($this->getSubmitMessage($form_state, static::SUBMIT_UPDATE, FALSE));
   }
 
   /**
@@ -335,5 +308,4 @@ abstract class SubscriptionsFormBase extends ContentEntityForm {
     return $this->getSubscriptionWidget($form_state)
       ->extractNewsletterIds($form_state->getValue('subscriptions'), $selected);
   }
-
 }

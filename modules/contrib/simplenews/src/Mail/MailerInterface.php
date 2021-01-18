@@ -1,8 +1,14 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\simplenews\Mail\MailerInterface.
+ */
 
 namespace Drupal\simplenews\Mail;
 
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\simplenews\NewsletterInterface;
+use Drupal\simplenews\Mail\MailInterface;
+use Drupal\node\NodeInterface;
 use Drupal\simplenews\Spool\SpoolStorageInterface;
 use Drupal\simplenews\SubscriberInterface;
 
@@ -12,7 +18,7 @@ use Drupal\simplenews\SubscriberInterface;
 interface MailerInterface {
 
   /**
-   * Send mail spool immediately if cron should not be used.
+   * Send mail spool immediatly if cron should not be used.
    *
    * @param array $conditions
    *   (Optional) Array of spool conditions which are applied to the query.
@@ -22,7 +28,7 @@ interface MailerInterface {
    * @return bool
    *   TRUE if the mails were sent or a batch was prepared, FALSE if not.
    */
-  public function attemptImmediateSend(array $conditions = [], $use_batch = TRUE);
+  public function attemptImmediateSend(array $conditions = array(), $use_batch = TRUE);
 
   /**
    * Send simplenews newsletters from the spool.
@@ -32,6 +38,8 @@ interface MailerInterface {
    * Mail data is retrieved from the spool, rendered and send one by one
    * If sending is successful the message is marked as send in the spool.
    *
+   * @todo: Redesign API to allow language counter in multilingual sends.
+   *
    * @param int $limit
    *   (Optional) The maximum number of mails to send. Defaults to
    *   unlimited.
@@ -40,10 +48,8 @@ interface MailerInterface {
    *
    * @return int
    *   Returns the amount of sent mails.
-   *
-   * @todo: Redesign API to allow language counter in multilingual sends.
    */
-  public function sendSpool($limit = SpoolStorageInterface::UNLIMITED, array $conditions = []);
+  public function sendSpool($limit = SpoolStorageInterface::UNLIMITED, array $conditions = array());
 
   /**
    * Send a node to an email address.
@@ -51,20 +57,20 @@ interface MailerInterface {
    * @param \Drupal\simplenews\Mail\MailInterface $mail
    *   The mail object.
    *
-   * @return int
-   *   One of the SpoolStorageInterface::STATUS_* constants.
+   * @return bool
+   *   TRUE if the email was successfully delivered; otherwise FALSE.
    */
   public function sendMail(MailInterface $mail);
 
   /**
    * Send test version of newsletter.
    *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $issue
-   *   The newsletter issue to be sent.
+   * @param \Drupal\node\NodeInterface $node
+   *   The newsletter node to be sent.
    * @param array $test_addresses
    *   List of addresses to send the newsletter to.
    */
-  public function sendTest(ContentEntityInterface $issue, array $test_addresses);
+  public function sendTest(NodeInterface $node, array $test_addresses);
 
   /**
    * Send collected confirmations.
@@ -78,7 +84,7 @@ interface MailerInterface {
    * @todo This function currently does not return information about which
    *       subscriber received a confirmation.
    */
-  public function sendCombinedConfirmation(SubscriberInterface $subscriber);
+  function sendCombinedConfirmation(SubscriberInterface $subscriber);
 
   /**
    * Update newsletter sent status.
@@ -110,5 +116,4 @@ interface MailerInterface {
    *    'formatted' => Formatted, mime encoded, from name and address
    */
   public function getFrom();
-
 }

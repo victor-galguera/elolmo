@@ -1,8 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\php\Tests\Plugin\views\ArgumentValidatorTest.
+ */
+
 namespace Drupal\php\Tests\Plugin\views;
 
-use Drupal\Tests\views\Kernel\ViewsKernelTestBase;
+use Drupal\views\Tests\ViewKernelTestBase;
 use Drupal\views\Tests\ViewTestData;
 use Drupal\views\Views;
 
@@ -13,7 +18,7 @@ use Drupal\views\Views;
  *
  * @see \Drupal\php\Plugin\views\argument_validator\Php
  */
-class PhpArgumentValidatorTest extends ViewsKernelTestBase {
+class PhpArgumentValidatorTest extends ViewKernelTestBase {
 
   /**
    * Views used by this test.
@@ -27,7 +32,7 @@ class PhpArgumentValidatorTest extends ViewsKernelTestBase {
    *
    * @var array
    */
-  public static $modules = ['filter', 'php', 'php_views_test_config'];
+  public static $modules = ['php', 'php_views_test_config'];
 
   /**
    * {@inheritdoc}
@@ -35,7 +40,7 @@ class PhpArgumentValidatorTest extends ViewsKernelTestBase {
   protected function setUp($import_test_views = TRUE) {
     parent::setUp();
     if ($import_test_views) {
-      ViewTestData::createTestViews(get_class($this), ['php_views_test_config']);
+      ViewTestData::createTestViews(get_class($this), array('php_views_test_config'));
     }
   }
 

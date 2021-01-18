@@ -44,7 +44,7 @@ class ConfigForm extends ConfigFormBase {
         '@yaml-editor' => 'https://www.drupal.org/project/yaml_editor',
       ]);
 
-      $this->messenger()->addWarning($message);
+      drupal_set_message($message, 'warning');
     }
 
     $form['config'] = array(

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\VoteInterface.
+ */
+
 namespace Drupal\votingapi;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -87,7 +92,7 @@ interface VoteInterface extends ContentEntityInterface, EntityOwnerInterface {
   public function setOwnerId($uid);
 
   /**
-   * Returns the source of the vote.  It is the user's IP address hash.
+   * Returns the source of the vote.  By default, this is the user's IP address.
    *
    * @return string
    *   The vote source.
@@ -95,7 +100,7 @@ interface VoteInterface extends ContentEntityInterface, EntityOwnerInterface {
   public function getSource();
 
   /**
-   * Sets the source of the vote. It is the user's IP address hash.
+   * Sets the source of the vote. By default, this is the user's IP address.
    *
    * @param string $source
    *   The source of the vote.
@@ -104,5 +109,4 @@ interface VoteInterface extends ContentEntityInterface, EntityOwnerInterface {
    *   The called vote entity.
    */
   public function setSource($source);
-
 }

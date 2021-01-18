@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_embed\EntityNotFoundException.
+ */
+
 namespace Drupal\entity_embed\Exception;
 
 /**

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity\Controller\RevisionControllerTrait.
+ */
+
 namespace Drupal\entity\Controller;
 
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -23,7 +28,7 @@ trait RevisionControllerTrait {
    *
    * @return \Drupal\Core\Language\LanguageManagerInterface
    */
-  abstract public function languageManager();
+  public abstract function languageManager();
 
   /**
    * Determines if the user has permission to revert revisions.
@@ -55,6 +60,7 @@ trait RevisionControllerTrait {
    *
    * @return array
    *   A link render array.
+   *
    */
   abstract protected function buildRevertRevisionLink(EntityInterface $entity_revision);
 
@@ -116,18 +122,24 @@ trait RevisionControllerTrait {
     $langcode = $this->languageManager()
       ->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)
       ->getId();
-    /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $entity_storage */
-    $entity_storage = $this->entityTypeManager()->getStorage($entity->getEntityTypeId());
-    $revision_ids = $this->revisionIds($entity);
-    $entity_revisions = $entity_storage->loadMultipleRevisions($revision_ids);
-    $translatable = $entity->getEntityType()->isTranslatable();
+    $entity_storage = $this->entityTypeManager()
+      ->getStorage($entity->getEntityTypeId());
 
     $header = [$this->t('Revision'), $this->t('Operations')];
     $rows = [];
+
+    $revision_ids = $this->revisionIds($entity);
+    // @todo Expand the entity storage to load multiple revisions.
+    $entity_revisions = array_combine($revision_ids, array_map(function($vid) use ($entity_storage) {
+      return $entity_storage->loadRevision($vid);
+      }, $revision_ids));
+
     foreach ($entity_revisions as $revision) {
       $row = [];
       /** @var \Drupal\Core\Entity\ContentEntityInterface $revision */
-      if (!$translatable || ($revision->hasTranslation($langcode) && $revision->getTranslation($langcode)->isRevisionTranslationAffected())) {
+      if ($revision->hasTranslation($langcode) && $revision->getTranslation($langcode)
+          ->isRevisionTranslationAffected()
+      ) {
         $row[] = $this->getRevisionDescription($revision, $revision->isDefaultRevision());
 
         if ($revision->isDefaultRevision()) {
@@ -143,13 +155,7 @@ trait RevisionControllerTrait {
           }
         }
         else {
-          $links = $this->getOperationLinks($revision);
-          $row[] = [
-            'data' => [
-              '#type' => 'operations',
-              '#links' => $links,
-            ],
-          ];
+          $row[] = $this->getOperationLinks($revision);
         }
       }
 

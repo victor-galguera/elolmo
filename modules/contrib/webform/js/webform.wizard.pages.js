@@ -39,12 +39,12 @@
                 'aria-label': title,
                 'tabindex': '0'
               })
-              .on('click', function () {
-                $button.trigger('click');
+              .click(function () {
+                $button.click();
               })
-              .on('keydown', function (event) {
+              .keydown(function (event) {
                 if (event.which === 13) {
-                  $button.trigger('click');
+                  $button.click();
                 }
               });
             // Only allow the marker to be tabbable.

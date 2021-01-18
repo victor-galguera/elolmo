@@ -34,7 +34,7 @@
               $element.attr({'required': 'required', 'aria-required': 'true'});
             }
           }
-        }).trigger('change');
+        }).change();
       });
     }
   };

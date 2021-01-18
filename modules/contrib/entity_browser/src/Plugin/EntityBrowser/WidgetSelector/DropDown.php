@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\Plugin\EntityBrowser\WidgetSelector\DropDown.
+ */
+
 namespace Drupal\entity_browser\Plugin\EntityBrowser\WidgetSelector;
 
 use Drupal\entity_browser\WidgetSelectorBase;
@@ -19,41 +24,31 @@ class DropDown extends WidgetSelectorBase {
   /**
    * {@inheritdoc}
    */
-  public function getForm(array &$form = [], FormStateInterface &$form_state = NULL) {
+  public function getForm(array &$form = array(), FormStateInterface &$form_state = NULL) {
     // Set a wrapper container for us to replace the form on ajax call.
     $form['#prefix'] = '<div id="entity-browser-form">';
     $form['#suffix'] = '</div>';
 
-    /** @var \Drupal\entity_browser\EntityBrowserInterface $browser */
-    $browser = $form_state->getFormObject()->getEntityBrowser();
-
-    $widget_ids = [];
-    foreach ($this->widget_ids as $widget_id => $widget_name) {
-      if ($browser->getWidget($widget_id)->access()->isAllowed()) {
-        $widget_ids[$widget_id] = $widget_name;
-      }
-    }
-
-    $element['widget'] = [
+    $element['widget'] = array(
       '#type' => 'select',
-      '#options' => $widget_ids,
+      '#options' => $this->widget_ids,
       '#default_value' => $this->getDefaultWidget(),
       '#executes_submit_callback' => TRUE,
-      '#limit_validation_errors' => [['widget']],
+      '#limit_validation_errors' => array(array('widget')),
       // #limit_validation_errors only takes effect if #submit is present.
-      '#submit' => [],
-      '#ajax' => [
-        'callback' => [$this, 'changeWidgetCallback'],
+      '#submit' => array(),
+      '#ajax' => array(
+        'callback' => array($this, 'changeWidgetCallback'),
         'wrapper' => 'entity-browser-form',
-      ],
-    ];
+      ),
+    );
 
-    $element['change'] = [
+    $element['change'] = array(
       '#type' => 'submit',
       '#name' => 'change',
-      '#value' => $this->t('Change'),
-      '#attributes' => ['class' => ['js-hide']],
-    ];
+      '#value' => t('Change'),
+      '#attributes' => array('class' => array('js-hide')),
+    );
 
     return $element;
   }
@@ -70,7 +65,7 @@ class DropDown extends WidgetSelectorBase {
    *
    * @param array $form
    *   Form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * @param FormStateInterface $form_state
    *   Form state object.
    *
    * @return array

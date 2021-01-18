@@ -1,49 +1,51 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\dropzonejs\DropzoneJsUploadSave.
+ */
+
 namespace Drupal\dropzonejs;
 
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Utility\Token;
 use Drupal\file\FileInterface;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
+use Symfony\Component\Validator\Constraints\File;
 use Drupal\Core\File\FileSystemInterface;
 
 /**
- * A service that saves files uploaded by the dropzonejs element as files.
+ * A service that saves files uploaded by the dropzonejs element as file
+ * entities.
  *
  * Most of this file mimics or directly copies what core does. For more
  * information and comments see file_save_upload().
  */
 class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
 
-  use StringTranslationTrait;
-
   /**
    * Entity manager service.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityManagerInterface
    */
-  protected $entityTypeManager;
+  protected $entityManager;
 
   /**
    * Mime type guesser service.
    *
-   * @var \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface
+   * @var \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface;
    */
   protected $mimeTypeGuesser;
 
   /**
    * The file system service.
    *
-   * @var \Drupal\Core\File\FileSystemInterface
+   * @var \Drupal\Core\File\FileSystemInterface;
    */
   protected $fileSystem;
 
@@ -76,24 +78,10 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
   protected $token;
 
   /**
-   * The messenger service.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
-   * The stream wrapper manager.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
-
-  /**
    * Construct the DropzoneUploadSave object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager service.
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   Entity manager service.
    * @param \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface $mimetype_guesser
    *   The mime type guesser service.
    * @param \Drupal\Core\File\FileSystemInterface $file_system
@@ -106,40 +94,23 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    *   Config factory service.
    * @param \Drupal\Core\Utility\Token $token
    *   The token service.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager
-   *   The stream wrapper manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer, ConfigFactoryInterface $config_factory, Token $token, MessengerInterface $messenger, StreamWrapperManagerInterface $stream_wrapper_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(EntityManagerInterface $entity_manager, MimeTypeGuesserInterface $mimetype_guesser, FileSystemInterface $file_system, LoggerChannelFactoryInterface $logger_factory, RendererInterface $renderer, ConfigFactoryInterface $config_factory, Token $token) {
+    $this->entityManager = $entity_manager;
     $this->mimeTypeGuesser = $mimetype_guesser;
     $this->fileSystem = $file_system;
     $this->logger = $logger_factory->get('dropzonejs');
     $this->renderer = $renderer;
     $this->configFactory = $config_factory;
     $this->token = $token;
-    $this->messenger = $messenger;
-    $this->streamWrapperManager = $stream_wrapper_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createFile($uri, $destination, $extensions, AccountProxyInterface $user, array $validators = []) {
+  public function saveFile($uri, $destination, $extensions, AccountProxyInterface $user, $validators = []) {
     // Create the file entity.
-    $uri = $this->streamWrapperManager->normalizeUri($uri);
-    $file_info = new \SplFileInfo($uri);
-
-    /** @var \Drupal\file\FileInterface $file */
-    $file = $this->entityTypeManager->getStorage('file')->create([
-      'uid' => $user->id(),
-      'status' => 0,
-      'filename' => $file_info->getFilename(),
-      'uri' => $uri,
-      'filesize' => $file_info->getSize(),
-      'filemime' => $this->mimeTypeGuesser->guess($uri),
-    ]);
+    $file = $this->fileEntityFromUri($uri, $user);
 
     // Replace tokens. As the tokens might contain HTML we convert it to plain
     // text.
@@ -151,7 +122,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     // to add it here or else the file upload will fail.
     if ($renamed && !empty($extensions)) {
       $extensions .= ' txt';
-      $this->messenger->addMessage($this->t('For security reasons, your upload has been renamed to %filename.', ['%filename' => $file->getFilename()]));
+      drupal_set_message(t('For security reasons, your upload has been renamed to %filename.', ['%filename' => $file->getFilename()]));
     }
 
     // Validate the file.
@@ -159,28 +130,27 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     if (!empty($errors)) {
       $message = [
         'error' => [
-          '#markup' => $this->t('The specified file %name could not be uploaded.', ['%name' => $file->getFilename()]),
+          '#markup' => t('The specified file %name could not be uploaded.', ['%name' => $file->getFilename()]),
         ],
         'item_list' => [
           '#theme' => 'item_list',
           '#items' => $errors,
         ],
       ];
-      $this->messenger->addError($this->renderer->renderPlain($message));
+      drupal_set_message($this->renderer->renderPlain($message), 'error');
       return FALSE;
     }
 
     // Prepare destination.
     if (!$this->prepareDestination($file, $destination)) {
-      $this->messenger->addError($this->t('The file could not be uploaded because the destination %destination is invalid.', ['%destination' => $destination]));
+      drupal_set_message(t('The file could not be uploaded because the destination %destination is invalid.', ['%destination' => $destination]), 'error');
       return FALSE;
     }
 
     // Move uploaded files from PHP's upload_tmp_dir to destination.
-    $move_result = $this->fileSystem->move($uri, $file->getFileUri());
+    $move_result = file_unmanaged_move($uri, $file->getFileUri());
     if (!$move_result) {
-      $this->messenger->addError($this->t('File upload error. Could not move uploaded file.'));
-
+      drupal_set_message(t('File upload error. Could not move uploaded file.'), 'error');
       $this->logger->notice('Upload error. Could not move uploaded file %file to destination %destination.', ['%file' => $file->getFilename(), '%destination' => $file->getFileUri()]);
       return FALSE;
     }
@@ -188,6 +158,30 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     // Set the permissions on the new file.
     $this->fileSystem->chmod($file->getFileUri());
 
+    // If we made it this far it's safe to record this file in the database.
+    $file->save();
+    return $file;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fileEntityFromUri($uri, AccountProxyInterface $user) {
+    $uri = file_stream_wrapper_uri_normalize($uri);
+    $file_info = new \SplFileInfo($uri);
+
+    // Begin building file entity.
+    $values = [
+      'uid' => $user->id(),
+      'status' => 0,
+      'filename' => $file_info->getFilename(),
+      'uri' => $uri,
+      'filesize' => $file_info->getSize(),
+      'filemime' => $this->mimeTypeGuesser->guess($uri),
+    ];
+
+    /** @var \Drupal\file\FileInterface $file */
+    $file = $this->entityManager->getStorage('file')->create($values);
     return $file;
   }
 
@@ -225,6 +219,7 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     return FALSE;
   }
 
+
   /**
    * Validate and set destination the destination URI.
    *
@@ -240,8 +235,8 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
    */
   protected function prepareDestination(FileInterface $file, $destination) {
     // Assert that the destination contains a valid stream.
-    $destination_scheme = $this->streamWrapperManager::getScheme($destination);
-    if (!$this->streamWrapperManager->isValidScheme($destination_scheme)) {
+    $destination_scheme = file_uri_scheme($destination);
+    if (!file_stream_wrapper_valid_scheme($destination_scheme)) {
       return FALSE;
     }
 
@@ -254,8 +249,8 @@ class DropzoneJsUploadSave implements DropzoneJsUploadSaveInterface {
     if (substr($destination, -1) != '/') {
       $destination .= '/';
     }
-    $destination = $this->fileSystem->getDestinationFilename($destination . $file->getFilename(), FileSystemInterface::EXISTS_RENAME);
-    $file->setFileUri($destination);
+    $file->destination = file_destination($destination . $file->getFilename(), FILE_EXISTS_RENAME);
+    $file->setFileUri($file->destination);
     return TRUE;
   }
 

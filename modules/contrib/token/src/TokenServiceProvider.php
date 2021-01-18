@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\token\TokenServiceProvider.
+ */
+
 namespace Drupal\token;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;

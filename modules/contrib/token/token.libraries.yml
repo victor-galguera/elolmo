@@ -1,16 +1,15 @@
 jquery.treeTable:
   remote: 'http://plugins.jquery.com/treetable/'
-  version: 3.2.0
+  version: 2.3.0
   license:
     name: MIT
-    url: https://github.com/ludo/jquery-treetable/blob/3.2.0/MIT-LICENSE.txt
+    url: https://github.com/ludo/jquery-treetable/blob/2.3.0/treeTable/MIT-LICENSE
     gpl-compatible: true
   js:
-    js/jquery.treetable.js: {}
+    js/jquery.treeTable.js: {}
   css:
     component:
-      css/jquery.treetable.css: {}
-      css/token.treetable.theme.css: {}
+      css/jquery.treeTable.css: {}
   dependencies:
     - core/jquery
 token:

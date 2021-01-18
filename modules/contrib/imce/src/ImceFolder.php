@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\ImceFolder.
+ */
+
 namespace Drupal\imce;
 
 /**
@@ -22,7 +27,7 @@ class ImceFolder extends ImceItem {
   /**
    * Scan status.
    *
-   * @var bool
+   * @var boolean
    */
   public $scanned;
 
@@ -31,21 +36,21 @@ class ImceFolder extends ImceItem {
    *
    * @var array
    */
-  public $items = [];
+  public $items = array();
 
   /**
    * Files.
    *
    * @var array
    */
-  public $files = [];
+  public $files = array();
 
   /**
    * Subfolders.
    *
    * @var array
    */
-  public $subfolders = [];
+  public $subfolders = array();
 
   /**
    * Constructs the folder.
@@ -67,11 +72,11 @@ class ImceFolder extends ImceItem {
     if (isset($this->conf)) {
       return $this->conf;
     }
-    // Inherit parent conf.
+    // Inherit parent conf
     if ($parent = $this->parent) {
       if ($conf = $parent->getConf()) {
         if (Imce::permissionInFolderConf('browse_subfolders', $conf)) {
-          return $conf + ['inherited' => TRUE];
+          return $conf + array('inherited' => TRUE);
         }
       }
     }
@@ -97,14 +102,14 @@ class ImceFolder extends ImceItem {
   public function setPath($path) {
     $oldpath = $this->path;
     if ($path !== $oldpath) {
-      // Remove oldpath references.
+      // Remove oldpath references
       if (isset($oldpath)) {
         unset($this->fm()->tree[$oldpath]);
         foreach ($this->subfolders as $name => $item) {
           $item->setPath(NULL);
         }
       }
-      // Add new path references.
+      // Add new path references
       $this->path = $path;
       if (isset($path)) {
         $this->fm()->tree[$path] = $this;
@@ -130,7 +135,6 @@ class ImceFolder extends ImceItem {
 
   /**
    * Returns an item by name.
-   *
    * Scans the folder if needed.
    */
   public function checkItem($name) {
@@ -238,18 +242,18 @@ class ImceFolder extends ImceItem {
   public function scan() {
     if (!$this->scanned) {
       $this->scanned = TRUE;
-      $options = [
+      $options = array(
         'browse_files' => $this->getPermission('browse_files'),
         'browse_subfolders' => $this->getPermission('browse_subfolders'),
-      ];
+      );
       $content = $this->fm()->scanDir($this->getUri(), $options);
       // Add files as raw data. We create the objects when needed.
       $this->files = $this->items = $content['files'];
       // Create the subfolder objects.
       $subfolders = $this->subfolders;
-      $this->subfolders = [];
+      $this->subfolders = array();
       foreach ($content['subfolders'] as $name => $uri) {
-        // Check if previously created.
+        // Check if previously created
         if (isset($subfolders[$name]) && is_object($subfolders[$name])) {
           $this->subfolders[$name] = $this->items[$name] = $subfolders[$name];
         }

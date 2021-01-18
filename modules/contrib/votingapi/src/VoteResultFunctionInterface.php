@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\VoteResultFunctionInterface.
+ */
+
 namespace Drupal\votingapi;
 
 /**
@@ -20,6 +25,7 @@ interface VoteResultFunctionInterface {
    */
   public function getLabel();
 
+
   /**
    * Retrieve the description for the voting result.
    *
@@ -33,10 +39,8 @@ interface VoteResultFunctionInterface {
    *
    * @param \Drupal\votingapi\Entity\Vote[] $votes
    *   An array of Vote entities.
-   *
    * @return int
    *   A result based on the supplied votes.
    */
   public function calculateResult($votes);
-
 }

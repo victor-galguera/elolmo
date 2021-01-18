@@ -1,10 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\page_manager\ContextMapper.
+ */
+
 namespace Drupal\page_manager;
 
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Plugin\Context\Context;
-use Drupal\page_manager\Context\ContextDefinitionFactory;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\page_manager\Context\EntityLazyLoadContext;
 
 /**
@@ -35,9 +40,7 @@ class ContextMapper implements ContextMapperInterface {
   public function getContextValues(array $context_configurations) {
     $contexts = [];
     foreach ($context_configurations as $name => $context_configuration) {
-      $context_definition = ContextDefinitionFactory::create($context_configuration['type'])
-        ->setLabel($context_configuration['label']);
-
+      $context_definition = new ContextDefinition($context_configuration['type'], $context_configuration['label']);
       if (strpos($context_configuration['type'], 'entity:') === 0) {
         $context = new EntityLazyLoadContext($context_definition, $this->entityRepository, $context_configuration['value']);
       }

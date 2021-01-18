@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\imce\Plugin\ImcePlugin\Delete.
+ */
+
 namespace Drupal\imce\Plugin\ImcePlugin;
 
 use Drupal\imce\Imce;
@@ -24,17 +29,17 @@ class Delete extends ImcePluginBase {
    * {@inheritdoc}
    */
   public function permissionInfo() {
-    return [
+    return array(
       'delete_files' => $this->t('Delete files'),
       'delete_subfolders' => $this->t('Delete subfolders'),
-    ];
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildPage(array &$page, ImceFM $fm) {
-    // Check if delete permission exists.
+    // Check if delete permission exists
     if ($fm->hasPermission('delete_files') || $fm->hasPermission('delete_subfolders')) {
       $page['#attached']['library'][] = 'imce/drupal.imce.delete';
     }
@@ -61,11 +66,11 @@ class Delete extends ImcePluginBase {
    * Deletes a list of imce items and returns succeeded ones.
    */
   public function deleteItems(ImceFM $fm, array $items) {
-    $success = [];
+    $success = array();
     $ignore_usage = $fm->getConf('ignore_usage', FALSE);
     foreach ($items as $item) {
       if ($uri = $item->getUri()) {
-        $result = $item->type === 'folder' ? $this->deleteFolderUri($uri, $ignore_usage, !$item->getPermission('delete_files')) : $this->deleteFileUri($uri, $ignore_usage);
+        $result = $item->type === 'folder' ? $this->deleteFolderUri($uri, $ignore_usage) : $this->deleteFileUri($uri, $ignore_usage);
         if ($result) {
           $item->removeFromJs();
           $item->remove();
@@ -80,40 +85,34 @@ class Delete extends ImcePluginBase {
    * Deletes a file by uri.
    */
   public static function deleteFileUri($uri, $ignore_usage = FALSE) {
-    // Managed file.
+    // Managed file
     if ($file = Imce::getFileEntity($uri)) {
       if (!$ignore_usage && $usage = \Drupal::service('file.usage')->listUsage($file)) {
         unset($usage['imce']);
         if ($usage) {
-          \Drupal::messenger()
-            ->addMessage(t('%filename is in use by another application.', ['%filename' => $file->getFilename()]), 'error');
+          drupal_set_message(t('%filename is in use by another application.', array('%filename' => $file->getFilename())), 'error');
           return FALSE;
         }
       }
       $file->delete();
       return TRUE;
     }
-    // Unmanaged file.
-    return \Drupal::service('file_system')->delete($uri);
+    // Unmanaged file
+    return file_unmanaged_delete($uri);
   }
 
   /**
    * Deletes a folder by uri.
    */
-  public static function deleteFolderUri($uri, $ignore_usage = FALSE, $check_files = FALSE) {
+  public static function deleteFolderUri($uri, $ignore_usage = FALSE) {
     // Get folder content without any filtering.
     $content = Imce::scanDir($uri);
     if (!empty($content['error'])) {
       return FALSE;
     }
-    if ($check_files && !empty($content['files'])) {
-      \Drupal::messenger()
-        ->addMessage(t('%folder contains files and can not be deleted.', ['%folder' => \Drupal::service('file_system')->basename($uri)]), 'error');
-      return FALSE;
-    }
     // Delete subfolders first.
     foreach ($content['subfolders'] as $path) {
-      if (!static::deleteFolderUri($path, $ignore_usage, $check_files)) {
+      if (!static::deleteFolderUri($path, $ignore_usage)) {
         return FALSE;
       }
     }
@@ -123,12 +122,11 @@ class Delete extends ImcePluginBase {
         return FALSE;
       }
     }
-    // Recently emptied folders need some refreshing
-    // before the removal on windows.
+    // Recently emptied folders need some refreshing before the removal on windows.
     if (strncasecmp(PHP_OS, 'WIN', 3) == 0) {
       @closedir(@opendir($uri));
     }
-    // Remove the folder.
+    // Remove the folder
     return rmdir($uri);
   }
 

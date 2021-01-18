@@ -1,11 +1,16 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\book\BlogLister.
+ */
+
 namespace Drupal\blog;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
+use Drupal\Component\Utility\Xss;
 
 /**
  * Defines a blog lister.
@@ -37,14 +42,14 @@ class BlogLister implements BlogListerInterface {
   /**
    * {@inheritdoc}
    *
-   * @param \Drupal\user\UserInterface $user
-   *   User object.
+   * @param UserInterface $user
+   *   User object
    *
-   * @return string
+   * @return String
    *   Title string
    */
   public function userBlogTitle(UserInterface $user) {
-    return new TranslatableMarkup("@username's blog", ['@username' => $user->getDisplayName()]);
+    return Xss::filter($user->getUsername()) . "'s blog";
   }
 
 }

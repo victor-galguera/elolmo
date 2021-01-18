@@ -1,10 +1,17 @@
 <?php
 
+/**
+ * @file
+ * Contains Drupal\page_manager_ui\Form\PageReorderVariantsForm.
+ */
+
 namespace Drupal\page_manager_ui\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\TempStore\SharedTempStoreFactory;
+use Drupal\page_manager\Entity\PageVariant;
+use Drupal\page_manager\PageInterface;
+use Drupal\user\SharedTempStoreFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -15,14 +22,14 @@ class PageReorderVariantsForm extends FormBase {
   /**
    * Tempstore factory.
    *
-   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
+   * @var \Drupal\user\SharedTempStoreFactory
    */
   protected $tempstore;
 
   /**
    * Constructs a new DisplayVariantAddForm.
    *
-   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $tempstore
+   * @param \Drupal\user\SharedTempStoreFactory $tempstore
    *   The tempstore factory.
    */
   public function __construct(SharedTempStoreFactory $tempstore) {
@@ -34,7 +41,7 @@ class PageReorderVariantsForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('tempstore.shared')
+      $container->get('user.shared_tempstore')
     );
   }
 
@@ -42,7 +49,6 @@ class PageReorderVariantsForm extends FormBase {
    * Get the tempstore id.
    *
    * @return string
-   *   The tempstore id.
    */
   protected function getTempstoreId() {
     return 'page_manager.page';
@@ -76,8 +82,7 @@ class PageReorderVariantsForm extends FormBase {
         'action' => 'order',
         'relationship' => 'sibling',
         'group' => 'variant-weight',
-      ],
-      ],
+      ]],
     ];
 
     $variants = $page->getVariants();

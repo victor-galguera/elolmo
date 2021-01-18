@@ -69,11 +69,11 @@ INSTALLATION
 
     More control over the content of simplenews blocks can be achieved using
     the block theming. Theme your simplenews block by copying
-    simplenews-block.html.twig into your theme directory and edit the content.
+    simplenews-block.tpl.php into your theme directory and edit the content.
     The file is self documented listing all available variables.
 
     The newsletter block can be themed generally and per newsletter:
-      simplenews-block.html.twig (for all newsletters)
+      simplenews-block.tpl.php (for all newsletters)
       simplenews-block.tpl--[tid].php (for newsletter series tid)
 
  8. MULTILINGUAL SUPPORT
@@ -101,20 +101,30 @@ INSTALLATION
 
 9.  NEWSLETTER THEMING
 
-    You can customize the theming of newsletters. Copy the file
-    simplenews-newsletter-body.html.twig from the simplenews module directory
-    to your theme directory. Both general and by-newsletter theming can
-    be performed.
+    You can customize the theming of newsletters. Copy any of the *.tpl.php
+    files from the simplenews module directory to your theme directory. Both
+    general and by-newsletter theming can be performed.
+    Theme newsletter body:
+      simplenews-newsletter-body.tpl.php (for all newsletters)
+      simplenews-newsletter-body--[newsletter_id].tpl.php
+      simplenews-newsletter-body--[view mode].tpl.php
+      simplenews-newsletter-body--[newsletter_id]--[view mode].tpl.php
 
-      simplenews-newsletter-body.html.twig (for all newsletters)
-      simplenews-newsletter-body--[newsletter_id].html.twig
-      simplenews-newsletter-body--[view mode].html.twig
-      simplenews-newsletter-body--[newsletter_id]--[view mode].html.twig
-
-      [newsletter_id]: Machine readable name of the newsletter category
+      [tid]: Machine readable name of the newsletter category
       [view mode]: 'email-plain', 'email-html', 'email-textalt'
       Example:
-        simplenews-newsletter-body--1--email-plain.html.twig
+        simplenews-newsletter-body--1--email-plain.tpl.php
+
+    Theme newsletter footer:
+      simplenews-newsletter-footer.tpl.php (for all newsletters)
+      simplenews-newsletter-footer--[newsletter_id].tpl.php
+      simplenews-newsletter-footer--[view mode].tpl.php
+      simplenews-newsletter-footer--[newsletter_id]--[view mode].tpl.php
+
+      [tid]: Machine readable name of the newsletter category
+      [view mode]: 'email-plain', 'email-html', 'email-textalt'
+      Example:
+        simplenews-newsletter-footer--1--email-plain.tpl.php
 
     The template files are self documented listing all available variables.
     Depending on how the mails are sent (e.g. how cron is triggered), either the
@@ -160,8 +170,7 @@ INSTALLATION
     specify an alternative destination page.
       Structure > Configuration > Web Services > Newsletters > edit newsletter category > Subscription settings
 
-    To skip the confirmation page you can add parameters to the subscription
-    URL.
+    To skip the confirmation page you can add parameters to the subscription URL.
       Example: [simplenews-subscribe-url]/ok
     When an alternative destination page has been defined the extra parameters
     will be added to the destination URL.

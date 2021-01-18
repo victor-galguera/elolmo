@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\Plugin\VoteResultFunction\Count.
+ */
+
 namespace Drupal\votingapi\Plugin\VoteResultFunction;
 
 use Drupal\votingapi\VoteResultFunctionBase;
@@ -21,5 +26,4 @@ class Count extends VoteResultFunctionBase {
   public function calculateResult($votes) {
     return count($votes);
   }
-
 }

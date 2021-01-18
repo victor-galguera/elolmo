@@ -1,13 +1,9 @@
 <?php
-
 namespace Drupal\dropzonejs_test\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
-/**
- * Class DropzoneJsTestForm.
- */
 class DropzoneJsTestForm extends FormBase {
 
   /**
@@ -22,10 +18,10 @@ class DropzoneJsTestForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['dropzonejs'] = [
-      '#title' => $this->t('DropzoneJS element'),
+      '#title' => t('DropzoneJs element'),
       '#type' => 'dropzonejs',
       '#required' => TRUE,
-      '#dropzone_description' => 'DropzoneJS description',
+      '#dropzone_description' => 'DropzoneJs description',
       '#max_filesize' => '1M',
       '#extensions' => 'jpg png',
     ];

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\Plugin\Derivative\BlocktabsBlock.
+ */
+
 namespace Drupal\blocktabs\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
@@ -15,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class BlocktabsBlock extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The entity storage.
+   * The menu storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
@@ -24,8 +29,8 @@ class BlocktabsBlock extends DeriverBase implements ContainerDeriverInterface {
   /**
    * Constructs new SystemMenuBlock.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $entity_storage
-   *   The entity storage.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $menu_storage
+   *   The menu storage.
    */
   public function __construct(EntityStorageInterface $entity_storage) {
     $this->entityStorage = $entity_storage;
@@ -36,7 +41,7 @@ class BlocktabsBlock extends DeriverBase implements ContainerDeriverInterface {
    */
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(
-      $container->get('entity_type.manager')->getStorage('blocktabs')
+      $container->get('entity.manager')->getStorage('blocktabs')
     );
   }
 
@@ -45,9 +50,10 @@ class BlocktabsBlock extends DeriverBase implements ContainerDeriverInterface {
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     foreach ($this->entityStorage->loadMultiple() as $blocktabs => $entity) {
+	  //drupal_set_message('123:' . $blocktabs);
       $this->derivatives[$blocktabs] = $base_plugin_definition;
       $this->derivatives[$blocktabs]['admin_label'] = 'Blocktabs:' . $entity->label();
-      $this->derivatives[$blocktabs]['config_dependencies']['config'] = [$entity->getConfigDependencyName()];
+      $this->derivatives[$blocktabs]['config_dependencies']['config'] = array($entity->getConfigDependencyName());
     }
     return $this->derivatives;
   }

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\TabManager.
+ */
+
 namespace Drupal\blocktabs;
 
 use Drupal\Core\Cache\CacheBackendInterface;

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\votingapi\Plugin\VoteResultFunction\Sum.
+ */
+
 namespace Drupal\votingapi\Plugin\VoteResultFunction;
 
 use Drupal\votingapi\VoteResultFunctionBase;
@@ -25,5 +30,4 @@ class Sum extends VoteResultFunctionBase {
     }
     return $total;
   }
-
 }

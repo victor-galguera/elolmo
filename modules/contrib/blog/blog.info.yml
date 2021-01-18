@@ -1,18 +1,14 @@
 name: Blog
 description: "Enables multi-user blogs."
-core_version_requirement: ^8.8 || ^9
+# core: 8.x
 type: module
 dependencies:
-  - drupal:comment
-  - drupal:menu_ui
-  - drupal:node
-  - drupal:path
-  - drupal:taxonomy
-  - drupal:text
-  - drupal:user
-  - drupal:views
+  - node
+  - views
 
-# Information added by Drupal.org packaging script on 2020-06-20
-version: '3.0.1'
+
+# Information added by Drupal.org packaging script on 2016-04-13
+version: '8.x-2.x-dev'
+core: '8.x'
 project: 'blog'
-datestamp: 1592611736
+datestamp: 1460549643

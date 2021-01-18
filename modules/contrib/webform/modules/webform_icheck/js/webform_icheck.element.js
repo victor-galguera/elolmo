@@ -47,10 +47,10 @@
           .iCheck(options)
           // @see https://github.com/fronteed/iCheck/issues/244
           .on('ifChecked', function (e) {
-            $(e.target).attr('checked', 'checked').trigger('change');
+            $(e.target).attr('checked', 'checked').change();
           })
           .on('ifUnchecked', function (e) {
-            $(e.target).removeAttr('checked').trigger('change');
+            $(e.target).removeAttr('checked').change();
           });
       });
     }

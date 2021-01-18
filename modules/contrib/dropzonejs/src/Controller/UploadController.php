@@ -1,13 +1,18 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\dropzonejs\Controller\UploadController.
+ */
+
 namespace Drupal\dropzonejs\Controller;
 
-use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\dropzonejs\UploadException;
 use Drupal\dropzonejs\UploadHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -26,7 +31,7 @@ class UploadController extends ControllerBase {
   /**
    * The current request.
    *
-   * @var \Symfony\Component\HttpFoundation\Request
+   * @var \Symfony\Component\HttpFoundation\Request $request
    *   The HTTP request object.
    */
   protected $request;
@@ -34,10 +39,12 @@ class UploadController extends ControllerBase {
   /**
    * Constructs dropzone upload controller route controller.
    *
-   * @param \Drupal\dropzonejs\UploadHandlerInterface $upload_handler
-   *   Upload handler.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   Request object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   Config factory.
+   * @param \Drupal\Core\Transliteration\PhpTransliteration $transliteration
+   *   Transliteration service.
    */
   public function __construct(UploadHandlerInterface $upload_handler, Request $request) {
     $this->uploadHandler = $upload_handler;
@@ -55,7 +62,7 @@ class UploadController extends ControllerBase {
   }
 
   /**
-   * Handles DropzoneJS uploads.
+   * Handles DropzoneJs uploads.
    */
   public function handleUploads() {
     $file = $this->request->files->get('file');
@@ -65,14 +72,12 @@ class UploadController extends ControllerBase {
 
     // @todo: Implement file_validate_size();
     try {
-      /* @var \Drupal\Core\File\FileSystem $file_system */
-      $file_system = \Drupal::service('file_system');
       // Return JSON-RPC response.
-      return new AjaxResponse([
+      return new JsonResponse([
         'jsonrpc' => '2.0',
-        'result' => $file_system->basename($this->uploadHandler->handleUpload($file)),
+        'result' => basename($this->uploadHandler->handleUpload($file)),
         'id' => 'id',
-      ]);
+      ], 200);
     }
     catch (UploadException $e) {
       return $e->getErrorResponse();

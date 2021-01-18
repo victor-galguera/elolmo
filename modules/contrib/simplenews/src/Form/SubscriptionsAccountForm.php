@@ -1,10 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\SubscriptionsAccountForm.
+ */
+
 namespace Drupal\simplenews\Form;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\simplenews\Entity\Subscriber;
 use Drupal\user\UserInterface;
 
 /**
@@ -16,13 +20,29 @@ class SubscriptionsAccountForm extends SubscriptionsFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, UserInterface $user = NULL) {
+    // Try to load a subscriber from the uid, otherwise just set the mail field
+    // on the new subscriber.
     if (isset($user)) {
       $form_state->set('user', $user);
-      // Load/create a subscriber from the user.
-      $this->setEntity(Subscriber::loadByUid($user->id(), 'create'));
+      if ($subscriber = simplenews_subscriber_load_by_uid($user->id())) {
+        $this->setEntity($subscriber);
+      }
+      else {
+        $this->entity->setUserId($user->id());
+        $this->entity->setMail($user->getEmail());
+      }
     }
 
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $actions[static::SUBMIT_UPDATE]['#value'] = $this->t('Save');
+    return $actions;
   }
 
   /**
@@ -33,15 +53,7 @@ class SubscriptionsAccountForm extends SubscriptionsFormBase {
     if (\Drupal::currentUser()->id() == $user->id()) {
       return $this->t('Your newsletter subscriptions have been updated.');
     }
-    return $this->t('The newsletter subscriptions for user %account have been updated.', ['%account' => $user->label()]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    parent::submitForm($form, $form_state);
-    $form_state->setRedirectUrl($this->entity->getUser()->toUrl());
+    return $this->t('The newsletter subscriptions for user %account have been updated.', array('%account' => $user->label()));
   }
 
   /**
@@ -55,11 +67,6 @@ class SubscriptionsAccountForm extends SubscriptionsFormBase {
    */
   public function checkAccess(UserInterface $user) {
     $account = $this->currentUser();
-
-    // Deny access for anonymous user at /user/0/simplenews.
-    if ($user->isAnonymous()) {
-      return AccessResult::forbidden();
-    }
 
     return AccessResult::allowedIfHasPermission($account, 'administer simplenews subscriptions')
       ->orIf(AccessResult::allowedIfHasPermission($account, 'subscribe to newsletters')

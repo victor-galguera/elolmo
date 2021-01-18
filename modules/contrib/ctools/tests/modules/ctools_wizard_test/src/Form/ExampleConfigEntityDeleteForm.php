@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools_wizard_test\Form\ExampleConfigEntityDeleteForm.
+ */
+
 namespace Drupal\ctools_wizard_test\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
@@ -36,7 +41,8 @@ class ExampleConfigEntityDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $this->messenger()->addMessage(
+
+    drupal_set_message(
       $this->t('content @type: deleted @label.',
         [
           '@type' => $this->entity->bundle(),

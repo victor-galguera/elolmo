@@ -1,9 +1,12 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\ctools\Plugin\Relationship\TypedDataEntityRelationship.
+ */
 
 namespace Drupal\ctools\Plugin\Relationship;
-
 use Drupal\Core\Plugin\Context\Context;
-use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 
 /**
  * @Relationship(
@@ -20,7 +23,7 @@ class TypedDataEntityRelationship extends TypedDataRelationship {
     $plugin_definition = $this->getPluginDefinition();
 
     $entity_type = $this->getData($this->getContext('base'))->getDataDefinition()->getSetting('target_type');
-    $context_definition = new EntityContextDefinition("entity:$entity_type", $plugin_definition['label']);
+    $context_definition = new ContextDefinition("entity:$entity_type", $plugin_definition['label']);
     $context_value = NULL;
 
     // If the 'base' context has a value, then get the property value to put on

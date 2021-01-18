@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\field_group\Element\AccordionItem.
+ */
+
 namespace Drupal\field_group\Element;
 
 use Drupal\Core\Render\Element\RenderElement;
@@ -15,18 +20,10 @@ class AccordionItem extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = get_class($this);
-
-    return [
-      '#process' => [
-        [$class, 'processGroup'],
-      ],
-      '#pre_render' => [
-        [$class, 'preRenderGroup'],
-      ],
-      '#open' => FALSE,
-      '#theme_wrappers' => ['field_group_accordion_item'],
-    ];
+    return array(
+      '#collapsed' => FALSE,
+      '#theme_wrappers' => array('field_group_accordion_item'),
+    );
   }
 
 }

@@ -1,21 +1,21 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\entity_browser\WidgetInterface.
+ */
+
 namespace Drupal\entity_browser;
 
-use Drupal\Component\Plugin\ConfigurableInterface;
-use Drupal\Component\Plugin\DependentPluginInterface;
+use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Defines the interface for entity browser widgets.
- *
- * Entity browser widgets present a form for actually selecting entities in an
- * entity browser. Once entities have been selected, they are delivered upstream
- * to the entity browser's selection display plugin.
  */
-interface WidgetInterface extends PluginInspectionInterface, ConfigurableInterface, PluginFormInterface, DependentPluginInterface {
+interface WidgetInterface extends PluginInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
 
   /**
    * Returns the widget id.
@@ -40,17 +40,6 @@ interface WidgetInterface extends PluginInspectionInterface, ConfigurableInterfa
    *   The widget label.
    */
   public function label();
-
-  /**
-   * Sets the widget's label.
-   *
-   * @param string $label
-   *   New plugin label.
-   *
-   * @return \Drupal\entity_browser\WidgetInterface
-   *   This object.
-   */
-  public function setLabel($label);
 
   /**
    * Returns the widget's weight.
@@ -80,13 +69,13 @@ interface WidgetInterface extends PluginInspectionInterface, ConfigurableInterfa
    *   unit.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Form state object.
-   * @param array $additional_widget_parameters
+   * @param array $aditional_widget_parameters
    *   Additional parameters that we want to pass to the widget.
    *
    * @return array
    *   Form structure.
    */
-  public function getForm(array &$original_form, FormStateInterface $form_state, array $additional_widget_parameters);
+  public function getForm(array &$original_form, FormStateInterface $form_state, array $aditional_widget_parameters);
 
   /**
    * Validates form.
@@ -109,22 +98,5 @@ interface WidgetInterface extends PluginInspectionInterface, ConfigurableInterfa
    *   Form state object.
    */
   public function submit(array &$element, array &$form, FormStateInterface $form_state);
-
-  /**
-   * Returns if widget requires JS commands support by selection display.
-   *
-   * @return bool
-   *   True is auto selection is enabled and add/remove of entities will be done
-   *   over javascript events on selection display.
-   */
-  public function requiresJsCommands();
-
-  /**
-   * Defines if the widget is visible / accessible in a given context.
-   *
-   * @return \Drupal\Core\Access\AccessResultInterface
-   *   The access result.
-   */
-  public function access();
 
 }

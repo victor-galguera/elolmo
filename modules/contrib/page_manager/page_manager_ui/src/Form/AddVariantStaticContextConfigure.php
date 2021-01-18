@@ -1,6 +1,12 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Form\AddVariantStaticContextConfigure.
+ */
+
 namespace Drupal\page_manager_ui\Form;
+
 
 use Drupal\Core\Plugin\Context\ContextInterface;
 use Drupal\ctools\Form\ContextConfigure;
@@ -28,8 +34,7 @@ class AddVariantStaticContextConfigure extends ContextConfigure {
       'page' => $page_variant->getPage()->id(),
       'machine_name' => $this->machine_name,
       'step' => 'contexts',
-    ],
-    ];
+    ]];
   }
 
   /**

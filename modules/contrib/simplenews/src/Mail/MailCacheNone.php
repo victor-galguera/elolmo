@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Mail\MailCacheNone.
+ */
+
 namespace Drupal\simplenews\Mail;
 
 /**
@@ -10,7 +15,7 @@ namespace Drupal\simplenews\Mail;
 class MailCacheNone extends MailCacheStatic {
 
   /**
-   * {@inheritdoc}
+   * {@inhertidoc}
    */
   public function isCacheable(MailInterface $mail, $group, $key) {
     return FALSE;

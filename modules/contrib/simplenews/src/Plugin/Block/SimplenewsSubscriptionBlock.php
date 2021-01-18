@@ -1,19 +1,26 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Plugin\Block\SimplenewsSubscriptionBlock.
+ */
+
 namespace Drupal\simplenews\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\simplenews\Entity\Newsletter;
 use Drupal\simplenews\Entity\Subscriber;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a subscription block with all available newsletters and email field.
+ * Provides an 'Simplenews subscription' block with all available newsletters and an email field.
  *
  * @Block(
  *   id = "simplenews_subscription_block",
@@ -24,18 +31,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SimplenewsSubscriptionBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The entity type manager.
+   * The injected entity manager.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityManagerInterface
    */
-  protected $entityTypeManager;
+  protected $entityManager;
 
   /**
-   * The form builder.
+   * The entity query object for newsletters.
    *
-   * @var \Drupal\Core\Form\FormBuilderInterface
+   * @var \Drupal\Core\Entity\Query\QueryInterface
    */
-  protected $formBuilder;
+  protected $newsletterQuery;
 
   /**
    * Constructs an SimplenewsSubscriptionBlock object.
@@ -46,16 +53,20 @@ class SimplenewsSubscriptionBlock extends BlockBase implements ContainerFactoryP
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityStorageInterface; $newsletterStorage
+   *   The storage object for newsletters.
    * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The form builder object.
+   * @param \Drupal\Core\Entity\Query\QueryInterface $newsletterQuery
+   *   The entity query object for newsletters.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, FormBuilderInterface $formBuilder) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityManagerInterface $entity_manager, FormBuilderInterface $formBuilder, QueryInterface $newsletterQuery) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
+    $this->entityManager = $entity_manager;
     $this->formBuilder = $formBuilder;
+    $this->newsletterQuery = $newsletterQuery;
   }
+
 
   /**
    * {@inheritdoc}
@@ -65,28 +76,30 @@ class SimplenewsSubscriptionBlock extends BlockBase implements ContainerFactoryP
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager'),
-      $container->get('form_builder')
+      $container->get('entity.manager'),
+      $container->get('form_builder'),
+      $container->get('entity.query')->get('simplenews_newsletter')
     );
   }
+
 
   /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
     // By default, the block will contain 1 newsletter.
-    return [
-      'newsletters' => [],
-      'message' => $this->t('Stay informed - subscribe to our newsletter.'),
+    return array(
+      'newsletters' => array(),
+      'message' => t('Stay informed - subscribe to our newsletter.'),
       'unique_id' => '',
-    ];
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   protected function blockAccess(AccountInterface $account) {
-    // Only allow users with the 'subscribe to newsletters' permission.
+    // Only grant access to users with the 'subscribe to newsletters' permission.
     return AccessResult::allowedIfHasPermission($account, 'subscribe to newsletters');
   }
 
@@ -94,52 +107,43 @@ class SimplenewsSubscriptionBlock extends BlockBase implements ContainerFactoryP
    * {@inheritdoc}
    */
   public function blockForm($form, FormStateInterface $form_state) {
-    foreach (simplenews_newsletter_get_visible() as $newsletter) {
+    $newsletters = simplenews_newsletter_get_visible();
+    foreach ($newsletters as $newsletter) {
       $options[$newsletter->id()] = $newsletter->name;
     }
 
-    $form['newsletters'] = [
+    $form['newsletters'] = array(
       '#type' => 'checkboxes',
-      '#title' => $this->t('Newsletters'),
+      '#title' => t('Newsletters'),
       '#options' => $options,
       '#required' => TRUE,
       '#default_value' => $this->configuration['newsletters'],
-    ];
-    $form['message'] = [
+    );
+    $form['message'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Block message'),
+      '#title' => t('Block message'),
       '#size' => 60,
       '#maxlength' => 255,
       '#default_value' => $this->configuration['message'],
-    ];
-    $form['unique_id'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Unique ID'),
-      '#size' => 60,
-      '#maxlength' => 255,
-      '#description' => $this->t('Each subscription block must have a unique form ID. If no value is provided, a random ID will be generated. Use this to have a predictable, short ID, e.g. to configure this form use a CAPTCHA.'),
-      '#default_value' => $this->configuration['unique_id'],
-    ];
-    // @codingStandardsIgnoreStart
+    );
     /*if (\Drupal::moduleHandler()->moduleExists('views')) {
         $form['link_previous'] = array(
           '#type' => 'checkbox',
-          '#title' => $this->t('Display link to previous issues'),
+          '#title' => t('Display link to previous issues'),
           '#return_value' => 1,
           '#default_value' => variable_get('simplenews_block_l_' . $delta, 1),
-          '#description' => $this->t('Link points to newsletter/newsletter_id, which is provided by the newsletter issue list default view.'),
+          '#description' => t('Link points to newsletter/newsletter_id, which is provided by the newsletter issue list default view.'),
         );
       }*/
     /*if (\Drupal::moduleHandler()->moduleExists('views')) {
       $form['rss_feed'] = array(
         '#type' => 'checkbox',
-        '#title' => $this->t('Display RSS-feed icon'),
+        '#title' => t('Display RSS-feed icon'),
         '#return_value' => 1,
         '#default_value' => variable_get('simplenews_block_r_' . $delta, 1),
-        '#description' => $this->t('Link points to newsletter/feed/newsletter_id, which is provided by the newsletter issue list default view.'),
+        '#description' => t('Link points to newsletter/feed/newsletter_id, which is provided by the newsletter issue list default view.'),
       );
     }*/
-    // @codingStandardsIgnoreEnd
     return $form;
   }
 
@@ -149,26 +153,33 @@ class SimplenewsSubscriptionBlock extends BlockBase implements ContainerFactoryP
   public function blockSubmit($form, FormStateInterface $form_state) {
     $this->configuration['newsletters'] = array_filter($form_state->getValue('newsletters'));
     $this->configuration['message'] = $form_state->getValue('message');
-    // @codingStandardsIgnoreStart
     //$this->configuration['link_previous'] = $form_state->getValue('link_previous');
     //$this->configuration['rss_feed'] = $form_state->getValue('rss_feed');
-    // @codingStandardsIgnoreEnd
-    $this->configuration['unique_id'] = empty($form_state->getValue('unique_id')) ? \Drupal::service('uuid')->generate() : $form_state->getValue('unique_id');
-  }
+    $this->configuration['unique_id'] = \Drupal::service('uuid')->generate();
+}
 
   /**
    * {@inheritdoc}
    */
   public function build() {
     /** @var \Drupal\simplenews\Form\SubscriptionsBlockForm $form_object */
-    $form_object = $this->entityTypeManager->getFormObject('simplenews_subscriber', 'block');
+    $form_object = \Drupal::entityManager()->getFormObject('simplenews_subscriber', 'block');
     $form_object->setUniqueId($this->configuration['unique_id']);
     $form_object->setNewsletterIds($this->configuration['newsletters']);
     $form_object->message = $this->configuration['message'];
 
     // Set the entity on the form.
-    $user = \Drupal::currentUser();
-    $form_object->setEntity(Subscriber::loadByUid($user->id(), 'create'));
+    if ($user = \Drupal::currentUser()) {
+      if ($subscriber = simplenews_subscriber_load_by_uid($user->id())) {
+        $form_object->setEntity($subscriber);
+      }
+      else {
+        $form_object->setEntity(Subscriber::create(array('mail' => $user->getEmail())));
+      }
+    }
+    else {
+      $form_object->setEntity(Subscriber::create());
+    }
 
     return $this->formBuilder->getForm($form_object);
   }

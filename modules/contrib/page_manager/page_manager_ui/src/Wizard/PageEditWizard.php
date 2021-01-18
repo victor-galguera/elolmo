@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\page_manager_ui\Wizard\PageEditWizard.
+ */
 
 namespace Drupal\page_manager_ui\Wizard;
 
@@ -152,7 +156,7 @@ class PageEditWizard extends PageWizardBase {
       '#links' => [],
       '#attributes' => [
         'class' => ['inline'],
-      ],
+      ]
     ];
     foreach ($this->getPageActionLinks($page) as $action) {
       $form['wizard_actions']['#links'][] = $action + [
@@ -228,7 +232,7 @@ class PageEditWizard extends PageWizardBase {
       '#type' => 'submit',
       '#value' => $this->t('Cancel'),
       '#submit' => [
-        '::clearTempstore',
+        '::clearTempstore'
       ],
     ];
 

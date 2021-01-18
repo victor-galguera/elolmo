@@ -9,7 +9,7 @@
  * Implements hook_requirements().
  */
 function token_requirements($phase = 'runtime') {
-  $requirements = [];
+  $requirements = array();
 
   if ($phase == 'runtime') {
     // Check for various token definition problems.
@@ -18,17 +18,13 @@ function token_requirements($phase = 'runtime') {
     foreach ($token_problems as $problem_key => $problem) {
       if (!empty($problem['problems'])) {
         $problems = array_unique($problem['problems']);
-
-        $build = [
-          '#theme' => 'item_list',
-          '#items' => $problems,
-        ];
-
-        $requirements['token-' . $problem_key] = [
+        $problems = array_map('\Drupal\Component\Utility\SafeMarkup::checkPlain', $problems);
+        $requirements['token-' . $problem_key] = array(
           'title' => $problem['label'],
-          'value' => \Drupal::service('renderer')->renderPlain($build),
+          // @todo Use render arrays. See https://drupal.org/node/2195739
+          'value' => \Drupal::theme()->render('item_list', array('items' => $problems)),
           'severity' => $problem['severity'],
-        ];
+        );
       }
     }
   }
@@ -41,22 +37,22 @@ function token_requirements($phase = 'runtime') {
  */
 function token_install() {
   // Create a token view mode for each entity type.
-  $info = \Drupal::entityTypeManager()->getDefinitions();
+  $info = \Drupal::entityManager()->getDefinitions();
   foreach ($info as $entity_type => $entity_type_info) {
     // We're only interested in entity types with a view builder.
     if (!$entity_type_info->getViewBuilderClass()) {
       continue;
     }
     // Try to find a token view mode for that entity type.
-    $storage = \Drupal::entityTypeManager()->getStorage('entity_view_mode');
+    $storage = \Drupal::entityManager()->getStorage('entity_view_mode');
     // Add a token view mode if it does not already exist.
     if (!$storage->load("$entity_type.token")) {
-      $storage->create([
+      $storage->create(array(
         'targetEntityType' => $entity_type,
         'id' => "$entity_type.token",
         'status' => TRUE,
         'label' => t('Token'),
-      ])->save();
+      ))->save();
     }
   }
 }
@@ -65,7 +61,7 @@ function token_install() {
  * Build a list of Drupal 6 tokens and their Drupal 7 token names.
  */
 function _token_upgrade_token_list() {
-  $tokens = [
+  $tokens = array(
     // Global tokens
     'user-name' => 'current-user:name',
     'user-id' => 'current-user:id',
@@ -142,7 +138,7 @@ function _token_upgrade_token_list() {
     //'date-in-tz' => '',
     'account-url' => 'user:url',
     'account-edit' => 'user:edit-url',
-  ];
+  );
 
   // Account for date tokens which need to be expanded.
   $tokens += _token_upgrade_token_date_list('site-', 'site:date');
@@ -160,8 +156,8 @@ function _token_upgrade_token_list() {
  * Build a list of Drupal 6 date tokens and their Drupal 7 token names.
  */
 function _token_upgrade_token_date_list($old_token, $new_token) {
-  $tokens = [];
-  $formats = [
+  $tokens = array();
+  $formats = array(
     'yyyy' => 'Y',
     'yy' => 'y',
     'month' => 'F',
@@ -174,7 +170,7 @@ function _token_upgrade_token_date_list($old_token, $new_token) {
     'ddd' => 'D',
     'dd' => 'd',
     'd' => 'j',
-  ];
+  );
   foreach ($formats as $token_format => $date_format) {
     $tokens[$old_token . $token_format] = "$new_token:custom:$date_format";
   }
@@ -198,12 +194,12 @@ function _token_upgrade_token_date_list($old_token, $new_token) {
  *
  * @see _token_upgrade_token_list()
  */
-function token_update_token_text($text, $updates = [], $leading = '[', $trailing = ']') {
+function token_update_token_text($text, $updates = array(), $leading = '[', $trailing = ']') {
   $updates += _token_upgrade_token_list();
   $regex = '/' . preg_quote($leading, '/') . '([^\s]*)' . preg_quote($trailing, '/') . '/';
   preg_match_all($regex, $text, $matches);
 
-  foreach ($matches[1] as $old_token) {
+  foreach ($matches[1] as $index => $old_token) {
     if (isset($updates[$old_token])) {
       $new_token = $updates[$old_token];
       $text = str_replace("{$leading}{$old_token}{$trailing}", "[$new_token]", $text);
@@ -220,7 +216,7 @@ function token_update_token_text($text, $updates = [], $leading = '[', $trailing
  */
 function token_get_token_problems() {
   // @todo Improve the duplicate checking to report which modules are the offenders.
-  //$token_info = [];
+  //$token_info = array();
   //foreach (module_implements('token_info') as $module) {
   //  $module_token_info = module_invoke($module, 'token_info');
   //  if (in_array($module, _token_core_supported_modules())) {
@@ -230,7 +226,7 @@ function token_get_token_problems() {
   //    if (is_array($module_token_info['types'])) {
   //      foreach (array_keys($module_token_info['types']) as $type) {
   //        if (is_array($module_token_info['types'][$type])) {
-  //          $module_token_info['types'][$type] += ['module' => $module];
+  //          $module_token_info['types'][$type] += array('module' => $module);
   //        }
   //      }
   //    }
@@ -246,28 +242,28 @@ function token_get_token_problems() {
   //}
 
   $token_info = \Drupal::token()->getInfo();
-  $token_problems = [
-    'not-array' => [
+  $token_problems = array(
+    'not-array' => array(
       'label' => t('Tokens or token types not defined as arrays'),
       'severity' => REQUIREMENT_ERROR,
-    ],
-    'missing-info' => [
+    ),
+    'missing-info' => array(
       'label' => t('Tokens or token types missing name property'),
       'severity' => REQUIREMENT_WARNING,
-    ],
-    'type-no-tokens' => [
+    ),
+    'type-no-tokens' => array(
       'label' => t('Token types do not have any tokens defined'),
       'severity' => REQUIREMENT_INFO,
-    ],
-    'tokens-no-type' => [
+    ),
+    'tokens-no-type' => array(
       'label' => t('Token types are not defined but have tokens'),
       'severity' => REQUIREMENT_INFO,
-    ],
-    'duplicate' => [
+    ),
+    'duplicate' => array(
       'label' => t('Token or token types are defined by multiple modules'),
       'severity' => REQUIREMENT_ERROR,
-    ],
-  ];
+    ),
+  );
 
   // Check token types for problems.
   foreach ($token_info['types'] as $type => $type_info) {
@@ -283,7 +279,7 @@ function token_get_token_problems() {
       $token_problems['duplicate']['problems'][] = "\$info['types']['$type']";
     }
     elseif (empty($token_info['tokens'][$real_type])) {
-      $token_problems['type-no-tokens']['problems'][] = "\$info['types']['$real_type']";
+      $token_problems['type-no-tokens']['problems'][] = "\$info['tokens']['$real_type']";
     }
   }
 

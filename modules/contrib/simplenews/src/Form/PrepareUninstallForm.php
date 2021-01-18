@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\simplenews\Form\PrepareUninstallForm.
+ */
+
 namespace Drupal\simplenews\Form;
 
+use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Removes fields and data used by Simplenews.
@@ -21,16 +28,16 @@ class PrepareUninstallForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['simplenews'] = [
+    $form['simplenews'] = array(
       '#type' => 'fieldset',
       '#title' => $this->t('Prepare uninstall'),
       '#description' => $this->t('When clicked all Simplenews data (content, fields) will be removed.'),
-    ];
+    );
 
-    $form['simplenews']['prepare_uninstall'] = [
+    $form['simplenews']['prepare_uninstall'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Delete Simplenews data'),
-    ];
+    );
 
     return $form;
   }
@@ -40,7 +47,7 @@ class PrepareUninstallForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $batch = [
-      'title' => $this->t('Deleting subscribers'),
+      'title' => t('Deleting subscribers'),
       'operations' => [
         [
           [__CLASS__, 'deleteSubscribers'], [],
@@ -52,19 +59,19 @@ class PrepareUninstallForm extends FormBase {
           [__CLASS__, 'purgeFieldData'], [],
         ],
       ],
-      'progress_message' => $this->t('Deleting Simplenews data... Completed @percentage% (@current of @total).'),
+      'progress_message' => static::t('Deleting Simplenews data... Completed @percentage% (@current of @total).'),
     ];
     batch_set($batch);
 
-    $this->messenger()->addMessage($this->t('Simplenews data has been deleted.'));
+    drupal_set_message($this->t('Simplenews data has been deleted.'));
   }
 
   /**
    * Deletes Simplenews subscribers.
    */
   public static function deleteSubscribers(&$context) {
-    $storage = \Drupal::entityTypeManager()->getStorage('simplenews_subscriber');
-    $subscriber_ids = $storage->getQuery()->range(0, 100)->execute();
+    $subscriber_ids = \Drupal::entityQuery('simplenews_subscriber')->range(0, 100)->execute();
+    $storage = \Drupal::entityManager()->getStorage('simplenews_subscriber');
     if ($subscribers = $storage->loadMultiple($subscriber_ids)) {
       $storage->delete($subscribers);
     }
@@ -75,11 +82,9 @@ class PrepareUninstallForm extends FormBase {
    * Removes Simplenews fields.
    */
   public static function removeFields() {
-    $field_config_storage = \Drupal::entityTypeManager()->getStorage('field_config');
-    $simplenews_fields_ids = $field_config_storage->getQuery()
-      ->condition('field_type', 'simplenews_', 'STARTS_WITH')->execute();
-    $simplenews_fields = $field_config_storage->loadMultiple($simplenews_fields_ids);
-
+    $simplenews_fields_ids = \Drupal::entityQuery('field_config')->condition('field_type', 'simplenews_', 'STARTS_WITH')->execute();
+    $simplenews_fields = \Drupal::entityManager()->getStorage('field_config')->loadMultiple($simplenews_fields_ids);
+    $field_config_storage = \Drupal::entityManager()->getStorage('field_config');
     $field_config_storage->delete($simplenews_fields);
   }
 
@@ -89,13 +94,11 @@ class PrepareUninstallForm extends FormBase {
   public static function purgeFieldData() {
     do {
       field_purge_batch(1000);
-      $properties = [
+      $properties = array(
         'deleted' => TRUE,
         'include_deleted' => TRUE,
-      ];
-      $fields = \Drupal::entityTypeManager()
-        ->getStorage('field_config')
-        ->loadByProperties($properties);
+      );
+      $fields = entity_load_multiple_by_properties('field_config', $properties);
     } while ($fields);
   }
 

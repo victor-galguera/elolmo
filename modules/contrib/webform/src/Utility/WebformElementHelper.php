@@ -4,7 +4,9 @@ namespace Drupal\webform\Utility;
 
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Template\Attribute;
 use Drupal\webform\Plugin\WebformElement\WebformCompositeBase;
@@ -72,19 +74,6 @@ class WebformElementHelper {
   protected static $allowedSubPropertiesRegExp;
 
   /**
-   * Checks if the key is string and a property.
-   *
-   * @param string $key
-   *   The key to check.
-   *
-   * @return bool
-   *   TRUE of the key is string and a property., FALSE otherwise.
-   */
-  public static function property($key) {
-    return ($key && is_string($key) && $key[0] == '#');
-  }
-
-  /**
    * Determine if an element and its key is a renderable array.
    *
    * @param array|mixed $element
@@ -97,21 +86,6 @@ class WebformElementHelper {
    */
   public static function isElement($element, $key) {
     return (Element::child($key) && is_array($element));
-  }
-
-  /**
-   * Determine if an element is accessible.
-   *
-   * @param array|mixed $element
-   *   An element.
-   *
-   * @return bool
-   *   TRUE if an element is accessible.
-   *
-   * @see \Drupal\Core\Render\Element::isVisibleElement
-   */
-  public static function isAccessibleElement($element) {
-    return (isset($element['#access']) && $element['#access'] === FALSE) ? FALSE : TRUE;
   }
 
   /**
@@ -272,7 +246,7 @@ class WebformElementHelper {
   public static function getProperties(array $element) {
     $properties = [];
     foreach ($element as $key => $value) {
-      if (static::property($key)) {
+      if (Element::property($key)) {
         $properties[$key] = $value;
       }
     }
@@ -290,7 +264,7 @@ class WebformElementHelper {
    */
   public static function removeProperties(array $element) {
     foreach ($element as $key => $value) {
-      if (static::property($key)) {
+      if (Element::property($key)) {
         unset($element[$key]);
       }
     }
@@ -402,7 +376,7 @@ class WebformElementHelper {
   public static function getIgnoredProperties(array $element) {
     $ignored_properties = [];
     foreach ($element as $key => $value) {
-      if (static::property($key)) {
+      if (Element::property($key)) {
         if (self::isIgnoredProperty($key)) {
           // Computed elements use #ajax as boolean and should not be ignored.
           // @see \Drupal\webform\Element\WebformComputedBase
@@ -447,7 +421,7 @@ class WebformElementHelper {
    */
   public static function removeIgnoredProperties(array $element) {
     foreach ($element as $key => $value) {
-      if (static::property($key) && self::isIgnoredProperty($key)) {
+      if ($key && is_string($key) && Element::property($key) && self::isIgnoredProperty($key)) {
         // Computed elements use #ajax as boolean and should not be ignored.
         // @see \Drupal\webform\Element\WebformComputedBase
         $is_ajax_computed = ($key === '#ajax' && is_bool($value));
@@ -556,7 +530,7 @@ class WebformElementHelper {
 
     foreach ($element as $key => &$value) {
       // Make sure to only merge properties.
-      if (!static::property($key) || empty($translation[$key])) {
+      if (!Element::property($key) || empty($translation[$key])) {
         continue;
       }
 
@@ -586,7 +560,7 @@ class WebformElementHelper {
   public static function getFlattened(array $elements) {
     $flattened_elements = [];
     foreach ($elements as $key => &$element) {
-      if (!self::isElement($element, $key)) {
+      if (!WebformElementHelper::isElement($element, $key)) {
         continue;
       }
 

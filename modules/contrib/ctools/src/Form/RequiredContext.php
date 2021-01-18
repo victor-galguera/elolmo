@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\ctools\Form\RequiredContext.
+ */
+
 namespace Drupal\ctools\Form;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
@@ -9,7 +14,6 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Form\FormBuilderInterface;
 
 abstract class RequiredContext extends FormBase {
 
@@ -17,13 +21,6 @@ abstract class RequiredContext extends FormBase {
    * @var \Drupal\Core\TypedData\TypedDataManager
    */
   protected $typedDataManager;
-
-  /**
-   * The builder of form.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
 
   /**
    * @var string
@@ -34,15 +31,11 @@ abstract class RequiredContext extends FormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('typed_data_manager'),
-      $container->get('form_builder')
-    );
+    return new static($container->get('typed_data_manager'));
   }
 
-  public function __construct(PluginManagerInterface $typed_data_manager, FormBuilderInterface $form_builder) {
+  public function __construct(PluginManagerInterface $typed_data_manager) {
     $this->typedDataManager = $typed_data_manager;
-    $this->formBuilder = $form_builder;
   }
 
   /**
@@ -70,7 +63,7 @@ abstract class RequiredContext extends FormBase {
       '#theme' => 'table',
       '#header' => array($this->t('Information'), $this->t('Description'), $this->t('Operations')),
       '#rows' => $this->renderContexts($cached_values),
-      '#empty' => $this->t('No required contexts have been configured.')
+      '#empty' => t('No required contexts have been configured.')
     );
     $form['contexts'] = [
       '#type' => 'select',
@@ -79,7 +72,7 @@ abstract class RequiredContext extends FormBase {
     $form['add'] = [
       '#type' => 'submit',
       '#name' => 'add',
-      '#value' => $this->t('Add required context'),
+      '#value' => t('Add required context'),
       '#ajax' => [
         'callback' => [$this, 'add'],
         'event' => 'click',
@@ -110,7 +103,7 @@ abstract class RequiredContext extends FormBase {
    */
   public function add(array &$form, FormStateInterface $form_state) {
     $context = $form_state->getValue('contexts');
-    $content = $this->formBuilder->getForm($this->getContextClass(), $context, $this->getTempstoreId(), $this->machine_name);
+    $content = \Drupal::formBuilder()->getForm($this->getContextClass(), $context, $this->getTempstoreId(), $this->machine_name);
     $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
     $response = new AjaxResponse();
     $response->addCommand(new OpenModalDialogCommand($this->t('Configure Required Context'), $content, array('width' => '700')));
@@ -144,7 +137,7 @@ abstract class RequiredContext extends FormBase {
 
   protected function getOperations($route_name_base, array $route_parameters = array()) {
     $operations['edit'] = array(
-      'title' => $this->t('Edit'),
+      'title' => t('Edit'),
       'url' => new Url($route_name_base . '.edit', $route_parameters),
       'weight' => 10,
       'attributes' => array(
@@ -160,7 +153,7 @@ abstract class RequiredContext extends FormBase {
     );
     $route_parameters['id'] = $route_parameters['context'];
     $operations['delete'] = array(
-      'title' => $this->t('Delete'),
+      'title' => t('Delete'),
       'url' => new Url($route_name_base . '.delete', $route_parameters),
       'weight' => 100,
       'attributes' => array(
@@ -195,7 +188,7 @@ abstract class RequiredContext extends FormBase {
    * Document the route name and parameters for edit/delete context operations.
    *
    * The route name returned from this method is used as a "base" to which
-   * ".edit" and ".delete" are appended in the getOperations() method.
+   * ".edit" and ".delete" are appeneded in the getOperations() method.
    * Subclassing '\Drupal\ctools\Form\ContextConfigure' and
    * '\Drupal\ctools\Form\RequiredContextDelete' should set you up for using
    * this approach quite seamlessly.

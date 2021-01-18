@@ -1,9 +1,14 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\blocktabs\TabBase.
+ */
+
 namespace Drupal\blocktabs;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\ContextAwarePluginBase;
+use Drupal\Core\Plugin\PluginBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -17,7 +22,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\blocktabs\TabManager
  * @see plugin_api
  */
-abstract class TabBase extends ContextAwarePluginBase implements TabInterface, ContainerFactoryPluginInterface {
+abstract class TabBase extends PluginBase implements TabInterface, ContainerFactoryPluginInterface {
 
   /**
    * The tab ID.
@@ -32,7 +37,7 @@ abstract class TabBase extends ContextAwarePluginBase implements TabInterface, C
    * @var int|string
    */
   protected $weight = '';
-
+  
   /**
    * The title of the tab.
    *
@@ -69,6 +74,7 @@ abstract class TabBase extends ContextAwarePluginBase implements TabInterface, C
     );
   }
 
+
   /**
    * {@inheritdoc}
    */
@@ -83,14 +89,14 @@ abstract class TabBase extends ContextAwarePluginBase implements TabInterface, C
    * {@inheritdoc}
    */
   public function getSummary() {
-    return [
+    return array(
       '#markup' => '',
-      '#tab' => [
+      '#tab' => array(
         'id' => $this->pluginDefinition['id'],
         'label' => $this->label(),
         'description' => $this->pluginDefinition['description'],
-      ],
-    ];
+      ),
+    );
   }
 
   /**
@@ -136,30 +142,30 @@ abstract class TabBase extends ContextAwarePluginBase implements TabInterface, C
   public function getTitle() {
     return $this->title;
   }
-
+  
   /**
    * {@inheritdoc}
    */
   public function getConfiguration() {
-    return [
+    return array(
       'uuid' => $this->getUuid(),
       'id' => $this->getPluginId(),
       'title' => $this->getTitle(),
       'weight' => $this->getWeight(),
       'data' => $this->configuration,
-    ];
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration) {
-    $configuration += [
-      'data' => [],
+    $configuration += array(
+      'data' => array(),
       'uuid' => '',
       'title' => '',
       'weight' => '',
-    ];
+    );
     $this->configuration = $configuration['data'] + $this->defaultConfiguration();
     $this->uuid = $configuration['uuid'];
     $this->title = $configuration['title'];
@@ -171,22 +177,21 @@ abstract class TabBase extends ContextAwarePluginBase implements TabInterface, C
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    return [];
+    return array();
   }
 
   /**
    * {@inheritdoc}
    */
   public function calculateDependencies() {
-    return [];
+    return array();
   }
-
+  
   /**
    * {@inheritdoc}
-   */
+   */  
   public function getContent() {
     $tab_content = '';
     return $tab_content;
   }
-
 }

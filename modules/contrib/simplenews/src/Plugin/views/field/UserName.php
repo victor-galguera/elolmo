@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Definition of Drupal\simplenews\Plugin\views\field\UserName.
+ */
+
 namespace Drupal\simplenews\Plugin\views\field;
 
 use Drupal\views\Plugin\views\field\FieldPluginBase;
@@ -22,13 +27,13 @@ class UserName extends FieldPluginBase {
     $uid = $this->getValue($values);
     if (!empty($uid)) {
       $account = User::load($uid);
-      $username = [
+      $username = array(
         '#theme' => 'username',
         '#account' => $account,
-      ];
-      return $this->getRenderer()->render($username);
+      );
+      return drupal_render($username);
     }
-    return [];
+    return $data;
   }
 
   /**
