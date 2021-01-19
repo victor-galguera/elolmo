@@ -7,6 +7,7 @@ function computations_form_alter(&$form, &$form_state, $form_id) {
   switch($form_id) {
    //here you need to know the form_id of the content type the field is attached to. you can use dpm($form_id) to get this. Let's assume the content type is called 'INVOICE';
   case 'node_cotizacion_form':
+  case 'node_cotizacion_edit_form':
    //then, you need to target the computed field, in my own case, it is the VAT field. Since computed field module doesn't add #process to the form, it's safe to add yours here. Read more about hook_element_info() <a href="https://www.drupal.org/node/169815">here</a>.
 
     $form['field_precio_cotizacion']['und'][0]['value']['#process'] = array('my_custom_process');
