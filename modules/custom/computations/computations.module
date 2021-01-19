@@ -17,6 +17,7 @@ function computations_form_alter(&$form, &$form_state, $form_id) {
 
 //now we can make our field appear as a textfield.
 function my_custom_process($element, &$form_state, $complete_form){
+    dpm($element);
   $element['field_precio_cotizacion'] = array(
     '#type' => 'textfield',
     '#size' => 8,
