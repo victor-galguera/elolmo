@@ -1,0 +1,4 @@
+name: Live Computations
+type: module
+description: Calcula campos en vivo
+core_version_requirement: ^8 || ^9
