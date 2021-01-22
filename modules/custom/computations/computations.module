@@ -3,29 +3,29 @@
 * Implementation of hook_form_alter().
 */
 function computations_form_alter(&$form, &$form_state, $form_id) {
-  dpm($form_id);
-  switch($form_id) {
-   //here you need to know the form_id of the content type the field is attached to. you can use dpm($form_id) to get this. Let's assume the content type is called 'INVOICE';
-  case 'node_cotizacion_form':
-  case 'node_cotizacion_edit_form':
-   //then, you need to target the computed field, in my own case, it is the VAT field. Since computed field module doesn't add #process to the form, it's safe to add yours here. Read more about hook_element_info() <a href="https://www.drupal.org/node/169815">here</a>.
+    //dpm($form_id);
+    switch($form_id) {
+    //here you need to know the form_id of the content type the field is attached to. you can use dpm($form_id) to get this. Let's assume the content type is called 'INVOICE';
+        case 'node_cotizacion_form':
+        case 'node_cotizacion_edit_form':
+        //then, you need to target the computed field, in my own case, it is the VAT field. Since computed field module doesn't add #process to the form, it's safe to add yours here. Read more about hook_element_info() <a href="https://www.drupal.org/node/169815">here</a>.
 
-    $form['field_precio_cotizacion']['und'][0]['value']['#process'] = array('my_custom_process');
-  break;
-  }
+        //$form['field_precio_cotizacion']['und'][0]['value']['#process'] = array('precio_cotizacion');
+        break;
+    }
 }
 
 //now we can make our field appear as a textfield.
-function my_custom_process($element, &$form_state, $complete_form){
-    dpm($element);
-  $element['field_precio_cotizacion'] = array(
-    '#type' => 'textfield',
-    '#size' => 8,
-    '#attributes' => array(
-      'readonly' => 'readonly',
-      'tabindex' => -1,
-    ),
-  );
-  return $element;
-}
+/*function precio_cotizacion($element, &$form_state, $complete_form){
+    //dpm($form_state);
+    $element['field_precio_cotizacion'] = array(
+        '#type' => 'textfield',
+        '#size' => 8,
+        '#attributes' => array(
+            'readonly' => 'readonly',
+            'tabindex' => -1,
+        ),
+    );
+    return $element;
+}*/
 ?>

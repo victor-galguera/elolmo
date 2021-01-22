@@ -1,20 +1,66 @@
 <?php
 
 function computed_field_field_precio_cotizacion_compute($entity_type_manager, $entity, $fields, $delta) {
-    
     $value = 0;
-
     if (isset($fields['field_propiedad'][0])) {
         $propiedad =  node_load($fields['field_propiedad'][0]['target_id']);
         $value = $propiedad->field_precio->value;
-        return $value;
     }
-
     return $value;
 
 }
 
-/*function computed_field_field_saldo_a_la_escritura_compute($entity_type_manager, $entity, $fields, $delta) {
+function computed_field_field_enganche_contado_calculado_compute($entity_type_manager, $entity, $fields, $delta) {
+    $value = 0;
+    if (isset($fields['field_propiedad'][0])) {
+        $propiedad =  node_load($fields['field_propiedad'][0]['target_id']);
+        $value = $propiedad->field_precio->value;
+    }
+    if (isset($fields['field_enganche_contado_percent'][0])) {
+        $enganche_contado_porcentaje = $fields['field_enganche_contado_percent'][0]['value'];
+        if($enganche_contado_porcentaje > 0) {
+            $value = $value * ($enganche_contado_porcentaje / 100);
+        }
+        if (isset($fields['field_apartado'][0])) {
+            $apartado = $fields['field_apartado'][0]['value'];
+            if($apartado > 0) {
+                $value = $value - $apartado;
+            } 
+        }
+    }
+    return $value;
+}
+
+function computed_field_field_enganche_diferido_calcular_compute($entity_type_manager, $entity, $fields, $delta) {
+    $value = 0;
+    if (isset($fields['field_propiedad'][0])) {
+        $propiedad =  node_load($fields['field_propiedad'][0]['target_id']);
+        $value = $propiedad->field_precio->value;
+    }
+    if (isset($fields['field_enganche_diferido_percent'][0])) {
+        $enganche_diferido_porcentaje = $fields['field_enganche_diferido_percent'][0]['value'];
+        if($enganche_diferido_porcentaje > 0) {
+            $value = $value * ($enganche_diferido_porcentaje / 100);
+        }
+    }
+    return $value;
+}
+
+function computed_field_field_cantidad_pago_diferido_compute($entity_type_manager, $entity, $fields, $delta) {
+    $value = 0;
+    if (isset($fields['field_enganche_mensualidades'][0])) {
+        $numero_pagos = $fields['field_enganche_mensualidades'][0]['value']; 
+    }
+    if (isset($fields['field_enganche_diferido_calcular'][0])) {
+        $enganche_diferido = $fields['field_enganche_diferido_calcular'][0]['value'];
+        
+        $value = $enganche_diferido / $numero_pagos;
+    }
+
+    return $value;
+}
+
+function computed_field_field_saldo_a_la_escritura_compute($entity_type_manager, $entity, $fields, $delta) {
     
     $value = 0;
     //dpm($fields);
@@ -24,7 +70,7 @@ function computed_field_field_precio_cotizacion_compute($entity_type_manager, $e
 
     return $value;
 
-}*/
+}
 
 
 ?>
