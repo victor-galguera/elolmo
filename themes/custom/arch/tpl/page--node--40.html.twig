@@ -12,7 +12,113 @@
       </div>
     </main>-->
     {{ page.content_full_bar }}
-    <div class="content">   
+    <div class="content">
+    <script type="text/javascript">
+		var megazoom;
+		
+		FWDMUtils.onReady(function(){
+			megazoom =  new FWDM({
+				// Main settings
+				parentId:"myDiv",
+				markersAndInfoWindowId:"markersAndPlaylist",
+				displayType:"responsive",
+				skinPath:"skins/skin1",
+				useVectorIcons:"no",
+				initializeOnlyWhenVisible:"no",
+				imagePath:"{{ bg_url }}",
+				useEntireScreen:"no",
+				addKeyboardSupport:"yes",
+				addDoubleClickSupport:"yes",
+				disableMouseWheel:"yes",
+				disableZoom:"no",
+				disablePan:"no",
+				autoScale:"yes",
+				zoomerWidth:1000,
+            	zoomerHeight:790,
+				imageWidth:2500,
+				imageHeight:2867,
+				imageOffsetX:0,
+				imageOffsetY:0,
+				zoomFactor:1.0,
+				doubleClickZoomFactor:1,
+				startZoomFactor:"default",
+				panSpeed:8,
+				zoomSpeed:.1,
+				backgroundColor:"#FFFFFF",
+				backgroundColorOnZoom:"transparent",
+				fullscreenBackgroundColor:"#FFFFFF",
+				// Preloader
+				preloaderText:"Loading image: ",
+				preloaderPosition:"center",
+				preloaderOffsetX:40,
+				preloaderOffsetY:40,
+				showPreloaderProgressBar:"yes",
+				preloaderWidth:"70%",
+				preloaderProgressBarBackgroundColor:"#8b859b",
+				preloaderProgressBarFillColor:"#7EC1AB",
+				preloaderWindowBackgroundOpacity:.7,
+				preloaderFontColor:"#000000",
+				preloaderBackgroundSize:"large",
+				preloaderBackgroundColor:"#FFFFFF",
+				// lightbox-
+				lightBoxWidth:1000,
+				lightBoxHeight:658,
+				lightBoxBackgroundOpacity:.8,
+				lightBoxBackgroundColor:"#000000",
+				// Controller
+				buttons:"moveLeft, moveRight, moveDown, moveUp, scrollbar, hideOrShowMarkers, hideOrShowController, info, fullscreen",
+				buttonsToolTips:"Move left, Move right, Move down, Move up, Zoom level: , Hide markers/Show markers, Hide controller/Show controller, Info, Full screen/Normal screen",
+				showControllerBackground:'yes',
+				controllerHorizontalPosition:"center",
+				controllerVerticalPosition:"bottom",
+				inversePanDirection:"yes",
+				controllerMaxWidth:815,
+				hideControllerDelay:300,
+				startSpaceBetweenButtons:28,
+				spaceBetweenButtons:20,
+				startSpaceForScrollBarButtons:20,
+				startSpaceForScrollBar:20,
+				controllerOffsetWidth:20,
+				controllerOffsetY:20,
+				scrollBarOffsetX:0,
+				scrollBarHandlerOffsetX:4,
+				scrollBarHandlerToolTipOffsetY:4,
+				zoomInAndOutToolTipOffsetY:-10,
+				buttonsToolTipOffsetY:-10,
+				controllerBackgroundOpacity:1,
+				buttonToolTipBackgroundColor:"#FFFFFF",
+				buttonToolTipFontColor:"#3A334B",
+				// Navigator
+				showNavigator:"yes",
+				showNavigatorOnMobile:"yes",
+				navigatorPosition:"topright",
+				navigatorWidth:120,
+				navigatorOffsetX:10,
+				navigatorOffsetY:10,
+				navigatorBackgroundColor:"#FFFFFF",
+				navigatorHandlerColor:"#7EC1AB",
+				navigatorBorderColor:"#E5E4E8",
+				// Info window
+				infoWindowWidth:920,
+				infoWindowBackgroundOpacity:.6,
+				infoWindowBackgroundColor:"#FFFFFF",
+				infoWindowScrollBarColor:"#585858",
+				// Markers
+				showMarkersInfo:"no",
+				markerToolTipOffsetY:6,
+				// Context menu
+				showScriptDeveloper:"no",
+				contextMenuLabels:"Move left, Move right, Move down, Move up, Zoom in/Zoom out, Hide markers/Show markers, Hide controller/Show controller, Info, Full screen/Normal screen",
+				contextMenuBorderColor:"rgba(0,0,0,0)",
+				contextMenuSpacerColor:"#E5E4E8",
+				contextMenuItemTextNormalColor:"#3a334b",
+				contextMenuItemTextSelectedColor:"#FFFFFF",
+				contextMenuItemBackgroundNormalColor:"#FFFFFF",
+				contextMenuItemBackgroundSelectedColor:"#7EC1AB",
+				contextMenuItemDisabledColor:"#cccccc"
+			});
+		})
+	</script>
     Aqui vamos a meter la imagen del sembrado
       {{ page.section_content }}
       {{ page.section_bottom }}
