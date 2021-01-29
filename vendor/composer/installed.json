@@ -3585,6 +3585,69 @@
         }
     },
     {
+        "name": "drupal/field_group_table",
+        "version": "1.0.0-beta3",
+        "version_normalized": "1.0.0.0-beta3",
+        "source": {
+            "type": "git",
+            "url": "https://git.drupalcode.org/project/field_group_table.git",
+            "reference": "8.x-1.0-beta3"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://ftp.drupal.org/files/projects/field_group_table-8.x-1.0-beta3.zip",
+            "reference": "8.x-1.0-beta3",
+            "shasum": "df324820acb0921fc1aa2df4b8951e043b8b5829"
+        },
+        "require": {
+            "drupal/core": "~8.0",
+            "drupal/field_group": "*"
+        },
+        "type": "drupal-module",
+        "extra": {
+            "drupal": {
+                "version": "8.x-1.0-beta3",
+                "datestamp": "1553071384",
+                "security-coverage": {
+                    "status": "not-covered",
+                    "message": "Beta releases are not covered by Drupal security advisories."
+                }
+            }
+        },
+        "installation-source": "dist",
+        "notification-url": "https://packages.drupal.org/8/downloads",
+        "license": [
+            "GPL-2.0-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Antonnavi",
+                "homepage": "https://www.drupal.org/user/875410"
+            },
+            {
+                "name": "a.ross",
+                "homepage": "https://www.drupal.org/user/968198"
+            },
+            {
+                "name": "bforchhammer",
+                "homepage": "https://www.drupal.org/user/216396"
+            },
+            {
+                "name": "charlie-s",
+                "homepage": "https://www.drupal.org/user/277960"
+            },
+            {
+                "name": "webadpro",
+                "homepage": "https://www.drupal.org/user/708024"
+            }
+        ],
+        "description": "Render fields in a 2-column table.",
+        "homepage": "https://www.drupal.org/project/field_group_table",
+        "support": {
+            "source": "https://git.drupalcode.org/project/field_group_table"
+        }
+    },
+    {
         "name": "drupal/file_browser",
         "version": "1.3.0",
         "version_normalized": "1.3.0.0",
