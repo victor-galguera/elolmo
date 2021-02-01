@@ -79,6 +79,7 @@
         "drupal/simple_instagram_feed": "^3.9",
         "drupal/simplenews": "^2.0@beta",
         "drupal/soundcloudfield": "^1.0@alpha",
+        "drupal/superslides": "^1.5",
         "drupal/token": "^1.9",
         "drupal/toolbar_menu_clean": "^1.2",
         "drupal/video_embed_field": "^2.4",

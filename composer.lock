@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4e816a0c6c4cb57fa3baf71b04208cd5",
+    "content-hash": "465a09dd4ff4cbed77e90fe2fad79b19",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -5043,6 +5043,55 @@
             "homepage": "https://www.drupal.org/project/soundcloudfield",
             "support": {
                 "source": "https://git.drupalcode.org/project/soundcloudfield"
+            }
+        },
+        {
+            "name": "drupal/superslides",
+            "version": "1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/superslides.git",
+                "reference": "8.x-1.5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/superslides-8.x-1.5.zip",
+                "reference": "8.x-1.5",
+                "shasum": "79957918298f65b0c27e77287fa4dd05e45cf6a0"
+            },
+            "require": {
+                "drupal/core": "~8.0"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.5",
+                    "datestamp": "1504510144",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Nishit Kamdar",
+                    "homepage": "https://www.drupal.org/u/kamdanishit"
+                },
+                {
+                    "name": "kamdanishit",
+                    "homepage": "https://www.drupal.org/user/3208649"
+                }
+            ],
+            "description": "Superslides Caption Slider is a Caption Slider integrated with views using two powerful libraries Superslides and Animate.css",
+            "homepage": "http://drupal.org/project/superslides",
+            "support": {
+                "source": "https://git.drupalcode.org/project/superslides",
+                "issues": "https://www.drupal.org/project/issues/superslides"
             }
         },
         {
