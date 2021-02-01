@@ -36,3 +36,45 @@ a:link img,
 a:visited img {
   border: 0;
 }
+
+
+
+.field--name-field-propiedad .field--label-inline {
+    display: inline-flex;
+}
+.fecha {
+    margin-bottom:30px;
+}
+/*.cliente, .ejecutivo {
+    width: 48%;
+    display: inline-block;
+    float: left;
+    text-align:center;
+    border: 1px solid gray;
+    padding:10px;
+}*/
+.inline {
+    display: inline;
+    float: left;
+    padding: 10px;
+    border-bottom: 1px solid gray;
+}
+.inline-block {
+    display: block;
+    padding: 10px;
+    border-bottom: 1px solid gray;
+}
+span {
+    font-weight: bold;
+}
+
+.div-block {
+    display: table-row;
+    margin-bottom: 30px;
+    border: none;
+    background-color: #ddd;
+}
+
+
+
+
