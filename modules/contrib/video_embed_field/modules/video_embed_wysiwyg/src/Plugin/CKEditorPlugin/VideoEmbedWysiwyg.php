@@ -1,11 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\video_embed_wyswiyg\Plugin\CKEditorPlugin\VideoEmbedWysiwyg.
- */
-
-
 namespace Drupal\video_embed_wysiwyg\Plugin\CKEditorPlugin;
 
 use Drupal\ckeditor\CKEditorPluginBase;
@@ -17,6 +11,8 @@ use Drupal\editor\Entity\Editor;
 use Drupal\video_embed_field\Plugin\Field\FieldFormatter\Video;
 
 /**
+ * The media_entity plugin for video_embed_field.
+ *
  * @CKEditorPlugin(
  *   id = "video_embed",
  *   label = @Translation("Video Embed WYSIWYG")
@@ -55,7 +51,12 @@ class VideoEmbedWysiwyg extends CKEditorPluginBase implements CKEditorPluginConf
    */
   public function settingsForm(array $form, FormStateInterface $form_state, Editor $editor) {
     $editor_settings = $editor->getSettings();
-    $plugin_settings =  NestedArray::getValue($editor_settings, ['plugins', 'video_embed', 'defaults', 'children']);
+    $plugin_settings = NestedArray::getValue($editor_settings, [
+      'plugins',
+      'video_embed',
+      'defaults',
+      'children',
+    ]);
     $settings = $plugin_settings ?: [];
 
     $form['defaults'] = [

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\imce\ImcePluginManager.
- */
-
 namespace Drupal\imce;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
@@ -60,8 +55,8 @@ class ImcePluginManager extends DefaultPluginManager {
    */
   protected function findDefinitions() {
     $definitions = parent::findDefinitions();
-    // Sort definitions by weight
-    uasort($definitions, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+    // Sort definitions by weight.
+    uasort($definitions, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
     return $definitions;
   }
 
@@ -82,7 +77,7 @@ class ImcePluginManager extends DefaultPluginManager {
    */
   public function getInstances() {
     if (!isset($this->instances)) {
-      $this->instances = array();
+      $this->instances = [];
       foreach ($this->getDefinitions() as $id => $def) {
         $this->instances[$id] = $this->createInstance($id);
       }
@@ -110,7 +105,7 @@ class ImcePluginManager extends DefaultPluginManager {
    *   An array of results keyed by plugin id.
    */
   public function invokeAll($hook, &$a = NULL, $b = NULL, $c = NULL) {
-    $ret = array();
+    $ret = [];
     if (in_array($hook, $this->getHooks())) {
       foreach ($this->getInstances() as $plugin => $instance) {
         $ret[$plugin] = $instance->$hook($a, $b, $c);
@@ -165,10 +160,11 @@ class ImcePluginManager extends DefaultPluginManager {
         $method = $def['operations'][$op];
       }
     }
-    if ($method && $instance = $this->getInstance(array('id' => $plugin))) {
+    if ($method && $instance = $this->getInstance(['id' => $plugin])) {
       return $instance->$method($fm);
     }
     // Indicate that the operation handler is not found.
     return FALSE;
   }
+
 }

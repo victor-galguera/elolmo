@@ -1,0 +1,51 @@
+.slider {
+  width: 600px;
+  height: 300px;
+  overflow: scroll;
+}
+
+.slider ul {
+  position: relative;
+  clear: both;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.slider li {
+  float: left;
+  height: 299px;
+}
+
+.grid-nav {
+  width: 100%;
+}
+
+h3 {
+  padding: 5px;
+  clear: both;
+}
+
+.grid-nav ul {
+  clear: both;
+  display: flex;
+  justify-content: center;
+}
+
+.grid-nav-layer li {
+  list-style: none;
+  margin: 1px;
+  float: left;
+  cursor: pointer;
+  padding: 6px;
+  border: 2px solid #a2a2a2;
+}
+
+.grid-nav-layer li img {
+  width: 80px;
+  height: 40px;
+}
+
+.grid-active {
+  background-color: #c4c2c3;
+}

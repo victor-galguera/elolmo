@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\imce\ImcePluginInterface.
- */
-
 namespace Drupal\imce;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -48,4 +43,5 @@ interface ImcePluginInterface extends PluginInspectionInterface {
    * Builds imce page by adding required libraries and elements.
    */
   public function buildPage(array &$page, ImceFM $fm);
+
 }

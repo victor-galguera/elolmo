@@ -12,19 +12,22 @@ function computed_field_field_precio_cotizacion_compute($entity_type_manager, $e
 
 function computed_field_field_enganche_contado_calculado_compute($entity_type_manager, $entity, $fields, $delta) {
     $value = 0;
+    $precio = 0;
+    $enganche = 0;
+    $apartado = 0;
     if (isset($fields['field_propiedad'][0])) {
         $propiedad =  node_load($fields['field_propiedad'][0]['target_id']);
-        $value = $propiedad->field_precio->value;
+        $precio = $propiedad->field_precio->value;
     }
     if (isset($fields['field_enganche_contado_percent'][0])) {
         $enganche_contado_porcentaje = $fields['field_enganche_contado_percent'][0]['value'];
         if($enganche_contado_porcentaje > 0) {
-            $value = $value * ($enganche_contado_porcentaje / 100);
+            $enganche = $precio * ($enganche_contado_porcentaje / 100);
         }
-        if (isset($fields['field_apartado'][0])) {
+        if (isset($fields['field_apartado'][0]['value'])) {
             $apartado = $fields['field_apartado'][0]['value'];
             if($apartado > 0) {
-                $value = $value - $apartado;
+                $value = $enganche - $apartado;
             } 
         }
     }
@@ -48,6 +51,7 @@ function computed_field_field_enganche_diferido_calcular_compute($entity_type_ma
 
 function computed_field_field_cantidad_pago_diferido_compute($entity_type_manager, $entity, $fields, $delta) {
     $value = 0;
+    $numero_pagos = 1;
     if (isset($fields['field_enganche_mensualidades'][0])) {
         $numero_pagos = $fields['field_enganche_mensualidades'][0]['value']; 
     }
@@ -63,9 +67,22 @@ function computed_field_field_cantidad_pago_diferido_compute($entity_type_manage
 function computed_field_field_saldo_a_la_escritura_compute($entity_type_manager, $entity, $fields, $delta) {
     
     $value = 0;
-    //dpm($fields);
-    if (isset($fields['field_apartado'][0])) {
 
+    if (isset($fields['field_propiedad'][0])) {
+        $propiedad =  node_load($fields['field_propiedad'][0]['target_id']);
+        $precio = $propiedad->field_precio->value;
+    }
+
+    if (isset($fields['field_saldo_escritura_percent'][0]['value'])) {
+        $field_saldo_escritura_percent = $fields['field_saldo_escritura_percent'][0]['value'];
+        if($field_saldo_escritura_percent > 0) {
+            $value = $precio * ($field_saldo_escritura_percent / 100);
+        }
+    }
+
+    if (isset($fields['field_promocion'][0]['value'])) {
+        $promocion = $fields['field_promocion'][0]['value'];
+        $value = $value - $promocion;
     }
 
     return $value;

@@ -1,19 +1,23 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\imce\ImceFileField.
- */
-
 namespace Drupal\imce;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\WidgetInterface;
+use Drupal\Core\Security\TrustedCallbackInterface;
+use Drupal\Core\Url;
 
 /**
  * Defines methods for integrating Imce into file field widgets.
  */
-class ImceFileField {
+class ImceFileField implements TrustedCallbackInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function trustedCallbacks() {
+    return ['preRenderWidget'];
+  }
 
   /**
    * Returns a list of supported widgets.
@@ -21,7 +25,7 @@ class ImceFileField {
   public static function supportedWidgets() {
     $widgets = &drupal_static(__FUNCTION__);
     if (!isset($widgets)) {
-      $widgets = array('file_generic', 'image_image');
+      $widgets = ['file_generic', 'image_image'];
       \Drupal::moduleHandler()->alter('imce_supported_widgets', $widgets);
       $widgets = array_unique($widgets);
     }
@@ -39,13 +43,13 @@ class ImceFileField {
    * Returns widget settings form.
    */
   public static function widgetSettingsForm(WidgetInterface $widget) {
-    $form = array();
+    $form = [];
     if (static::isWidgetSupported($widget)) {
-      $form['enabled'] = array(
+      $form['enabled'] = [
         '#type' => 'checkbox',
-        '#title' => t('Allow users to select files from <a href=":url">Imce File Manager</a> for this field.', array(':url' => \Drupal::url('imce.admin'))),
+        '#title' => t('Allow users to select files from <a href=":url">Imce File Manager</a> for this field.', [':url' => Url::fromRoute('imce.admin')->toString()]),
         '#default_value' => $widget->getThirdPartySetting('imce', 'enabled'),
-      );
+      ];
     }
     return $form;
   }
@@ -57,7 +61,7 @@ class ImceFileField {
     $widget = $context['widget'];
     if (static::isWidgetSupported($widget)) {
       $status = $widget->getThirdPartySetting('imce', 'enabled') ? t('Yes') : t('No');
-      $summary[] = t('Imce enabled: @status', array('@status' => $status));
+      $summary[] = t('Imce enabled: @status', ['@status' => $status]);
     }
   }
 
@@ -65,20 +69,20 @@ class ImceFileField {
    * Processes widget form.
    */
   public static function processWidget($element, FormStateInterface $form_state, $form) {
-    // Path input
-    $element['imce_paths'] = array(
+    // Path input.
+    $element['imce_paths'] = [
       '#type' => 'hidden',
-      '#attributes' => array(
-        'class' => array('imce-filefield-paths'),
-        'data-imce-url' => \Drupal::url('imce.page', array('scheme' => $element['#scheme'])),
-      ),
-      // Reset value to prevent consistent errors
+      '#attributes' => [
+        'class' => ['imce-filefield-paths'],
+        'data-imce-url' => Url::fromRoute('imce.page', ['scheme' => $element['#scheme']])->toString(),
+      ],
+      // Reset value to prevent consistent errors.
       '#value' => '',
-    );
-    // Library
+    ];
+    // Library.
     $element['#attached']['library'][] = 'imce/drupal.imce.filefield';
     // Set the pre-renderer to conditionally disable the elements.
-    $element['#pre_render'][] = array(get_called_class(), 'preRenderWidget');
+    $element['#pre_render'][] = [get_called_class(), 'preRenderWidget'];
     return $element;
   }
 
@@ -95,6 +99,7 @@ class ImceFileField {
 
   /**
    * Sets widget file id values by validating and processing the submitted data.
+   *
    * Runs before processor callbacks.
    */
   public static function setWidgetValue($element, &$input, FormStateInterface $form_state) {
@@ -114,9 +119,9 @@ class ImceFileField {
     }
     // Validate paths as file entities.
     $file_usage = \Drupal::service('file.usage');
-    $errors = array();
+    $errors = [];
     foreach ($paths as $path) {
-      // Get entity by uri
+      // Get entity by uri.
       $file = Imce::getFileEntity($element['#scheme'] . '://' . $path, TRUE);
       if ($new_errors = file_validate($file, $element['#upload_validators'])) {
         $errors = array_merge($errors, $new_errors);
@@ -139,14 +144,15 @@ class ImceFileField {
     if ($errors) {
       $errors = array_unique($errors);
       if (count($errors) > 1) {
-        $errors = array('#theme' => 'item_list', '#items' => $errors);
+        $errors = ['#theme' => 'item_list', '#items' => $errors];
         $message = \Drupal::service('renderer')->render($errors);
       }
       else {
         $message = array_pop($errors);
       }
       // May break the widget flow if set as a form error.
-      drupal_set_message($message, 'error');
+      \Drupal::messenger()
+        ->addMessage($message, 'error');
     }
   }
 

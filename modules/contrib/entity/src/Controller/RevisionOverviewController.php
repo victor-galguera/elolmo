@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\entity\Controller\RevisionOverviewController.
- */
-
 namespace Drupal\entity\Controller;
 
 use Drupal\Component\Utility\Xss;
@@ -16,7 +11,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Entity\RevisionLogInterface;
-use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -65,17 +59,17 @@ class RevisionOverviewController extends ControllerBase {
    * {@inheritdoc}
    */
   protected function hasDeleteRevisionAccess(EntityInterface $entity) {
-    return $this->currentUser()->hasPermission("delete all {$entity->id()} revisions");
+    return $this->currentUser()->hasPermission("delete all {$entity->getEntityTypeId()} revisions");
   }
 
   /**
    * {@inheritdoc}
    */
   protected function buildRevertRevisionLink(EntityInterface $entity_revision) {
-    if ($entity_revision->hasLinkTemplate('revision-revert')) {
+    if ($entity_revision->hasLinkTemplate('revision-revert-form')) {
       return [
-        'title' => t('Revert'),
-        'url' => $entity_revision->toUrl('revision-revert'),
+        'title' => $this->t('Revert'),
+        'url' => $entity_revision->toUrl('revision-revert-form'),
       ];
     }
   }
@@ -84,10 +78,10 @@ class RevisionOverviewController extends ControllerBase {
    * {@inheritdoc}
    */
   protected function buildDeleteRevisionLink(EntityInterface $entity_revision) {
-    if ($entity_revision->hasLinkTemplate('revision-delete')) {
+    if ($entity_revision->hasLinkTemplate('revision-delete-form')) {
       return [
-        'title' => t('Delete'),
-        'url' => $entity_revision->toUrl('revision-delete'),
+        'title' => $this->t('Delete'),
+        'url' => $entity_revision->toUrl('revision-delete-form'),
       ];
     }
   }

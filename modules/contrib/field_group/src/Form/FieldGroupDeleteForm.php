@@ -1,15 +1,12 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\field_group\Form\FieldGroupDeleteForm.
- */
-
 namespace Drupal\field_group\Form;
 
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\field_group\FieldgroupUi;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for removing a fieldgroup from a bundle.
@@ -19,15 +16,34 @@ class FieldGroupDeleteForm extends ConfirmFormBase {
   /**
    * The fieldgroup to delete.
    *
-   * @var stdClass
+   * @var object
    */
   protected $fieldGroup;
 
   /**
-   * Construct the delete form: get the group config out of the request.
+   * The messenger.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
    */
-  public function __construct() {
-    $this->fieldGroup = (object)$this->getRequest()->attributes->get('field_group');
+  protected $messenger;
+
+  /**
+   * FieldGroupDeleteForm constructor.
+   *
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger.
+   */
+  public function __construct(MessengerInterface $messenger) {
+    $this->messenger = $messenger;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('messenger')
+    );
   }
 
   /**
@@ -40,13 +56,33 @@ class FieldGroupDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
+  public function buildForm(array $form, FormStateInterface $form_state, $field_group_name = NULL, $entity_type_id = NULL, $bundle = NULL, $context = NULL) {
+
+    if ($context == 'form') {
+      $mode = $this->getRequest()->attributes->get('form_mode_name');
+    }
+    else {
+      $mode = $this->getRequest()->attributes->get('view_mode_name');
+    }
+
+    if (empty($mode)) {
+      $mode = 'default';
+    }
+
+    $this->fieldGroup = field_group_load_field_group($field_group_name, $entity_type_id, $bundle, $context, $mode);
+    return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $bundles = entity_get_bundles();
+    $bundles = \Drupal::service('entity_type.bundle.info')->getAllBundleInfo();
     $bundle_label = $bundles[$this->fieldGroup->entity_type][$this->fieldGroup->bundle]['label'];
 
-    field_group_group_delete($this->fieldGroup);
+    field_group_delete_field_group($this->fieldGroup);
 
-    drupal_set_message(t('The group %group has been deleted from the %type content type.', array('%group' => t($this->fieldGroup->label), '%type' => $bundle_label)));
+    $this->messenger->addMessage($this->t('The group %group has been deleted from the %type content type.', ['%group' => $this->fieldGroup->label, '%type' => $bundle_label]));
 
     // Redirect.
     $form_state->setRedirectUrl($this->getCancelUrl());
@@ -57,7 +93,7 @@ class FieldGroupDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete the group %group?', array('%group' => t($this->fieldGroup->label)));
+    return $this->t('Are you sure you want to delete the group %group?', ['%group' => $this->fieldGroup->label]);
   }
 
   /**
@@ -71,39 +107,7 @@ class FieldGroupDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-
-    $entity_type_id = $this->fieldGroup->entity_type;
-    $entity_type = \Drupal::entityManager()->getDefinition($entity_type_id);
-    if (!$entity_type->get('field_ui_base_route')) {
-      return;
-    }
-
-    $options = array(
-      $entity_type->getBundleEntityType() => $this->fieldGroup->bundle,
-    );
-
-    // Redirect to correct route.
-    if ($this->fieldGroup->context == 'form') {
-      if ($this->fieldGroup->mode == 'default') {
-        $route_name = "entity.entity_form_display.{$entity_type_id}.default";
-      }
-      else {
-        $route_name = "entity.entity_form_display.{$entity_type_id}.form_mode";
-        $options['form_mode_name'] = $this->fieldGroup->mode;
-      }
-    }
-    else {
-      if ($this->fieldGroup->mode == 'default') {
-        $route_name = "entity.entity_view_display.{$entity_type_id}.default";
-      }
-      else {
-        $route_name = "entity.entity_view_display.{$entity_type_id}.view_mode";
-        $options['view_mode_name'] = $this->fieldGroup->mode;
-      }
-    }
-
-    return new Url($route_name, $options);
-
+    return FieldgroupUi::getFieldUiRoute($this->fieldGroup);
   }
 
 }

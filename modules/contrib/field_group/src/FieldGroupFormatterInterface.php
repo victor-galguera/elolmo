@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\field_group\FieldGroupFormatterInterface.
- */
-
 namespace Drupal\field_group;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -15,6 +10,18 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  * @ingroup field_group_formatter
  */
 interface FieldGroupFormatterInterface extends PluginInspectionInterface {
+
+  /**
+   * Allows the field group formatter to manipulate the field group array and attach the formatters elements.
+   * The process method is called in the #process part of theme layer, and is currently used for forms.
+   * The preRender method is called in the #pre_render part of the theme layer, and is currently used for entity displays.
+   *
+   * @param array $element
+   *   The field group render array.
+   * @param object $processed_object
+   *   The object / entity beïng processed.
+   */
+  public function process(&$element, $processed_object);
 
   /**
    * Allows the field group formatter to manipulate the field group array and attach the formatters rendering element.
@@ -44,7 +51,7 @@ interface FieldGroupFormatterInterface extends PluginInspectionInterface {
    * If an empty result is returned, a UI can still be provided to display
    * a settings form in case the formatter has configurable settings.
    *
-   * @return array()
+   * @return array
    *   A short summary of the formatter settings.
    */
   public function settingsSummary();

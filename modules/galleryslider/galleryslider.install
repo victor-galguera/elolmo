@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Contains galleryslider.install.
+ */
+
+/**
+ * Implements hook_uninstall() for image.style.galleryslider.yml.
+ */
+function galleryslider_uninstall() {
+
+  /** @var \Drupal\Core\Config\ConfigFactoryInterface $configFactory */
+  $configFactory = \Drupal::configFactory();
+  $logger = \Drupal::logger('amp');
+
+  $configNames = [
+    'image.style.galleryslider',
+  ];
+
+  foreach ($configNames as $configName) {
+    try {
+      $configFactory->getEditable($configName)->delete();
+    }
+    catch (\Exception $e) {
+      $logger->warning(sprintf('Unable to uninstall config: %s.', $configName));
+    }
+  }
+}

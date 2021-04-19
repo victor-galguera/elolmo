@@ -75,3 +75,15 @@ drupal.imce.filefield:
     - core/jquery
     - core/drupal
     - core/drupalSettings
+
+drupal.imce.input:
+  version: VERSION
+  css:
+    component:
+      css/imce.input.css: {}
+  js:
+    js/imce.input.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings

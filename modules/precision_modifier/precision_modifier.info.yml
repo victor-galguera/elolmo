@@ -1,0 +1,10 @@
+name: 'precision modifier'
+type: module
+description: 'Increments the precision for integer and decimal numbers'
+core_version_requirement: ^8 || ^9
+package: 'Numbers'
+
+# Information added by Drupal.org packaging script on 2020-09-11
+version: '8.x-1.0'
+project: 'precision_modifier'
+datestamp: 1599844677

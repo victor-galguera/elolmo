@@ -1,16 +1,11 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\imce\Controller\ImceController.
- */
-
 namespace Drupal\imce\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Controller\ControllerBase;
 use Drupal\imce\Imce;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Controller routines for imce routes.
@@ -22,14 +17,14 @@ class ImceController extends ControllerBase {
    */
   public function adminOverview(Request $request) {
     // Build the settings form first.(may redirect)
-    $output['settings_form'] = \Drupal::formBuilder()->getForm('Drupal\imce\Form\ImceSettingsForm') + array('#weight' => 10);
+    $output['settings_form'] = $this->formBuilder()->getForm('Drupal\imce\Form\ImceSettingsForm') + ['#weight' => 10];
     // Buld profile list.
-    $output['profile_list'] = array(
+    $output['profile_list'] = [
       '#type' => 'container',
-      '#attributes' => array('class' => array('imce-profile-list')),
-      'title' => array('#markup' => '<h2>' . $this->t('Configuration Profiles') . '</h2>'),
+      '#attributes' => ['class' => ['imce-profile-list']],
+      'title' => ['#markup' => '<h2>' . $this->t('Configuration Profiles') . '</h2>'],
       'list' => $this->entityTypeManager()->getListBuilder('imce_profile')->render(),
-    );
+    ];
     return $output;
   }
 

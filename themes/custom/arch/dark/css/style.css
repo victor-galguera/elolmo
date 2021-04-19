@@ -556,8 +556,8 @@ label.error{
 
 .section-title{
   text-align: center;
-  margin:0;
-  margin-left: 0.32em;
+  /*margin:0;
+  margin-left: 0.32em;*/
 }
 
 .fade-title-left,

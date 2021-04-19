@@ -1,0 +1,13 @@
+name: ImageLightBox
+type: module
+description: Image Lightbox, Responsive and Touch friendly
+package: image
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - drupal:image
+
+# Information added by Drupal.org packaging script on 2020-11-19
+version: '2.0.1'
+project: 'imagelightbox'
+datestamp: 1605827070

@@ -1,0 +1,15 @@
+langcode: en
+status: true
+dependencies: {  }
+name: galleryslider
+label: 'GallerySlider(600x300)'
+effects:
+  5a491d04-e64b-4754-8dd2-f01254d59989:
+    uuid: 5a491d04-e64b-4754-8dd2-f01254d59989
+    id: image_scale_and_crop
+    weight: -10
+    data:
+      width: 600
+      height: 300
+      upscale: true
+      anchor: center-center

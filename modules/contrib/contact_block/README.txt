@@ -20,16 +20,23 @@ Install as you would normally install a contributed Drupal module. See:
 
 CONFIGURATION
 -------------
+Create a contact form
+ - Home > Administration > Structure > Contact forms
+ - Edit (or delete) the default contact forms. Use Manage fields to add, update
+   or remove fields of the form.
+ - Optionally, create a contact form.
+
 Add a Contact block to a block region.
  - Home > Administration > Structure > Block layout
  - Click 'Place block' of the region you want to place a contact block in.
  - Search for 'Contact block' in the listed blocks and click 'Place block'.
- - Select the 'Contact form' you want to add.
+ - Select the contact form you want to show in this block.
  - Save the block.
+ - Optionally, create another contact block.
 
-The personal contact form is build to be used on a pages that 'know' about the
-user. The user 'To' address is found using the user ID in the URL. No personal
-contact form is displayed if the user ID is not in the URL.
+The personal contact form is built to be used on a pages that 'know' about the
+user. The user 'To' address is determined by using the user ID in the URL. No
+personal contact form is displayed if the user ID is not in the URL.
 For developers: The personal contact form is only loaded if the path contains
 the 'user' placeholder. For example in /user/{user}.
 
@@ -42,5 +49,4 @@ Current maintainers:
  * Erik Stielstra (Sutharsan) https://www.drupal.org/user/73854
 
 This project has been sponsored by:
- * Wizzlern
-   The Drupal trainers.
+ * Wizzlern, The Drupal trainers

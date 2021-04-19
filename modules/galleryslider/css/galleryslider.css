@@ -1,0 +1,52 @@
+body {
+  line-height: 0;
+}
+
+.slider {
+  width: 600px;
+  margin: 100px auto 0;
+  background-color: #fff;
+}
+
+/** { margin: 0 ; padding:0; }*/
+
+
+::selection {
+  color: #000;
+}
+
+#slider-nav {
+  /*	display: none; */
+  margin-top: 1em;
+  display: flex;
+  justify-content: center;
+}
+
+#slide-nav .grid {
+  width: 70%;
+  margin: auto;
+}
+
+#slider-nav a {
+  font-size: 1.3em;
+  padding: 1em;
+  margin-right: 1em;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.slider .item-list ul {
+  margin: 0;
+}
+
+.slider .item-list ul li {
+  padding: 0px;
+}
+
+.slider .views-field.views-field-uid {
+  line-height: 0;
+}
+
+.slider .views-field.views-field-title {
+  line-height: 0;
+}

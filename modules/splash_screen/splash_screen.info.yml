@@ -1,0 +1,11 @@
+name: Splash Screen
+type: module
+description: Allows the management of one or more Splash Screens.
+core: '8.x'
+core_version_requirement: ^8 || ^9
+package: Splash Screen
+
+# Information added by Drupal.org packaging script on 2020-03-29
+version: '8.x-5.0'
+project: 'splash_screen'
+datestamp: 1585478287

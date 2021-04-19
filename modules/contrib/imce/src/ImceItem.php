@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\imce\ImceItem.
- */
-
 namespace Drupal\imce;
 
 /**
@@ -13,7 +8,7 @@ namespace Drupal\imce;
 abstract class ImceItem {
 
   /**
-   * Item type
+   * Item type.
    *
    * @var string
    */
@@ -29,7 +24,7 @@ abstract class ImceItem {
   /**
    * Selected status.
    *
-   * @var boolean
+   * @var bool
    */
   public $selected;
 
@@ -41,7 +36,7 @@ abstract class ImceItem {
   public $parent;
 
   /**
-   * File manager
+   * File manager.
    *
    * @var \Drupal\imce\ImceFM
    */

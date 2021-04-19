@@ -1,0 +1,14 @@
+name: Gallery slider
+type: module
+description: Gallery Slider jQuery plugin integration module.
+# core: 8.x
+package: Gallery Slider
+dependencies:
+  - drupal:field
+  - drupal:image
+core_version_requirement: ^8 || ^9
+
+# Information added by Drupal.org packaging script on 2020-05-23
+version: '8.x-3.1'
+project: 'galleryslider'
+datestamp: 1590234693

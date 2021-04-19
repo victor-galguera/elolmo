@@ -6,6 +6,9 @@ imce.settings:
     abs_urls:
       type: boolean
       label: 'Enable absolute URLs'
+    admin_theme:
+      type: boolean
+      label: 'Use admin theme for IMCE paths'
     roles_profiles:
       type: sequence
       label: 'Role-profile assignments'
@@ -58,6 +61,14 @@ imce.profile_conf.maxheight:
 imce.profile_conf.replace:
   type: integer
   label: 'Upload replace method'
+
+imce.profile_conf.thumbnail_style:
+  type: string
+  label: 'Thumbnail style'
+
+imce.profile_conf.thumbnail_grid_style:
+  type: boolean
+  label: 'Thumbnail grid style'
 
 imce.profile_conf.folders:
   type: sequence

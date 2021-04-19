@@ -1,0 +1,40 @@
+{#
+/**
+ * @file
+ * Theme override for a view template to display a list of rows.
+ *
+ * Available variables:
+ * - attributes: HTML attributes for the container.
+ * - rows: A list of rows for this list.
+ *   - attributes: The row's HTML attributes.
+ *   - content: The row's contents.
+ * - title: The title of this group of rows. May be empty.
+ * - list: @todo.
+ *   - type: Starting tag will be either a ul or ol.
+ *   - attributes: HTML attributes for the list element.
+ *
+ * @see template_preprocess_views_view_list()
+ */
+#}
+
+
+  <{{ list.type }} data-markers="">
+
+    {% for row in rows %}
+      <li data-marker-type="tooltip-plus" data-show-content="yes" data-reg-point="centerbottom" data-marker-normal-state-path="/libraries/megazoom/skins/skin1/marker1.png" data-marker-selected-state-path="/libraries/megazoom/skins/skin1/marker1-rollover.png" 
+      data-marker-left="{{row.content['#row']._entity.field_left[0].value}}" data-marker-top="{{row.content['#row']._entity.field_top[0].value}}" data-marker-width="24" data-marker-height="33" data-show-after-zoom-factor="0" data-tooltip-offset-x="0" data-marker-window-width="280">
+        <img src="{{file_url(row.content['#row']._entity.field_miniatura.entity.uri.value)}}">
+        <h4>{{ row.content['#row']._entity.field_lote[0].value|raw}}</h4>
+        <p>Precio: <strong>$ {{ row.content['#row']._entity.field_precio[0].value|number_format(2, '.', ',') }}</strong></br>
+        m2 de construcción: <strong>{{row.content['#row']._entity.field_m2_construccion[0].value|number_format(0, '.', ',') }}</strong></br>
+        m2 de terreno: <strong>{{row.content['#row']._entity.field_m2_terreno[0].value|number_format(0, '.', ',') }}</strong></br>
+        Estatus de venta: <strong>{{row.content['#row']._entity.field_estatus_venta[0].value|capitalize }}</strong> </br>
+        {% if logged_in %}
+          <a href="/es/node/add/cotizacion?edit[field_propiedad][widget]={{row.content['#row']._entity.nid[0].value}}" target="_blank">-> Cotizar</a>
+        {% endif %}
+
+    	</p>
+      </li>
+    {% endfor %}
+
+  </{{ list.type }}>

@@ -1,13 +1,9 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\imce\Plugin\BUEditorPlugin\Imce.
- */
-
 namespace Drupal\imce\Plugin\BUEditorPlugin;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\editor\Entity\Editor;
 use Drupal\bueditor\BUEditorPluginBase;
 use Drupal\bueditor\Entity\BUEditorEditor;
@@ -26,10 +22,11 @@ class Imce extends BUEditorPluginBase {
   /**
    * {@inheritdoc}
    */
+  // @codingStandardsIgnoreLine
   public function alterEditorJS(array &$js, BUEditorEditor $bueditor_editor, Editor $editor = NULL) {
     // Check selected file browser.
     if (isset($js['settings']['fileBrowser']) && $js['settings']['fileBrowser'] === 'imce') {
-      // Check access
+      // Check access.
       if (ImceMain::access()) {
         $js['libraries'][] = 'imce/drupal.imce.bueditor';
       }
@@ -46,20 +43,20 @@ class Imce extends BUEditorPluginBase {
     // Add imce option to file browser field.
     $fb = &$form['settings']['fileBrowser'];
     $fb['#options']['imce'] = $this->t('Imce File Manager');
-    // Add configuration link
-    $form['settings']['imce'] = array(
+    // Add configuration link.
+    $form['settings']['imce'] = [
       '#type' => 'container',
-      '#states' => array(
-        'visible' => array(':input[name="settings[fileBrowser]"]' => array('value' => 'imce')),
-      ),
-      '#attributes' => array(
-        'class' => array('description'),
-      ),
-      'content' => array(
-        '#markup' => $this->t('Configure <a href=":url">Imce File Manager</a>.', array(':url' => \Drupal::url('imce.admin')))
-      ),
-    );
-    // Set weight
+      '#states' => [
+        'visible' => [':input[name="settings[fileBrowser]"]' => ['value' => 'imce']],
+      ],
+      '#attributes' => [
+        'class' => ['description'],
+      ],
+      'content' => [
+        '#markup' => $this->t('Configure <a href=":url">Imce File Manager</a>.', [':url' => Url::fromRoute('imce.admin')->toString()]),
+      ],
+    ];
+    // Set weight.
     if (isset($fb['#weight'])) {
       $form['settings']['imce']['#weight'] = $fb['#weight'] + 0.1;
     }

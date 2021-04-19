@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\imce\Annotation\ImcePlugin.
- */
-
 namespace Drupal\imce\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
@@ -12,7 +7,7 @@ use Drupal\Component\Annotation\Plugin;
 /**
  * Defines an ImcePlugin annotation object.
  *
- * Plugin Namespace: Plugin\ImcePlugin
+ * Plugin Namespace: Plugin\ImcePlugin.
  *
  * @see \Drupal\imce\ImcePluginBase
  *
@@ -30,9 +25,9 @@ class ImcePlugin extends Plugin {
   /**
    * Plugin label.
    *
-   * @ingroup plugin_translatable
-   *
    * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
    */
   public $label;
 
@@ -48,6 +43,6 @@ class ImcePlugin extends Plugin {
    *
    * @var array
    */
-  public $operations = array();
+  public $operations = [];
 
 }

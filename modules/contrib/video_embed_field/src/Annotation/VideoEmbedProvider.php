@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\video_embed_field\Annotation\EmbedProvider.
- */
-
 namespace Drupal\video_embed_field\Annotation;
 
 use Drupal\Component\Annotation\Plugin;

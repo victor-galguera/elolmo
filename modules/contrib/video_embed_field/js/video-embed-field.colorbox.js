@@ -1,3 +1,8 @@
+/**
+ * @file
+ * The video_embed_field colorbox integration.
+ */
+
 (function($) {
   Drupal.behaviors.video_embed_field_colorbox = {
     attach: function (context, settings) {

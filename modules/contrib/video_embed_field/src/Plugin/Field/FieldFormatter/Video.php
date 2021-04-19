@@ -1,12 +1,9 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\video_embed_field\Plugin\Field\FieldFormatter\Video.
- */
-
 namespace Drupal\video_embed_field\Plugin\Field\FieldFormatter;
 
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -44,100 +41,6 @@ class Video extends FormatterBase implements ContainerFactoryPluginInterface {
   protected $currentUser;
 
   /**
-   * {@inheritdoc}
-   */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
-    $element = [];
-    foreach ($items as $delta => $item) {
-      $provider = $this->providerManager->loadProviderFromInput($item->value);
-
-      $autoplay = $this->currentUser->hasPermission('never autoplay videos') ? FALSE : $this->getSetting('autoplay');
-      $element[$delta] = $provider->renderEmbedCode($this->getSetting('width'), $this->getSetting('height'), $autoplay);
-      $element[$delta]['#cache']['contexts'][] = 'user.permissions';
-
-      // For responsive videos, wrap each field item in it's own container
-      if ($this->getSetting('responsive')) {
-        $element[$delta] = [
-          '#type' => 'container',
-          '#attached' => ['library' => ['video_embed_field/responsive-video']],
-          '#attributes' => ['class' => ['video-embed-field-responsive-video']],
-          'children' => $element[$delta],
-        ];
-      }
-    }
-    return $element;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    return [
-      'responsive' => TRUE,
-      'width' => '854',
-      'height' => '480',
-      'autoplay' => TRUE,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $elements = parent::settingsForm($form, $form_state);
-    $elements['autoplay'] = [
-      '#title' => t('Autoplay'),
-      '#type' => 'checkbox',
-      '#description' => $this->t('Autoplay the videos for users without the "never autoplay videos" permission. Roles with this permission will bypass this setting.'),
-      '#default_value' => $this->getSetting('autoplay'),
-    ];
-    $elements['responsive'] = [
-      '#title' => t('Responsive Video'),
-      '#type' => 'checkbox',
-      '#description' => $this->t("Make the video fill the width of it's container, adjusting to the size of the user's screen."),
-      '#default_value' => $this->getSetting('responsive'),
-    ];
-    // Loosely match the name attribute so forms which don't have a field
-    // formatter structure (such as the WYSIWYG settings form) are also matched.
-    $responsive_checked_state = [
-      'visible' => [
-        [
-          ':input[name*="responsive"]' => ['checked' => FALSE],
-        ]
-      ],
-    ];
-    $elements['width'] = [
-      '#title' => t('Width'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('width'),
-      '#required' => TRUE,
-      '#size' => 20,
-      '#states' => $responsive_checked_state,
-    ];
-    $elements['height'] = [
-      '#title' => t('Height'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('height'),
-      '#required' => TRUE,
-      '#size' => 20,
-      '#states' => $responsive_checked_state,
-    ];
-    return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $dimensions = $this->getSetting('responsive') ? $this->t('Responsive') : $this->t('@widthx@height', ['@width' => $this->getSetting('width'), '@height' => $this->getSetting('height')]);
-    $summary[] = t('Embedded Video (@dimensions@autoplay).', [
-      '@dimensions' => $dimensions,
-      '@autoplay' => $this->getSetting('autoplay') ? t(', autoplaying') : '',
-    ]);
-    return $summary;
-  }
-
-  /**
    * Constructs a new instance of the plugin.
    *
    * @param string $plugin_id
@@ -159,7 +62,7 @@ class Video extends FormatterBase implements ContainerFactoryPluginInterface {
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The logged in user.
    */
-  public function __construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, ProviderManagerInterface $provider_manager, AccountInterface $current_user) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, $settings, $label, $view_mode, $third_party_settings, ProviderManagerInterface $provider_manager, AccountInterface $current_user) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->providerManager = $provider_manager;
     $this->currentUser = $current_user;
@@ -183,6 +86,110 @@ class Video extends FormatterBase implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function viewElements(FieldItemListInterface $items, $langcode) {
+    $element = [];
+    foreach ($items as $delta => $item) {
+      $provider = $this->providerManager->loadProviderFromInput($item->value);
+
+      if (!$provider) {
+        $element[$delta] = ['#theme' => 'video_embed_field_missing_provider'];
+      }
+      else {
+        $autoplay = $this->currentUser->hasPermission('never autoplay videos') ? FALSE : $this->getSetting('autoplay');
+        $element[$delta] = $provider->renderEmbedCode($this->getSetting('width'), $this->getSetting('height'), $autoplay);
+        $element[$delta]['#cache']['contexts'][] = 'user.permissions';
+
+        $element[$delta] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => [Html::cleanCssIdentifier(sprintf('video-embed-field-provider-%s', $provider->getPluginId()))]],
+          'children' => $element[$delta],
+        ];
+
+        // For responsive videos, wrap each field item in it's own container.
+        if ($this->getSetting('responsive')) {
+          $element[$delta]['#attached']['library'][] = 'video_embed_field/responsive-video';
+          $element[$delta]['#attributes']['class'][] = 'video-embed-field-responsive-video';
+        }
+      }
+
+    }
+    return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return [
+      'responsive' => TRUE,
+      'width' => '854',
+      'height' => '480',
+      'autoplay' => TRUE,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $elements = parent::settingsForm($form, $form_state);
+    $elements['autoplay'] = [
+      '#title' => $this->t('Autoplay'),
+      '#type' => 'checkbox',
+      '#description' => $this->t('Autoplay the videos for users without the "never autoplay videos" permission. Roles with this permission will bypass this setting.'),
+      '#default_value' => $this->getSetting('autoplay'),
+    ];
+    $elements['responsive'] = [
+      '#title' => $this->t('Responsive Video'),
+      '#type' => 'checkbox',
+      '#description' => $this->t("Make the video fill the width of it's container, adjusting to the size of the user's screen."),
+      '#default_value' => $this->getSetting('responsive'),
+    ];
+    // Loosely match the name attribute so forms which don't have a field
+    // formatter structure (such as the WYSIWYG settings form) are also matched.
+    $responsive_checked_state = [
+      'visible' => [
+        [
+          ':input[name*="responsive"]' => ['checked' => FALSE],
+        ],
+      ],
+    ];
+    $elements['width'] = [
+      '#title' => $this->t('Width'),
+      '#type' => 'number',
+      '#field_suffix' => 'px',
+      '#default_value' => $this->getSetting('width'),
+      '#required' => TRUE,
+      '#size' => 20,
+      '#states' => $responsive_checked_state,
+    ];
+    $elements['height'] = [
+      '#title' => $this->t('Height'),
+      '#type' => 'number',
+      '#field_suffix' => 'px',
+      '#default_value' => $this->getSetting('height'),
+      '#required' => TRUE,
+      '#size' => 20,
+      '#states' => $responsive_checked_state,
+    ];
+    return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $dimensions = $this->getSetting('responsive') ? $this->t('Responsive') : $this->t('@widthx@height', ['@width' => $this->getSetting('width'), '@height' => $this->getSetting('height')]);
+    $summary[] = $this->t('Embedded Video (@dimensions@autoplay).', [
+      '@dimensions' => $dimensions,
+      '@autoplay' => $this->getSetting('autoplay') ? $this->t(', autoplaying') : '',
+    ]);
+    return $summary;
+  }
+
+  /**
    * Get an instance of the Video field formatter plugin.
    *
    * This is useful because there is a lot of overlap to the configuration and
@@ -202,7 +209,11 @@ class Video extends FormatterBase implements ContainerFactoryPluginInterface {
     return \Drupal::service('plugin.manager.field.formatter')->createInstance('video_embed_field_video', [
       'settings' => !empty($settings) ? $settings : [],
       'third_party_settings' => [],
-      'field_definition' => new FieldConfig(['field_name' => 'mock', 'entity_type' => 'mock', 'bundle' => 'mock']),
+      'field_definition' => new FieldConfig([
+        'field_name' => 'mock',
+        'entity_type' => 'mock',
+        'bundle' => 'mock',
+      ]),
       'label' => '',
       'view_mode' => '',
     ]);

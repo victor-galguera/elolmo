@@ -71,4 +71,12 @@
 
 <js-bottom-placeholder token="{{ placeholder_token|raw }}">
 </body>
+<script>
+jQuery("#tidio-chat-iframe").on("load", function() {
+  let head = jQuery("#tidio-chat-iframe").contents().find("head");
+  console.log("tidio veamos");
+  let css = '<style>a.tidio-135wcf7 { display: none;}</style>';
+  jQuery(head).append(css);
+});
+</script>
 </html>

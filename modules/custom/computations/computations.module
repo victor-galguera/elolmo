@@ -28,4 +28,82 @@ function computations_form_alter(&$form, &$form_state, $form_id) {
     );
     return $element;
 }*/
-?>
+
+
+/**
+ * Prevents validation of decimal numbers
+ * @see https://www.drupal.org/node/2230909
+ */
+function computations_field_widget_form_alter(&$element, \Drupal\Core\Form\FormStateInterface $form_state, $context) {
+  $field_definition = $context['items']->getFieldDefinition();
+  if ($field_definition->getType() == 'decimal') {
+    $element['value']['#step'] = 'any';
+  }
+}
+
+
+
+
+
+/**
+* Implements hook_entity_update().
+*/
+function computations_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
+    if ($entity->getEntityTypeId() == 'node' && $entity->bundle() == 'lead') {
+        $vendedor = $entity->get('field_asignado_a')->getValue();
+        //kint($vendedor);
+        foreach ( $vendedor as $member ) {
+            if ($member['target_id'] !== '1') {
+                $tid = intval($member['target_id']);
+                $user = \Drupal\user\Entity\User::load( $tid );
+                $to = $user->getEmail();
+                //kint($entity->bundle());
+            }
+        }
+        //$membersTo = implode (', ', $tos);
+
+        //$to = $membersTo;
+        $mailManager = \Drupal::service('plugin.manager.mail');
+        $module = 'computations';
+        $key = 'new_notif';
+        $params['message'] = 'Has sido asignado a un Lead';
+        $params['node_title'] = $entity->label();
+        $params['subject'] = "Has sido asignado a un Lead";
+        $params['body'] = 'Has sido asignado a un Lead en privadaelolmo.com';
+        $subject = "Has sido asignado a un Lead";
+        $body = 'Has sido asignado a un Lead en privadaelolmo.com';
+        //$params['subject'] = $this->t('Verfication code');
+        //$params['body'] = [t("Your verfication code is: ")." ".$code];
+        $langcode = \Drupal::currentUser()->getPreferredLangcode();
+        $send = true;
+        $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send, $subject, $body);
+        //ksm($result);
+        //die();
+        if ($result['result'] !== true) {
+            drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
+        }
+        else {
+            drupal_set_message(t('Your message has been sent.'));
+        }
+        //die();
+    }
+}
+
+
+/**
+* Implements hook_mail().
+*/
+function computations_mail($key, &$message, $params) {
+    $options = array(
+        'langcode' => $message['langcode'],
+    );
+
+    switch ($key) {
+        case 'new_notif':
+            $message['from'] = \Drupal::config('system.site')->get('mail');
+            $message['subject'] = 'Has sido asignado a un Lead';
+            $message['body'][] = 'Has sido asignado a un Lead en privadaelolmo.com';
+        break;
+    }
+}
+
