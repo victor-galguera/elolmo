@@ -10,6 +10,7 @@ return array(
     'Stack' => array($vendorDir . '/stack/builder/src'),
     'Smalot\\PdfParser\\' => array($vendorDir . '/smalot/pdfparser/src'),
     'Sabberworm\\CSS' => array($vendorDir . '/sabberworm/php-css-parser/lib'),
+    'HTMLPurifier' => array($vendorDir . '/ezyang/htmlpurifier/library'),
     'EasyRdf_' => array($vendorDir . '/easyrdf/easyrdf/lib'),
     'Doctrine\\Common\\Collections\\' => array($vendorDir . '/doctrine/collections/lib'),
     'Console' => array($vendorDir . '/pear/console_getopt'),
