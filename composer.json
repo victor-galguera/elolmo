@@ -76,6 +76,7 @@
         "drupal/printable": "^2.0",
         "drupal/role_delegation": "^1.1",
         "drupal/rules": "^3.0@alpha",
+        "drupal/rules_role_email": "^1.0@alpha",
         "drupal/simple_instagram_feed": "^3.9",
         "drupal/simplenews": "^2.0@beta",
         "drupal/soundcloudfield": "^1.0@alpha",

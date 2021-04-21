@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e9885ed680fe9af8b55a5be62f9a6ee8",
+    "content-hash": "87f44dfc3f849ece453b4ac9cb42f28c",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -4938,6 +4938,50 @@
             "support": {
                 "source": "https://git.drupalcode.org/project/rules",
                 "issues": "https://www.drupal.org/project/issues/rules"
+            }
+        },
+        {
+            "name": "drupal/rules_role_email",
+            "version": "1.0.0-alpha5",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/rules_role_email.git",
+                "reference": "8.x-1.0-alpha5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/rules_role_email-8.x-1.0-alpha5.zip",
+                "reference": "8.x-1.0-alpha5",
+                "shasum": "26965b949170d2a3114e981c743400c850321969"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.0-alpha5",
+                    "datestamp": "1611242091",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "bribread22",
+                    "homepage": "https://www.drupal.org/user/3082379"
+                }
+            ],
+            "description": "This module provides a Rules action that sends emails to users of specified roles.",
+            "homepage": "https://www.drupal.org/project/rules_role_email",
+            "support": {
+                "source": "https://git.drupalcode.org/project/rules_role_email"
             }
         },
         {
@@ -10336,6 +10380,7 @@
         "drupal/menu_attributes": 10,
         "drupal/page_manager": 10,
         "drupal/rules": 15,
+        "drupal/rules_role_email": 15,
         "drupal/simplenews": 10,
         "drupal/soundcloudfield": 15,
         "drupal/views_load_more": 20,

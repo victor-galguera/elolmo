@@ -65,13 +65,13 @@ function computations_entity_update(Drupal\Core\Entity\EntityInterface $entity) 
         //$to = $membersTo;
         $mailManager = \Drupal::service('plugin.manager.mail');
         $module = 'computations';
-        $key = 'new_notif';
+        $key = 'lead';
         $params['message'] = 'Has sido asignado a un Lead';
         $params['node_title'] = $entity->label();
         $params['subject'] = "Has sido asignado a un Lead";
-        $params['body'] = 'Has sido asignado a un Lead en privadaelolmo.com';
+        $params['body'] = 'Has sido asignado a un Lead en privadaelolmo.com/user';
         $subject = "Has sido asignado a un Lead";
-        $body = 'Has sido asignado a un Lead en privadaelolmo.com';
+        $body = 'Has sido asignado a un Lead en privadaelolmo.com/user';
         //$params['subject'] = $this->t('Verfication code');
         //$params['body'] = [t("Your verfication code is: ")." ".$code];
         $langcode = \Drupal::currentUser()->getPreferredLangcode();
@@ -99,10 +99,10 @@ function computations_mail($key, &$message, $params) {
     );
 
     switch ($key) {
-        case 'new_notif':
+        case 'lead':
             $message['from'] = \Drupal::config('system.site')->get('mail');
             $message['subject'] = 'Has sido asignado a un Lead';
-            $message['body'][] = 'Has sido asignado a un Lead en privadaelolmo.com';
+            $message['body'][] = 'Has sido asignado a un Lead en privadaelolmo.com/user';
         break;
     }
 }
