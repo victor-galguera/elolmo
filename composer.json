@@ -83,6 +83,7 @@
         "drupal/token": "^1.9",
         "drupal/toolbar_menu_clean": "^1.2",
         "drupal/video_embed_field": "^2.4",
+        "drupal/views_data_export": "^1.0",
         "drupal/views_fieldsets": "^3.3",
         "drupal/views_flipped_table": "^1.4",
         "drupal/views_load_more": "1.x-dev",
@@ -90,7 +91,8 @@
         "drupal/views_templates": "^1.1",
         "drupal/viewsreference": "^1.7",
         "drupal/votingapi": "^3.0@beta",
-        "drupal/webform": "^6.0"
+        "drupal/webform": "^6.0",
+        "drupal/xls_serialization": "^1.2"
     },
     "conflict": {
         "drupal/drupal": "*"
